@@ -8,6 +8,7 @@ checks and the project tests, and leaves a clean tree when a proposal is bad.
 """
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
@@ -276,7 +277,7 @@ def apply_patch_proposal(summary: str, patch: str) -> list[str]:
 
 
 def _repair_invalid_json_escapes(raw: str) -> str:
-    """Repair only invalid backslash escapes inside JSON string literals.
+    r"""Repair only invalid backslash escapes inside JSON string literals.
 
     Small local models often emit JavaScript/regex snippets such as \d, \s or
     \/ with one backslash instead of the double escaping required by JSON.
@@ -333,6 +334,21 @@ def _repair_invalid_json_escapes(raw: str) -> str:
     return "".join(out)
 
 
+def _quote_bare_json_keys(raw: str) -> str:
+    """Quote only bare object keys in relaxed JSON-like model output.
+
+    This is deliberately narrow: it does not evaluate expressions or execute
+    model content. Structural/path/edit validation still runs afterwards.
+    """
+    key_re = re.compile(r'(?P<prefix>[{,]\\s*)(?P<key>[A-Za-z_][A-Za-z0-9_-]*)(?P<suffix>\\s*:)' )
+    return key_re.sub(
+        lambda match: (
+            f'{match.group("prefix")}"{match.group("key")}"{match.group("suffix")}'
+        ),
+        raw,
+    )
+
+
 def parse_proposal(output: str) -> dict | None:
     raw = output.strip()
     if raw == "NOOP":
@@ -358,14 +374,18 @@ def parse_proposal(output: str) -> dict | None:
     try:
         proposal = json.loads(candidate)
     except json.JSONDecodeError as first_exc:
-        repaired = _repair_invalid_json_escapes(candidate)
+        repaired = _quote_bare_json_keys(_repair_invalid_json_escapes(candidate))
         try:
             proposal = json.loads(repaired)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError(
-                f"Model output is invalid JSON after safe escape repair: {exc}; "
-                f"original error: {first_exc}"
-            ) from exc
+        except json.JSONDecodeError as json_exc:
+            try:
+                proposal = ast.literal_eval(repaired)
+            except (SyntaxError, ValueError) as literal_exc:
+                raise RuntimeError(
+                    "Model output is invalid structured data after safe escape/key repair: "
+                    f"{json_exc}; original error: {first_exc}; "
+                    f"literal fallback: {literal_exc}"
+                ) from literal_exc
 
     if not isinstance(proposal, dict):
         raise RuntimeError("Model proposal must be a JSON object.")
@@ -379,7 +399,7 @@ def parse_proposal(output: str) -> dict | None:
 
 
 def _literalize_regex_style_find(find: str) -> str:
-    """Turn accidental regex escaping into a literal exact-match candidate.
+    r"""Turn accidental regex escaping into a literal exact-match candidate.
 
     The local model sometimes emits code text like `foo\.bar\(x\)` even
     though the protocol requires literal source text. We only use this fallback
@@ -527,6 +547,44 @@ def apply_deterministic_fast_path() -> tuple[str, list[str]] | None:
             app.write_text(js, encoding="utf-8")
             smoke.write_text(tests, encoding="utf-8")
             return "Add local read path for saved observations", ["src/app.js", "tests/smoke.mjs"]
+
+    if "const MAX_INPUT_BYTES =" not in js:
+        constant_anchor = "  const JPEG_QUALITY = 0.78;"
+        guard_anchor = """    if (file.type && !file.type.startsWith('image/')) {
+      throw new Error("Il file selezionato non è un'immagine.");
+    }
+    const original = await fileToDataUrl(file);"""
+        if js.count(constant_anchor) != 1 or js.count(guard_anchor) != 1:
+            return None
+
+        js = js.replace(
+            constant_anchor,
+            constant_anchor + "\n  const MAX_INPUT_BYTES = 12 * 1024 * 1024;",
+            1,
+        )
+        size_guard = """    if (file.type && !file.type.startsWith('image/')) {
+      throw new Error("Il file selezionato non è un'immagine.");
+    }
+    if (file.size && file.size > MAX_INPUT_BYTES) {
+      throw new Error("La foto selezionata supera il limite locale consentito.");
+    }
+    const original = await fileToDataUrl(file);"""
+        js = js.replace(guard_anchor, size_guard, 1)
+
+        test_anchor = "assert.match(js,/file\\.type && !file\\.type\\.startsWith\\('image\\/'\\)/);"
+        if tests.count(test_anchor) != 1:
+            return None
+        tests = tests.replace(
+            test_anchor,
+            test_anchor
+            + "\nassert.match(js,/MAX_INPUT_BYTES = 12 \\* 1024 \\* 1024/);"
+            + "\nassert.match(js,/file\\.size && file\\.size > MAX_INPUT_BYTES/);",
+            1,
+        )
+
+        app.write_text(js, encoding="utf-8")
+        smoke.write_text(tests, encoding="utf-8")
+        return "Reject oversized evidence before local decoding", ["src/app.js", "tests/smoke.mjs"]
 
     return None
 
