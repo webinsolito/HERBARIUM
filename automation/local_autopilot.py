@@ -140,7 +140,7 @@ def call_model(prompt: str) -> str:
             ],
             "temperature": 0.05,
             "top_p": 0.85,
-            "max_tokens": 3000,
+            "max_tokens": 1200,
             "stream": False,
         }
     ).encode("utf-8")
