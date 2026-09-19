@@ -165,6 +165,41 @@ END_PATCH
             finally:
                 autopilot.ROOT = previous_root
 
+
+    def test_deterministic_fast_path_adds_only_mime_guard_once(self) -> None:
+        app_source = """  const prepareEvidenceImage = async file => {
+    const original = await fileToDataUrl(file);
+  };
+"""
+        smoke_source = "assert.match(js,/readAsDataURL\\(file\\)/);\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "tests").mkdir()
+            (root / "src/app.js").write_text(app_source, encoding="utf-8")
+            (root / "tests/smoke.mjs").write_text(smoke_source, encoding="utf-8")
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "baseline"], cwd=root, check=True)
+
+            previous_root = autopilot.ROOT
+            autopilot.ROOT = root
+            try:
+                result = autopilot.apply_deterministic_fast_path()
+                self.assertIsNotNone(result)
+                summary, expected = result
+                self.assertIn("non-image", summary)
+                self.assertEqual(expected, ["src/app.js", "tests/smoke.mjs"])
+                self.assertEqual(
+                    autopilot.validate_changed_files(expected),
+                    ["src/app.js", "tests/smoke.mjs"],
+                )
+                self.assertIsNone(autopilot.apply_deterministic_fast_path())
+            finally:
+                autopilot.ROOT = previous_root
+
     def test_missing_required_edit_field_still_rejected(self) -> None:
         proposal = {
             "summary": "bad edit",
