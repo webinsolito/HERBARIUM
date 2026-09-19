@@ -26,13 +26,13 @@ jobs:
       MODEL_FILE: qwen2.5-coder-1.5b-instruct-q4_0.gguf
     steps:
       - name: Checkout controller
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: main
           path: controller
           persist-credentials: false
       - name: Checkout candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: candidate/mission-001-source-recovery
           path: project
@@ -62,7 +62,7 @@ jobs:
           fi
       - name: Restore local AI cache
         if: steps.fast.outputs.needs_ai == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ env.CACHE_DIR }}
           key: herbarium-local-ai-v3-${{ env.LLAMA_RELEASE }}-${{ env.MODEL_SHA256 }}
@@ -151,7 +151,7 @@ jobs:
           git push origin "HEAD:$BASE_BRANCH"
       - name: Upload proposal diagnostics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: local-autopilot-diagnostics-${{ github.run_id }}
           path: |
