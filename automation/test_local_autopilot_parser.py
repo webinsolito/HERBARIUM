@@ -115,6 +115,20 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(proposal["summary"], "bounded repair")
         self.assertEqual(proposal["edits"][0]["path"], "src/app.js")
 
+    def test_truncated_unified_diff_is_rejected_clearly(self) -> None:
+        output = """SUMMARY: bounded change
+BEGIN_PATCH
+diff --git a/src/app.js b/src/app.js
+--- a/src/app.js
++++ b/src/app.js
+@@ -1 +1 @@
+-OLD
++NEW
+"""
+        with self.assertRaisesRegex(RuntimeError, "truncated or missing END_PATCH"):
+            autopilot.parse_patch_proposal(output)
+
+
     def test_unified_diff_protocol_applies_end_to_end(self) -> None:
         output = """SUMMARY: replace one bounded line
 BEGIN_PATCH
