@@ -557,6 +557,9 @@ def main() -> int:
         summary, expected = fast_path
         files = validate_changed_files(expected)
         print("HERBARIUM deterministic fast path:", summary)
+    elif os.environ.get("HERBARIUM_FAST_PATH_ONLY") == "1":
+        print("HERBARIUM deterministic fast path: NOOP")
+        return 0
     else:
         prompt = build_prompt()
         output = call_model(prompt)
