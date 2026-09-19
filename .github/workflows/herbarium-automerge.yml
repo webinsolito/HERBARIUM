@@ -1,0 +1,68 @@
+name: HERBARIUM Autopilot Merge
+
+on:
+  workflow_run:
+    workflows: ["HERBARIUM Guard"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: herbarium-autopilot-merge
+  cancel-in-progress: false
+
+jobs:
+  merge-green-autopilot:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Find and safely merge matching autopilot PR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          pr_json="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/commits/$HEAD_SHA/pulls")"
+          pr_number="$(jq -r '
+            [.[] |
+              select(.state == "open") |
+              select(.base.ref == "candidate/mission-001-source-recovery") |
+              select(.head.repo.full_name == env.REPO) |
+              select(.head.ref | startswith("autopilot/"))
+            ][0].number // empty
+          ' <<<"$pr_json")"
+
+          if [ -z "$pr_number" ]; then
+            echo "No open HERBARIUM autopilot PR is associated with this green Guard run."
+            exit 0
+          fi
+
+          draft="$(gh api "/repos/$REPO/pulls/$pr_number" --jq '.draft')"
+          if [ "$draft" = "true" ]; then
+            echo "PR #$pr_number is draft; refusing autonomous merge."
+            exit 1
+          fi
+
+          mapfile -t files < <(gh api --paginate "/repos/$REPO/pulls/$pr_number/files" --jq '.[].filename')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "PR #$pr_number has no changed files; refusing merge."
+            exit 1
+          fi
+
+          for file in "${files[@]}"; do
+            case "$file" in
+              .github/*|DIRECTOR.md|ROADMAP.md|RECOVERY.md|README.md)
+                echo "Protected path changed by PR #$pr_number: $file"
+                exit 1
+                ;;
+            esac
+          done
+
+          echo "Guard green and protected-path check passed for PR #$pr_number."
+          gh pr merge "$pr_number" --repo "$REPO" --squash --delete-branch
