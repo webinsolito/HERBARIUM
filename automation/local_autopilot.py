@@ -150,6 +150,64 @@ def call_model(prompt: str) -> str:
     return data["choices"][0]["message"]["content"]
 
 
+def _repair_invalid_json_escapes(raw: str) -> str:
+    """Repair only invalid backslash escapes inside JSON string literals.
+
+    Small local models often emit JavaScript/regex snippets such as \d, \s or
+    \/ with one backslash instead of the double escaping required by JSON.
+    We preserve valid JSON escapes and duplicate only a backslash whose next
+    character cannot begin a valid JSON escape. All later exact-edit and path
+    guards still apply, so this does not broaden write permissions.
+    """
+    out: list[str] = []
+    in_string = False
+    escaped = False
+    valid_simple = {'"', "\\", "/", "b", "f", "n", "r", "t"}
+
+    i = 0
+    while i < len(raw):
+        ch = raw[i]
+        if not in_string:
+            out.append(ch)
+            if ch == '"':
+                in_string = True
+            i += 1
+            continue
+
+        if escaped:
+            out.append(ch)
+            escaped = False
+            i += 1
+            continue
+
+        if ch == '"':
+            out.append(ch)
+            in_string = False
+            i += 1
+            continue
+
+        if ch != "\\":
+            out.append(ch)
+            i += 1
+            continue
+
+        nxt = raw[i + 1] if i + 1 < len(raw) else ""
+        if nxt in valid_simple:
+            out.append(ch)
+            escaped = True
+        elif nxt == "u" and i + 5 < len(raw) and all(
+            c in "0123456789abcdefABCDEF" for c in raw[i + 2 : i + 6]
+        ):
+            out.append(ch)
+            escaped = True
+        else:
+            # Preserve the literal backslash by JSON-escaping it.
+            out.append("\\\\")
+        i += 1
+
+    return "".join(out)
+
+
 def parse_proposal(output: str) -> dict | None:
     raw = output.strip()
     if raw == "NOOP":
@@ -158,7 +216,7 @@ def parse_proposal(output: str) -> dict | None:
         raise RuntimeError("Model output exceeds bounded size.")
 
     # Small local models occasionally wrap JSON in a code fence despite being
-    # told not to. Strip that harmless wrapper, but reject everything else.
+    # told not to. Strip that harmless wrapper.
     if raw.startswith("```"):
         lines = raw.splitlines()
         if len(lines) >= 3 and lines[-1].strip() == "```":
@@ -171,13 +229,21 @@ def parse_proposal(output: str) -> dict | None:
     if start < 0 or end < start:
         raise RuntimeError("Model output contains no JSON object.")
 
+    candidate = raw[start : end + 1]
     try:
-        proposal = json.loads(raw[start : end + 1])
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"Model output is invalid JSON: {exc}") from exc
+        proposal = json.loads(candidate)
+    except json.JSONDecodeError as first_exc:
+        repaired = _repair_invalid_json_escapes(candidate)
+        try:
+            proposal = json.loads(repaired)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                f"Model output is invalid JSON after safe escape repair: {exc}; "
+                f"original error: {first_exc}"
+            ) from exc
 
-    if set(proposal) - {"summary", "edits"}:
-        raise RuntimeError("Unexpected top-level fields in model proposal.")
+    if not isinstance(proposal, dict):
+        raise RuntimeError("Model proposal must be a JSON object.")
     summary = proposal.get("summary")
     edits = proposal.get("edits")
     if not isinstance(summary, str) or not summary.strip():
@@ -186,7 +252,7 @@ def parse_proposal(output: str) -> dict | None:
         raise RuntimeError("Proposal edits are missing.")
     if len(edits) > MAX_EDITS:
         raise RuntimeError("Proposal contains too many edit operations.")
-    return proposal
+    return {"summary": summary.strip(), "edits": edits}
 
 
 def validate_path(path: str) -> Path:
@@ -205,9 +271,17 @@ def validate_path(path: str) -> Path:
 def apply_exact_edits(proposal: dict) -> list[str]:
     touched: list[str] = []
     for index, edit in enumerate(proposal["edits"], start=1):
-        if not isinstance(edit, dict) or set(edit) != {"path", "find", "replace"}:
+        if not isinstance(edit, dict):
             raise RuntimeError(f"Edit {index} has invalid shape.")
+        required = {"path", "find", "replace"}
+        missing = required - set(edit)
+        if missing:
+            raise RuntimeError(
+                f"Edit {index} is missing required fields: {sorted(missing)}"
+            )
 
+        # Extra explanatory metadata from the small model is harmless and is
+        # ignored. The actual mutation still uses only path/find/replace.
         path = edit["path"]
         find = edit["find"]
         replace = edit["replace"]
