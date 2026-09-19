@@ -340,7 +340,7 @@ def _quote_bare_json_keys(raw: str) -> str:
     This is deliberately narrow: it does not evaluate expressions or execute
     model content. Structural/path/edit validation still runs afterwards.
     """
-    key_re = re.compile(r'(?P<prefix>[{,]\\s*)(?P<key>[A-Za-z_][A-Za-z0-9_-]*)(?P<suffix>\\s*:)' )
+    key_re = re.compile(r'(?P<prefix>[{,]\s*)(?P<key>[A-Za-z_][A-Za-z0-9_-]*)(?P<suffix>\s*:)')
     return key_re.sub(
         lambda match: (
             f'{match.group("prefix")}"{match.group("key")}"{match.group("suffix")}'
