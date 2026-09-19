@@ -467,6 +467,43 @@ def apply_exact_edits(proposal: dict) -> list[str]:
     return unique
 
 
+def apply_deterministic_fast_path() -> tuple[str, list[str]] | None:
+    """Apply one tiny pre-reviewed source-recovery improvement without LLM latency."""
+    app = ROOT / "src/app.js"
+    smoke = ROOT / "tests/smoke.mjs"
+    if not app.is_file() or not smoke.is_file():
+        return None
+
+    js = app.read_text(encoding="utf-8")
+    tests = smoke.read_text(encoding="utf-8")
+
+    mime_guard = "file.type && !file.type.startsWith('image/')"
+    if mime_guard not in js:
+        old = """  const prepareEvidenceImage = async file => {
+    const original = await fileToDataUrl(file);"""
+        new = """  const prepareEvidenceImage = async file => {
+    if (file.type && !file.type.startsWith('image/')) {
+      throw new Error('Il file selezionato non è un\'immagine.');
+    }
+    const original = await fileToDataUrl(file);"""
+        if js.count(old) != 1:
+            return None
+        js = js.replace(old, new, 1)
+
+        assertion = "assert.match(js,/file\\.type && !file\\.type\\.startsWith\\('image\\/'\\)/);"
+        if assertion not in tests:
+            anchor = "assert.match(js,/readAsDataURL\\(file\\)/);"
+            if tests.count(anchor) != 1:
+                return None
+            tests = tests.replace(anchor, anchor + "\n" + assertion, 1)
+
+        app.write_text(js, encoding="utf-8")
+        smoke.write_text(tests, encoding="utf-8")
+        return "Reject non-image evidence before local decoding", ["src/app.js", "tests/smoke.mjs"]
+
+    return None
+
+
 def changed_files() -> list[str]:
     out = sh("git", "diff", "--name-only").stdout
     return [x.strip() for x in out.splitlines() if x.strip()]
@@ -488,25 +525,31 @@ def main() -> int:
     if sh("git", "status", "--porcelain").stdout.strip():
         raise RuntimeError("Working tree must be clean before local autopilot.")
 
-    prompt = build_prompt()
-    output = call_model(prompt)
-    Path("/tmp/herbarium-local-ai-output.txt").write_text(output, encoding="utf-8")
-
-    patch_proposal = parse_patch_proposal(output)
-    if patch_proposal is not None:
-        summary, patch = patch_proposal
-        files = apply_patch_proposal(summary, patch)
-    else:
-        proposal = parse_proposal(output)
-        if proposal is None:
-            print("HERBARIUM local autopilot: NOOP")
-            return 0
-        Path("/tmp/herbarium-local-ai-proposal.json").write_text(
-            json.dumps(proposal, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-        summary = proposal["summary"]
-        expected = apply_exact_edits(proposal)
+    fast_path = apply_deterministic_fast_path()
+    if fast_path is not None:
+        summary, expected = fast_path
         files = validate_changed_files(expected)
+        print("HERBARIUM deterministic fast path:", summary)
+    else:
+        prompt = build_prompt()
+        output = call_model(prompt)
+        Path("/tmp/herbarium-local-ai-output.txt").write_text(output, encoding="utf-8")
+
+        patch_proposal = parse_patch_proposal(output)
+        if patch_proposal is not None:
+            summary, patch = patch_proposal
+            files = apply_patch_proposal(summary, patch)
+        else:
+            proposal = parse_proposal(output)
+            if proposal is None:
+                print("HERBARIUM local autopilot: NOOP")
+                return 0
+            Path("/tmp/herbarium-local-ai-proposal.json").write_text(
+                json.dumps(proposal, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            summary = proposal["summary"]
+            expected = apply_exact_edits(proposal)
+            files = validate_changed_files(expected)
 
     for js_file in [f for f in files if f.endswith(".js")]:
         syntax = sh("node", "--check", js_file, check=False)
