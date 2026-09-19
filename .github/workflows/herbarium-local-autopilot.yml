@@ -151,7 +151,7 @@ jobs:
           git push origin "HEAD:$BASE_BRANCH"
       - name: Upload proposal diagnostics
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: local-autopilot-diagnostics-${{ github.run_id }}
           path: |
