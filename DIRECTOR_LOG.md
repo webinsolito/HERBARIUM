@@ -34,3 +34,11 @@ This log is maintained by the hourly director.
 - Candidate commits: `b9e0725c289792fce414d8bd488764d90e30b595`, `27420e77cc9fed55460816d76332057bd4ef38d7`.
 - Guard run 35428635147 for `27420e77...` was queued at final verification, therefore this slice is NOT yet considered completed or promotable.
 - Next action: verify that Guard; on failure fix it before any further recovery work. On success continue Mission 001 feature-parity recovery.
+
+## 2026-09-19 — Mission 001 / independent control + H24 handoff
+- Verified Guard run `35428635147` for candidate `27420e77cc9fed55460816d76332057bd4ef38d7`: completed SUCCESS. The IndexedDB persistence slice is therefore externally green.
+- Confirmed Mission 001 remains IN PROGRESS; no unrelated feature mission opened and stable/main product code was not promoted.
+- Confirmed no open PRs or issues at control time.
+- Confirmed GitHub-native Local Autopilot run `35433476891` passed candidate verification, restored the pinned local-AI cache, installed the verified llama.cpp runtime, loaded the pinned Apache-2.0 Qwen coding model and entered the bounded patch-generation/test step. Because that run was still in progress, no generated patch is claimed as accepted yet.
+- Synchronized the public candidate preview to the latest externally green product head `27420e77` and labelled it explicitly as CANDIDATE PREVIEW. Preview publication is not stable promotion.
+- Next action: inspect the Local Autopilot result/PR and HERBARIUM Guard. If green, accept only the bounded Mission 001 improvement; if red, fix that failure before any other work.
