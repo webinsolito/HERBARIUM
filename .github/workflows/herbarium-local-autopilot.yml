@@ -77,8 +77,26 @@ jobs:
           npm test
           node --check src/app.js
 
-      - name: Restore local AI cache
+      - name: Run instant deterministic micro-task
+        id: fast
         if: steps.gate.outputs.run == 'true'
+        working-directory: project
+        env:
+          HERBARIUM_FAST_PATH_ONLY: "1"
+        shell: bash
+        run: |
+          set -euo pipefail
+          python ../controller/automation/local_autopilot.py
+          if git diff --quiet; then
+            echo "needs_ai=true" >> "$GITHUB_OUTPUT"
+            echo "No deterministic micro-task available; local AI fallback required."
+          else
+            echo "needs_ai=false" >> "$GITHUB_OUTPUT"
+            echo "Deterministic micro-task completed; skipping model startup."
+          fi
+
+      - name: Restore local AI cache
+        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
         uses: actions/cache@v4
         with:
           path: ${{ env.CACHE_DIR }}
@@ -87,7 +105,7 @@ jobs:
             herbarium-local-ai-v2-
 
       - name: Restore or install verified llama.cpp runtime
-        if: steps.gate.outputs.run == 'true'
+        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -115,7 +133,7 @@ jobs:
           LD_LIBRARY_PATH="$lib_dirs" "$server" --version
 
       - name: Download pinned Apache-2.0 coding model if absent
-        if: steps.gate.outputs.run == 'true'
+        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -130,7 +148,7 @@ jobs:
           echo "$MODEL_SHA256  $model" | sha256sum -c -
 
       - name: Start local model server
-        if: steps.gate.outputs.run == 'true'
+        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -146,7 +164,7 @@ jobs:
           exit 1
 
       - name: Generate bounded patch and run tests
-        if: steps.gate.outputs.run == 'true'
+        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
         working-directory: project
         env:
           HERBARIUM_LOCAL_LLM_URL: http://127.0.0.1:8080/v1/chat/completions
