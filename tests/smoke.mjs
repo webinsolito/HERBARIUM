@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const html=fs.readFileSync('src/index.html','utf8');
+const js=fs.readFileSync('src/app.js','utf8');
+assert.match(html,/accept="image\/\*"/);
+assert.match(html,/capture="environment"/);
+assert.match(html,/UNKNOWN/);
+assert.match(html,/id="whole"/);assert.match(html,/id="flower"/);assert.match(html,/id="leaf"/);assert.match(html,/id="detail"/);
+assert.match(js,/Motore botanico validato non installato/);
+assert.doesNotMatch(html,/\b\d{1,3}%\b/);
+console.log('HERBARIUM smoke PASS');
