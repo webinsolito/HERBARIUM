@@ -21,7 +21,7 @@ permissions:
 
 concurrency:
   group: herbarium-local-autopilot-${{ github.event_name }}-${{ github.event.workflow_run.head_branch || github.ref_name || 'global' }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   improve:
@@ -191,6 +191,8 @@ jobs:
           path: |
             /tmp/herbarium-local-ai-output.txt
             /tmp/herbarium-local-ai-proposal.json
+            /tmp/herbarium-local-ai-proposal.txt
+            /tmp/herbarium-local-ai.patch
             /tmp/herbarium-llama.log
           if-no-files-found: ignore
           retention-days: 3
