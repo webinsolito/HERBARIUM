@@ -43,7 +43,7 @@ network:
   allowed:
     - defaults
     - github
-    - npm
+    - node
 timeout-minutes: 25
 strict: true
 ---
