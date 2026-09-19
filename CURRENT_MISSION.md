@@ -5,28 +5,24 @@
 ### Objective
 Port the best real HERBARIUM baseline into this repository as a reproducible, testable project without regressing validated behavior.
 
-### Inputs
-- live reference: https://herbarium-taccuino-zero.jorrob98.chatgpt.site
-- `recovery/HERBARIUM_TEST_PC.html`
-- `recovery/candidate-0.6-index.html`
-- `docs/history/CHANGELOG_v0.4.md`
-- `docs/history/ROADMAP_2027.md`
-- `RECOVERY.md`
+### Current state
+IN PROGRESS on `candidate/mission-001-source-recovery`.
 
-### Required work
-1. Inspect the live reference and recovery files.
-2. Identify the most recent/complete behavior; do not assume the oldest standalone HTML is stable.
-3. Create a reproducible application baseline in versioned source files.
-4. Preserve mobile-first iPhone UX, camera/library flow, local persistence, offline/privacy behavior and prudent reject/unknown logic where actually present.
-5. Add automated smoke/regression tests for the recovered baseline.
-6. Do not add unrelated new features in this mission.
+A first reproducible source slice now exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local serve command and an automated smoke test. This is intentionally NOT promoted to main and is NOT claimed equivalent to the recovered v0.5/0.6 product yet.
+
+### Remaining required work
+1. Compare the recovered RC3 standalone and candidate 0.6 behavior feature-by-feature.
+2. Recover the complete application structure/assets needed by candidate 0.6 instead of keeping only a minimal shell.
+3. Preserve camera/library flow, local persistence, offline/privacy behavior, collection/book/atlas/academy features that are actually present and validated.
+4. Add regression tests for recovered core flows and explicit non-plant/UNKNOWN safeguards.
+5. Verify GitHub Actions green on the candidate head before any promotion.
 
 ### Exit gate
-- source lives in the repo;
+- complete source-of-truth baseline lives in the repo;
 - local build/serve command documented;
-- automated tests are repeatable;
-- GitHub Actions green;
-- no known regression versus the recovered baseline;
-- differences from the live reference are documented honestly.
+- automated tests repeatable and green;
+- GitHub Actions green on candidate head;
+- no known regression versus recovered baseline;
+- differences from live reference documented honestly.
 
-Status: READY
+Status: IN PROGRESS — DO NOT PROMOTE
