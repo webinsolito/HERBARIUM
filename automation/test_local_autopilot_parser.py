@@ -106,6 +106,15 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(len(proposal["edits"]), 4)
 
 
+    def test_relaxed_bare_keys_and_single_quotes_parse_safely(self) -> None:
+        raw = """{
+          summary: 'bounded repair',
+          edits: [{path: 'src/app.js', find: 'OLD', replace: 'NEW'}]
+        }"""
+        proposal = autopilot.parse_proposal(raw)
+        self.assertEqual(proposal["summary"], "bounded repair")
+        self.assertEqual(proposal["edits"][0]["path"], "src/app.js")
+
     def test_unified_diff_protocol_applies_end_to_end(self) -> None:
         output = """SUMMARY: replace one bounded line
 BEGIN_PATCH
@@ -199,6 +208,42 @@ END_PATCH
                 self.assertIsNone(autopilot.apply_deterministic_fast_path())
             finally:
                 autopilot.ROOT = previous_root
+
+    def test_deterministic_fast_path_adds_size_guard_after_existing_guards(self) -> None:
+        app_source = """  const JPEG_QUALITY = 0.78;
+  const loadObservations = async () => {};
+  const prepareEvidenceImage = async file => {
+    if (file.type && !file.type.startsWith('image/')) {
+      throw new Error("Il file selezionato non è un'immagine.");
+    }
+    const original = await fileToDataUrl(file);
+  };
+"""
+        smoke_source = "assert.match(js,/file\\.type && !file\\.type\\.startsWith\\('image\\/'\\)/);\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "tests").mkdir()
+            (root / "src/app.js").write_text(app_source, encoding="utf-8")
+            (root / "tests/smoke.mjs").write_text(smoke_source, encoding="utf-8")
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "baseline"], cwd=root, check=True)
+
+            previous_root = autopilot.ROOT
+            autopilot.ROOT = root
+            try:
+                result = autopilot.apply_deterministic_fast_path()
+            finally:
+                autopilot.ROOT = previous_root
+
+            self.assertIsNotNone(result)
+            self.assertIn("oversized", result[0])
+            updated = (root / "src/app.js").read_text(encoding="utf-8")
+            self.assertIn("MAX_INPUT_BYTES = 12 * 1024 * 1024", updated)
+            self.assertIn("file.size && file.size > MAX_INPUT_BYTES", updated)
 
     def test_missing_required_edit_field_still_rejected(self) -> None:
         proposal = {
