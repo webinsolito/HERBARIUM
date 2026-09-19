@@ -91,24 +91,21 @@ jobs:
           set -euo pipefail
           mkdir -p "$CACHE_DIR"
 
-          if [ ! -x "$RUNTIME_DIR/llama-server" ]; then
-            rm -rf "$RUNTIME_DIR" /tmp/llama-runtime /tmp/llama-runtime.tar.gz
-            mkdir -p /tmp/llama-runtime "$RUNTIME_DIR"
+          server="$(find "$RUNTIME_DIR" -type f -name llama-server 2>/dev/null | head -1 || true)"
+          if [ -z "$server" ]; then
+            rm -rf "$RUNTIME_DIR" /tmp/llama-runtime.tar.gz
+            mkdir -p "$RUNTIME_DIR"
             url="https://github.com/ggml-org/llama.cpp/releases/download/$LLAMA_RELEASE/$LLAMA_ARCHIVE"
             curl -fL --retry 4 --retry-delay 2 "$url" -o /tmp/llama-runtime.tar.gz
             echo "$LLAMA_ARCHIVE_SHA256  /tmp/llama-runtime.tar.gz" | sha256sum -c -
-            tar -xzf /tmp/llama-runtime.tar.gz -C /tmp/llama-runtime
-
-            server="$(find /tmp/llama-runtime -type f -name llama-server | head -1)"
-            if [ -z "$server" ]; then
-              echo "llama-server not found in verified official runtime"
-              exit 1
-            fi
-            runtime_root="$(dirname "$server")"
-            cp -a "$runtime_root"/. "$RUNTIME_DIR"/
+            tar -xzf /tmp/llama-runtime.tar.gz -C "$RUNTIME_DIR"
+            server="$(find "$RUNTIME_DIR" -type f -name llama-server | head -1)"
           fi
 
-          server="$RUNTIME_DIR/llama-server"
+          if [ -z "$server" ]; then
+            echo "llama-server not found in verified official runtime"
+            exit 1
+          fi
           chmod +x "$server"
           lib_dirs="$(find "$RUNTIME_DIR" -type f -name '*.so*' -printf '%h\n' | sort -u | paste -sd: -)"
           echo "LLAMA_SERVER=$server" >> "$GITHUB_ENV"
