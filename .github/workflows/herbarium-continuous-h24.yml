@@ -1,0 +1,92 @@
+name: HERBARIUM Continuous H24
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: herbarium-h24-autopilot
+  cancel-in-progress: false
+
+jobs:
+  guard-and-evolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v6
+        with:
+          ref: candidate/mission-001-source-recovery
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Install project dependencies
+        run: |
+          if [ -f package-lock.json ]; then npm ci; fi
+
+      - name: Baseline tests
+        id: baseline
+        run: |
+          if [ -f package.json ]; then npm test; fi
+
+      - name: Detect AI engine
+        id: ai
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          if [ -n "$COPILOT_GITHUB_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "AI evolution skipped: COPILOT_GITHUB_TOKEN is not configured." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Install Copilot CLI
+        if: steps.ai.outputs.enabled == 'true'
+        run: npm install -g @github/copilot
+
+      - name: Autonomous improvement cycle
+        if: steps.ai.outputs.enabled == 'true'
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          copilot -p "You are the autonomous HERBARIUM executor. Work ONLY in this checked-out candidate branch. Read README.md, DIRECTOR.md, CURRENT_MISSION.md, DIRECTOR_LOG.md and ROADMAP.md first. Continue the current mission only; do not open unrelated features. Inspect the existing code and tests. Make ONE coherent, useful improvement that moves CURRENT_MISSION.md toward its exit gate. Preserve mobile-first iPhone UX, camera plus photo library, local privacy and offline-first behavior, UNKNOWN/REJECT semantics, anti-false-positive safeguards, no fake data, no uncalibrated accuracy claims, and no paid/cloud dependency for core. Do NOT modify GitHub workflow files. Do NOT commit or push. Run relevant tests yourself and repair your change if needed. If no safe improvement is possible, make no code change." --allow-tool='shell(git:*)' --allow-tool='shell(npm:*)' --allow-tool='shell(node:*)' --allow-tool=write --no-ask-user
+
+      - name: Regression tests after AI change
+        if: steps.ai.outputs.enabled == 'true'
+        run: |
+          if [ -f package.json ]; then npm test; fi
+          node --check src/app.js
+
+      - name: Reject forbidden workflow edits
+        if: steps.ai.outputs.enabled == 'true'
+        run: |
+          if git diff --name-only | grep -E '^\.github/workflows/'; then
+            echo "AI attempted to modify workflow files; rejecting cycle."
+            git checkout -- .github/workflows/
+            exit 1
+          fi
+
+      - name: Commit green candidate changes
+        if: steps.ai.outputs.enabled == 'true'
+        run: |
+          if git diff --quiet; then
+            echo "No safe code change produced." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "HERBARIUM H24"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "H24: autonomous candidate improvement"
+          git push origin HEAD:candidate/mission-001-source-recovery
+          echo "Green autonomous candidate update pushed." >> "$GITHUB_STEP_SUMMARY"
