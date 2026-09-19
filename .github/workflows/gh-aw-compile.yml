@@ -1,13 +1,7 @@
 name: Compile HERBARIUM Agentic Workflow
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/herbarium-autopilot.md'
-      - '.github/workflows/gh-aw-compile.yml'
   workflow_dispatch:
-
 permissions:
   contents: write
 
