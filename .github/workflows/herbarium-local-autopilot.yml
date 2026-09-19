@@ -83,6 +83,8 @@ jobs:
         with:
           path: ${{ env.CACHE_DIR }}
           key: herbarium-local-ai-v3-${{ env.LLAMA_RELEASE }}-${{ env.MODEL_SHA256 }}
+          restore-keys: |
+            herbarium-local-ai-v2-
 
       - name: Restore or install verified llama.cpp runtime
         if: steps.gate.outputs.run == 'true'
