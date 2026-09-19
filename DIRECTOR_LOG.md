@@ -49,3 +49,5 @@ This log is maintained by the hourly director.
 - This log-only candidate commit intentionally triggers the green Guard -> Local Autopilot event chain to verify the optimized path.
 
 - Speed verification retry: controller syntax fix 875afef4 is now present on main; trigger Guard -> Local Autopilot again.
+
+- Direct-candidate speed verification: main controller fa4532f/e4297b9 removes PR bottleneck and obsolete automerge; trigger Guard -> Local Autopilot.
