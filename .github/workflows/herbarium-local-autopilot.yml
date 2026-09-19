@@ -157,7 +157,14 @@ jobs:
         working-directory: project
         env:
           HERBARIUM_LOCAL_LLM_URL: http://127.0.0.1:8080/v1/chat/completions
-        run: python ../controller/automation/local_autopilot.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          python ../controller/automation/local_autopilot.py 2>&1 | tee /tmp/herbarium-autopilot-run.log
+          if grep -q '^LOCAL_AUTOPILOT_REJECTED:' /tmp/herbarium-autopilot-run.log; then
+            echo "Local autopilot rejected its proposal; this cycle is not a PASS."
+            exit 1
+          fi
 
       - name: Commit tested change directly to candidate
         if: steps.gate.outputs.run == 'true'
@@ -202,6 +209,7 @@ jobs:
             /tmp/herbarium-local-ai-proposal.json
             /tmp/herbarium-local-ai-proposal.txt
             /tmp/herbarium-local-ai.patch
+            /tmp/herbarium-autopilot-run.log
             /tmp/herbarium-llama.log
           if-no-files-found: ignore
           retention-days: 3
