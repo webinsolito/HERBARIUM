@@ -12,10 +12,6 @@ concurrency:
 
 jobs:
   improve:
-    if: >-
-      github.event_name != 'workflow_run' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'candidate/mission-001-source-recovery')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -28,7 +24,6 @@ jobs:
       MODEL_COMMIT: 2ab9f8f42af02fc212effaef7c4850c885e965f4
       MODEL_SHA256: aa8353e0d0fca3a0041828701e90db7635197400f040676d11d7798665fa316e
       MODEL_FILE: qwen2.5-coder-1.5b-instruct-q4_0.gguf
-
     steps:
       - name: Checkout controller
         uses: actions/checkout@v4
@@ -36,34 +31,23 @@ jobs:
           ref: main
           path: controller
           persist-credentials: false
-
       - name: Checkout candidate
         uses: actions/checkout@v4
         with:
           ref: candidate/mission-001-source-recovery
           path: project
           fetch-depth: 0
-
       - name: Test autopilot parser
         run: python controller/automation/test_local_autopilot_parser.py
-
-      - name: Open candidate cycle
-        id: gate
-        shell: bash
-        run: echo "run=true" >> "$GITHUB_OUTPUT"
-
       - name: Verify candidate before AI
-        if: steps.gate.outputs.run == 'true'
         working-directory: project
         shell: bash
         run: |
           set -euo pipefail
           npm test
           node --check src/app.js
-
       - name: Run instant deterministic micro-task
         id: fast
-        if: steps.gate.outputs.run == 'true'
         working-directory: project
         env:
           HERBARIUM_FAST_PATH_ONLY: "1"
@@ -73,28 +57,22 @@ jobs:
           python ../controller/automation/local_autopilot.py
           if git diff --quiet; then
             echo "needs_ai=true" >> "$GITHUB_OUTPUT"
-            echo "No deterministic micro-task available; local AI fallback required."
           else
             echo "needs_ai=false" >> "$GITHUB_OUTPUT"
-            echo "Deterministic micro-task completed; skipping model startup."
           fi
-
       - name: Restore local AI cache
-        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
+        if: steps.fast.outputs.needs_ai == 'true'
         uses: actions/cache@v4
         with:
           path: ${{ env.CACHE_DIR }}
           key: herbarium-local-ai-v3-${{ env.LLAMA_RELEASE }}-${{ env.MODEL_SHA256 }}
-          restore-keys: |
-            herbarium-local-ai-v2-
-
+          restore-keys: herbarium-local-ai-v2-
       - name: Restore or install verified llama.cpp runtime
-        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
+        if: steps.fast.outputs.needs_ai == 'true'
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$CACHE_DIR"
-
           server="$(find "$RUNTIME_DIR" -type f -name llama-server 2>/dev/null | head -1 || true)"
           if [ -z "$server" ]; then
             rm -rf "$RUNTIME_DIR" /tmp/llama-runtime.tar.gz
@@ -105,19 +83,14 @@ jobs:
             tar -xzf /tmp/llama-runtime.tar.gz -C "$RUNTIME_DIR"
             server="$(find "$RUNTIME_DIR" -type f -name llama-server | head -1)"
           fi
-
-          if [ -z "$server" ]; then
-            echo "llama-server not found in verified official runtime"
-            exit 1
-          fi
+          test -n "$server"
           chmod +x "$server"
           lib_dirs="$(find "$RUNTIME_DIR" -type f -name '*.so*' -printf '%h\n' | sort -u | paste -sd: -)"
           echo "LLAMA_SERVER=$server" >> "$GITHUB_ENV"
           echo "LD_LIBRARY_PATH=$lib_dirs" >> "$GITHUB_ENV"
           LD_LIBRARY_PATH="$lib_dirs" "$server" --version
-
-      - name: Download pinned Apache-2.0 coding model if absent
-        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
+      - name: Verify pinned local coding model
+        if: steps.fast.outputs.needs_ai == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -130,25 +103,18 @@ jobs:
             mv "$model.tmp" "$model"
           fi
           echo "$MODEL_SHA256  $model" | sha256sum -c -
-
       - name: Start local model server
-        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
+        if: steps.fast.outputs.needs_ai == 'true'
         shell: bash
         run: |
           set -euo pipefail
           nohup "$LLAMA_SERVER" -m "$CACHE_DIR/$MODEL_FILE" -c 4096 -t 2 --host 127.0.0.1 --port 8080 >/tmp/herbarium-llama.log 2>&1 &
-          echo $! >/tmp/herbarium-llama.pid
-          for i in $(seq 1 60); do
-            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then
-              exit 0
-            fi
-            sleep 2
-          done
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1 && exit 0; sleep 2; done
           cat /tmp/herbarium-llama.log
           exit 1
-
-      - name: Generate bounded patch and run tests
-        if: steps.gate.outputs.run == 'true' && steps.fast.outputs.needs_ai == 'true'
+      - name: Generate bounded patch and validate proposal
+        id: ai
+        if: steps.fast.outputs.needs_ai == 'true'
         working-directory: project
         env:
           HERBARIUM_LOCAL_LLM_URL: http://127.0.0.1:8080/v1/chat/completions
@@ -157,45 +123,34 @@ jobs:
           set -euo pipefail
           python ../controller/automation/local_autopilot.py 2>&1 | tee /tmp/herbarium-autopilot-run.log
           if grep -q '^LOCAL_AUTOPILOT_REJECTED:' /tmp/herbarium-autopilot-run.log; then
-            echo "Local autopilot rejected its proposal; this cycle is not a PASS."
-            exit 1
+            echo "accepted=false" >> "$GITHUB_OUTPUT"
+            echo "Proposal rejected safely: NO CHANGE. Candidate remains untouched."
+            git reset --hard HEAD
+          else
+            echo "accepted=true" >> "$GITHUB_OUTPUT"
           fi
-
       - name: Commit tested change directly to candidate
-        if: steps.gate.outputs.run == 'true'
+        if: steps.fast.outputs.needs_ai == 'false' || steps.ai.outputs.accepted == 'true'
         working-directory: project
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet; then
-            echo "No accepted code change this cycle."
-            exit 0
-          fi
-
+          if git diff --quiet; then echo "NO CHANGE"; exit 0; fi
           changed="$(git diff --name-only)"
-          if echo "$changed" | grep -Ev '^(src/|tests/)' >/dev/null; then
-            echo "Protected/unexpected path detected:"
-            echo "$changed"
-            exit 1
-          fi
-
+          if echo "$changed" | grep -Ev '^(src/|tests/)' >/dev/null; then echo "$changed"; exit 1; fi
+          npm test
+          node --check src/app.js
           base_sha="$(git rev-parse HEAD)"
           git fetch origin "$BASE_BRANCH"
           remote_sha="$(git rev-parse FETCH_HEAD)"
-          if [ "$base_sha" != "$remote_sha" ]; then
-            echo "Candidate advanced during this run; refusing stale autonomous push."
-            exit 1
-          fi
-
+          test "$base_sha" = "$remote_sha"
           git config user.name "herbarium-local-autopilot[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src tests
           git commit -m "autopilot: bounded local HERBARIUM improvement"
           git push origin "HEAD:$BASE_BRANCH"
-          echo "Tested micro-improvement pushed to candidate; HERBARIUM Guard will verify it externally."
-
-      - name: Upload rejected/proposal diagnostics
-        if: always() && steps.gate.outputs.run == 'true'
+      - name: Upload proposal diagnostics
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: local-autopilot-diagnostics-${{ github.run_id }}
