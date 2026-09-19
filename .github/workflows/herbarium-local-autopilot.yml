@@ -1,0 +1,183 @@
+name: HERBARIUM Local Autopilot
+
+on:
+  workflow_run:
+    workflows: ["HERBARIUM Guard"]
+    types: [completed]
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/herbarium-local-autopilot.yml"
+      - "automation/local_autopilot.py"
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+concurrency:
+  group: herbarium-local-autopilot
+  cancel-in-progress: false
+
+jobs:
+  improve:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'candidate/mission-001-source-recovery')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      BASE_BRANCH: candidate/mission-001-source-recovery
+      CACHE_DIR: /home/runner/.cache/herbarium-local-ai
+      LLAMA_COMMIT: b29c606e28a01b1bc8c1351026a0fa6e616bf6c4
+      MODEL_COMMIT: 2ab9f8f42af02fc212effaef7c4850c885e965f4
+      MODEL_SHA256: aa8353e0d0fca3a0041828701e90db7635197400f040676d11d7798665fa316e
+      MODEL_FILE: qwen2.5-coder-1.5b-instruct-q4_0.gguf
+
+    steps:
+      - name: Checkout controller
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: controller
+          persist-credentials: false
+
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+        with:
+          ref: candidate/mission-001-source-recovery
+          path: project
+          fetch-depth: 0
+
+      - name: Refuse to stack unattended PRs
+        id: gate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          count="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --base "$BASE_BRANCH" --json headRefName --jq '[.[] | select(.headRefName | startswith("autopilot/"))] | length')"
+          if [ "$count" != "0" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Existing autopilot PR is still under verification; skipping."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify candidate before AI
+        if: steps.gate.outputs.run == 'true'
+        working-directory: project
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+          npm test
+          node --check src/app.js
+
+      - name: Restore local AI cache
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CACHE_DIR }}
+          key: herbarium-local-ai-v2-${{ env.LLAMA_COMMIT }}-${{ env.MODEL_SHA256 }}
+
+      - name: Build pinned llama.cpp if absent
+        if: steps.gate.outputs.run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$CACHE_DIR"
+          if [ ! -x "$CACHE_DIR/llama-server" ]; then
+            rm -rf /tmp/llama.cpp
+            git clone --filter=blob:none https://github.com/ggml-org/llama.cpp.git /tmp/llama.cpp
+            git -C /tmp/llama.cpp checkout "$LLAMA_COMMIT"
+            test "$(git -C /tmp/llama.cpp rev-parse HEAD)" = "$LLAMA_COMMIT"
+            cmake -S /tmp/llama.cpp -B /tmp/llama.cpp/build -DCMAKE_BUILD_TYPE=Release -DGGML_NATIVE=OFF -DLLAMA_CURL=OFF
+            cmake --build /tmp/llama.cpp/build --config Release -j2 --target llama-server
+            cp /tmp/llama.cpp/build/bin/llama-server "$CACHE_DIR/llama-server"
+          fi
+          "$CACHE_DIR/llama-server" --version
+
+      - name: Download pinned Apache-2.0 coding model if absent
+        if: steps.gate.outputs.run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$CACHE_DIR"
+          model="$CACHE_DIR/$MODEL_FILE"
+          if [ ! -f "$model" ]; then
+            url="https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/$MODEL_COMMIT/$MODEL_FILE?download=true"
+            curl -fL --retry 4 --retry-delay 3 "$url" -o "$model.tmp"
+            echo "$MODEL_SHA256  $model.tmp" | sha256sum -c -
+            mv "$model.tmp" "$model"
+          fi
+          echo "$MODEL_SHA256  $model" | sha256sum -c -
+
+      - name: Start local model server
+        if: steps.gate.outputs.run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup "$CACHE_DIR/llama-server" -m "$CACHE_DIR/$MODEL_FILE" -c 12288 -t 2 --host 127.0.0.1 --port 8080 >/tmp/herbarium-llama.log 2>&1 &
+          echo $! >/tmp/herbarium-llama.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/herbarium-llama.log
+          exit 1
+
+      - name: Generate bounded patch and run tests
+        if: steps.gate.outputs.run == 'true'
+        working-directory: project
+        env:
+          HERBARIUM_LOCAL_LLM_URL: http://127.0.0.1:8080/v1/chat/completions
+        run: python ../controller/automation/local_autopilot.py
+
+      - name: Create candidate PR only for tested change
+        if: steps.gate.outputs.run == 'true'
+        working-directory: project
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No accepted code change this cycle."
+            exit 0
+          fi
+
+          changed="$(git diff --name-only)"
+          if echo "$changed" | grep -Ev '^(src/|tests/)' >/dev/null; then
+            echo "Protected/unexpected path detected:"
+            echo "$changed"
+            exit 1
+          fi
+
+          branch="autopilot/local-$GITHUB_RUN_ID"
+          git config user.name "herbarium-local-autopilot[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add src tests
+          git commit -m "autopilot: bounded local HERBARIUM improvement"
+          git push origin "HEAD:$branch"
+
+          gh pr create             --repo "$GITHUB_REPOSITORY"             --base "$BASE_BRANCH"             --head "$branch"             --title "[HERBARIUM autopilot] local bounded improvement"             --body "Generated locally inside GitHub Actions with pinned Qwen2.5-Coder-1.5B-Instruct (Apache-2.0) through pinned llama.cpp. No external AI API was used. The patch was constrained to src/tests and passed the candidate test suite before this PR was opened. HERBARIUM Guard remains the independent merge gate."
+
+      - name: Upload rejected/proposal diagnostics
+        if: always() && steps.gate.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-autopilot-diagnostics-${{ github.run_id }}
+          path: |
+            /tmp/herbarium-local-ai-output.txt
+            /tmp/herbarium-local-ai.patch
+            /tmp/herbarium-llama.log
+          if-no-files-found: ignore
+          retention-days: 3
