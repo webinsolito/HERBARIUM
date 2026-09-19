@@ -42,3 +42,8 @@ This log is maintained by the hourly director.
 - Confirmed GitHub-native Local Autopilot run `35433476891` passed candidate verification, restored the pinned local-AI cache, installed the verified llama.cpp runtime, loaded the pinned Apache-2.0 Qwen coding model and entered the bounded patch-generation/test step. Because that run was still in progress, no generated patch is claimed as accepted yet.
 - Synchronized the public candidate preview to the latest externally green product head `27420e77` and labelled it explicitly as CANDIDATE PREVIEW. Preview publication is not stable promotion.
 - Next action: inspect the Local Autopilot result/PR and HERBARIUM Guard. If green, accept only the bounded Mission 001 improvement; if red, fix that failure before any other work.
+
+## 2026-09-19 — H24 speed-mode handoff
+- Controller main updated for deterministic zero-cost fast paths before local AI.
+- Redundant scheduled checker removed; Local Autopilot remains the H24 worker.
+- This log-only candidate commit intentionally triggers the green Guard -> Local Autopilot event chain to verify the optimized path.
