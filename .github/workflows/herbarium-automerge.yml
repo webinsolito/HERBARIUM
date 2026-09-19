@@ -2,7 +2,6 @@ name: HERBARIUM Autopilot Merge
 
 on:
   workflow_dispatch:
-
 permissions:
   contents: write
   pull-requests: write
