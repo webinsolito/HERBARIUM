@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -103,6 +104,66 @@ class ParserTests(unittest.TestCase):
         proposal = autopilot.parse_proposal(raw)
         self.assertEqual(proposal["summary"], "Add IndexedDB object storage.")
         self.assertEqual(len(proposal["edits"]), 4)
+
+
+    def test_unified_diff_protocol_applies_end_to_end(self) -> None:
+        output = """SUMMARY: replace one bounded line
+BEGIN_PATCH
+diff --git a/src/app.js b/src/app.js
+--- a/src/app.js
++++ b/src/app.js
+@@ -1 +1 @@
+-OLD
++NEW
+END_PATCH
+"""
+        parsed = autopilot.parse_patch_proposal(output)
+        self.assertIsNotNone(parsed)
+        summary, patch = parsed
+        self.assertEqual(summary, "replace one bounded line")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src/app.js").write_text("OLD\n", encoding="utf-8")
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "baseline"], cwd=root, check=True)
+
+            previous_root = autopilot.ROOT
+            autopilot.ROOT = root
+            try:
+                touched = autopilot.apply_patch_proposal(summary, patch)
+            finally:
+                autopilot.ROOT = previous_root
+
+            self.assertEqual(touched, ["src/app.js"])
+            self.assertEqual((root / "src/app.js").read_text(encoding="utf-8"), "NEW\n")
+
+    def test_unified_diff_rejects_protected_path(self) -> None:
+        output = """SUMMARY: forbidden
+BEGIN_PATCH
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -1 +1 @@
+-old
++new
+END_PATCH
+"""
+        summary, patch = autopilot.parse_patch_proposal(output)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "README.md").write_text("old\n", encoding="utf-8")
+            previous_root = autopilot.ROOT
+            autopilot.ROOT = root
+            try:
+                with self.assertRaisesRegex(RuntimeError, "Protected or invalid patch path"):
+                    autopilot.validate_patch_paths(patch)
+            finally:
+                autopilot.ROOT = previous_root
 
     def test_missing_required_edit_field_still_rejected(self) -> None:
         proposal = {
