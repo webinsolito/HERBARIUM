@@ -1,0 +1,57 @@
+name: Compile HERBARIUM Agentic Workflow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/herbarium-autopilot.md'
+      - '.github/workflows/gh-aw-compile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: herbarium-gh-aw-compile
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned gh-aw
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://github.com/github/gh-aw/releases/download/v0.88.7/linux-amd64 -o /tmp/gh-aw
+          echo "37faaaa95f622b910568bc878452f6036f01e951380fdfc41441944a95da43bf  /tmp/gh-aw" | sha256sum -c -
+          chmod +x /tmp/gh-aw
+          /tmp/gh-aw version
+
+      - name: Compile autopilot
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          /tmp/gh-aw compile herbarium-autopilot --strict
+
+      - name: Commit generated lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add .github/workflows/herbarium-autopilot.lock.yml .gitattributes
+          if git diff --cached --quiet; then
+            echo "Compiled workflow already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Compile HERBARIUM continuous autopilot"
+          git push origin HEAD:main
