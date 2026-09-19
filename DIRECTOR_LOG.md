@@ -27,3 +27,12 @@ This log is maintained by the hourly director.
 - Extended smoke guards to require persisted image evidence while continuing to forbid VERIFIED status and uncalibrated percentages.
 - Candidate commits: `33f07b94b69b5e5aaddcdead6107f7f7331e5549`, `0103b138730ecd3e6400acfd4c46e88bea647d16`.
 - Promotion remains forbidden until GitHub Actions is green on the new head and the broader Mission 001 recovery gate is satisfied.
+
+## 2026-09-19 — Mission 001 / bounded evidence persistence
+- Independently verified candidate head `24f75e92a0c716f82d0efb9d8b714637cfb3cf3e`: HERBARIUM Guard run 35425629120 completed SUCCESS.
+- Mission 001 is still incomplete, so no unrelated feature mission was opened.
+- Found a concrete reliability risk in the previous slice: full-resolution photos were encoded directly into localStorage, whose small synchronous quota could make multi-view observations fail quickly on iPhone-class photos.
+- Added deterministic client-side evidence preparation: maximum image edge 1600 px, JPEG quality 0.78, local-only canvas conversion, stored dimensions/original byte count, and explicit QuotaExceededError handling. UNKNOWN semantics remain unchanged.
+- Extended smoke guards to require bounded evidence persistence and quota handling while continuing to forbid VERIFIED status and uncalibrated percentages.
+- Candidate commits: `38aae8da5f0cfc45d8f4f20e580f2627633555aa`, `7139abae1e4df41a6fab72d346f0043855f9b43b`.
+- Promotion remains forbidden until GitHub Actions is green on the new head and the broader Mission 001 recovery gate is satisfied.
