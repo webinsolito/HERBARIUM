@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.request
@@ -66,11 +67,12 @@ The current source ALREADY has UNKNOWN semantics, IndexedDB observation
 persistence, JPEG evidence compression and transaction-based saves. Do not
 re-add those things.
 
-If several improvements are possible, prefer a small missing reliability gate
-that is objectively testable. For example, rejecting a selected file whose MIME
-type is not image/* before image decoding is a valid kind of improvement if it
-is not already present. This is only a fallback hint, not permission to ignore
-the actual current source.
+If the current src/app.js does NOT already contain an explicit MIME guard that
+rejects files whose type does not start with image/, your ONLY allowed change in
+this cycle is to implement that reject guard plus the smallest matching test.
+Do not change IndexedDB, DB_NAME, STORE_NAME, compression constants or existing
+storage semantics for that cycle. Once a MIME guard already exists, choose the
+next small missing reliability/source-recovery improvement from the actual code.
 
 Permanent product rules:
 - mobile-first iPhone;
@@ -250,9 +252,18 @@ def parse_proposal(output: str) -> dict | None:
         raise RuntimeError("Proposal summary is missing.")
     if not isinstance(edits, list) or not edits:
         raise RuntimeError("Proposal edits are missing.")
-    if len(edits) > MAX_EDITS:
-        raise RuntimeError("Proposal contains too many edit operations.")
     return {"summary": summary.strip(), "edits": edits}
+
+
+def _literalize_regex_style_find(find: str) -> str:
+    """Turn accidental regex escaping into a literal exact-match candidate.
+
+    The local model sometimes emits code text like `foo\.bar\(x\)` even
+    though the protocol requires literal source text. We only use this fallback
+    when the original exact string does not match and the unescaped candidate
+    matches exactly once in the current file.
+    """
+    return re.sub(r"\\([.(){}\[\]+*?^$|/])", r"\1", find)
 
 
 def validate_path(path: str) -> Path:
@@ -270,6 +281,7 @@ def validate_path(path: str) -> Path:
 
 def apply_exact_edits(proposal: dict) -> list[str]:
     touched: list[str] = []
+    applied_edits = 0
     for index, edit in enumerate(proposal["edits"], start=1):
         if not isinstance(edit, dict):
             raise RuntimeError(f"Edit {index} has invalid shape.")
@@ -289,17 +301,40 @@ def apply_exact_edits(proposal: dict) -> list[str]:
             raise RuntimeError(f"Edit {index} has empty find text.")
         if not isinstance(replace, str):
             raise RuntimeError(f"Edit {index} replacement is not text.")
+
+        # Harmless no-op entries are common with small models. Ignore them
+        # rather than discarding an otherwise useful bounded proposal.
         if find == replace:
-            raise RuntimeError(f"Edit {index} is a no-op.")
+            continue
 
         p = validate_path(path)
         current = p.read_text(encoding="utf-8")
         count = current.count(find)
+
+        if count != 1:
+            literal_find = _literalize_regex_style_find(find)
+            literal_count = current.count(literal_find) if literal_find != find else count
+            if literal_find != find and literal_count == 1:
+                find = literal_find
+                count = 1
+
+        # A regex-escaped find may become identical to the replacement after
+        # literalization. That is still a no-op and should be ignored.
+        if find == replace:
+            continue
+
         if count != 1:
             raise RuntimeError(
                 f"Edit {index} expected exactly one match in {path}, found {count}. "
                 "This normally means the model proposed a stale or ambiguous edit."
             )
+
+        applied_edits += 1
+        if applied_edits > MAX_EDITS:
+            raise RuntimeError(
+                f"Proposal contains more than {MAX_EDITS} effective edit operations."
+            )
+
         p.write_text(current.replace(find, replace, 1), encoding="utf-8")
         touched.append(path)
 
