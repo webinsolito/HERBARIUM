@@ -12,27 +12,25 @@ This log is maintained by the hourly director.
 ## 2026-09-19 — Mission 001 / local persistence slice
 - Verified candidate head `5414e2d5c115b6ce819a2d958f9e76e54cdfbd2c`: HERBARIUM Guard run 35420460651 completed SUCCESS.
 - Mission 001 remains incomplete; no new feature mission opened.
-- Compared recovered candidate 0.6 shell with current source slice: recovered product includes broader Field/Atlas/Academy/Book structure while current source remains intentionally minimal.
-- Implemented local persistence for UNKNOWN observations only. Stored records contain timestamp, captured roles and `status: UNKNOWN`; no image bytes, guessed species or verified-species increment are persisted.
-- Extended smoke regression guards to require local persistence and forbid VERIFIED status in the current baseline.
-- Candidate commits: `28a9e7d30218400dc7a6e6a341d7f6cfe97fbb96`, `a0518fe5d6b01a7f305cd70e4eb9ac3017fec66f`.
-- Promotion remains forbidden until the new candidate CI is green and Mission 001 exit gate is met.
+- Implemented local persistence for UNKNOWN observations only and regression guards against VERIFIED status.
 
 ## 2026-09-19 — Mission 001 / photo evidence persistence slice
-- Verified previous candidate head `8535722478760f1b7b3c85ec626f3ca4f955bdd3`: HERBARIUM Guard run 35423044811 completed SUCCESS.
-- Mission 001 remains the only active mission; no unrelated feature work opened.
-- Found a real source-of-truth gap: observation metadata persisted, but selected photo evidence itself was discarded, so a saved observation could not preserve the evidence it was based on.
-- Implemented local-only image evidence persistence using FileReader data URLs for each selected role; records remain `status: UNKNOWN` and no species is guessed or verified.
+- Verified previous candidate head `8535722478760f1b7b3c85ec626f3ca4f955bdd3`: HERBARIUM Guard completed SUCCESS.
+- Implemented local-only image evidence persistence; records remain `status: UNKNOWN`.
 - Added failure handling so an unreadable image does not create a partial observation.
-- Extended smoke guards to require persisted image evidence while continuing to forbid VERIFIED status and uncalibrated percentages.
-- Candidate commits: `33f07b94b69b5e5aaddcdead6107f7f7331e5549`, `0103b138730ecd3e6400acfd4c46e88bea647d16`.
-- Promotion remains forbidden until GitHub Actions is green on the new head and the broader Mission 001 recovery gate is satisfied.
 
 ## 2026-09-19 — Mission 001 / bounded evidence persistence
-- Independently verified candidate head `24f75e92a0c716f82d0efb9d8b714637cfb3cf3e`: HERBARIUM Guard run 35425629120 completed SUCCESS.
-- Mission 001 is still incomplete, so no unrelated feature mission was opened.
-- Found a concrete reliability risk in the previous slice: full-resolution photos were encoded directly into localStorage, whose small synchronous quota could make multi-view observations fail quickly on iPhone-class photos.
-- Added deterministic client-side evidence preparation: maximum image edge 1600 px, JPEG quality 0.78, local-only canvas conversion, stored dimensions/original byte count, and explicit QuotaExceededError handling. UNKNOWN semantics remain unchanged.
-- Extended smoke guards to require bounded evidence persistence and quota handling while continuing to forbid VERIFIED status and uncalibrated percentages.
-- Candidate commits: `38aae8da5f0cfc45d8f4f20e580f2627633555aa`, `7139abae1e4df41a6fab72d346f0043855f9b43b`.
-- Promotion remains forbidden until GitHub Actions is green on the new head and the broader Mission 001 recovery gate is satisfied.
+- Independently verified candidate head `24f75e92a0c716f82d0efb9d8b714637cfb3cf3e`: HERBARIUM Guard completed SUCCESS.
+- Added deterministic client-side evidence preparation: maximum edge 1600 px, JPEG quality 0.78 and local-only canvas conversion.
+- Candidate head `12e9b5f39b0fbd285d548f3cea5fda17acc428d2` subsequently verified with Guard run 35428457337 SUCCESS.
+
+## 2026-09-19 — Mission 001 / scalable local evidence store
+- Independent control verified `12e9b5f39b0fbd285d548f3cea5fda17acc428d2` and Guard run 35428457337 SUCCESS before changing code.
+- Mission 001 remains incomplete; no unrelated feature mission opened.
+- Replaced synchronous `localStorage` evidence persistence with IndexedDB object storage, keeping evidence as compressed JPEG `Blob` values rather than base64 strings. This removes the previous small localStorage quota bottleneck and base64 storage overhead while remaining local-only/offline-capable.
+- Observation writes are transaction-based; failed/aborted writes are rejected instead of being reported as successful. Stats now count the IndexedDB observation store.
+- UNKNOWN semantics remain unchanged; verified species count stays zero and no identification engine is simulated.
+- Extended smoke guards to require IndexedDB/object-store/Blob persistence and explicitly forbid fallback writes to localStorage.
+- Candidate commits: `b9e0725c289792fce414d8bd488764d90e30b595`, `27420e77cc9fed55460816d76332057bd4ef38d7`.
+- Guard run 35428635147 for `27420e77...` was queued at final verification, therefore this slice is NOT yet considered completed or promotable.
+- Next action: verify that Guard; on failure fix it before any further recovery work. On success continue Mission 001 feature-parity recovery.
