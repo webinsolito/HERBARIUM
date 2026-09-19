@@ -47,3 +47,5 @@ This log is maintained by the hourly director.
 - Controller main updated for deterministic zero-cost fast paths before local AI.
 - Redundant scheduled checker removed; Local Autopilot remains the H24 worker.
 - This log-only candidate commit intentionally triggers the green Guard -> Local Autopilot event chain to verify the optimized path.
+
+- Speed verification retry: controller syntax fix 875afef4 is now present on main; trigger Guard -> Local Autopilot again.
