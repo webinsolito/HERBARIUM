@@ -1,6 +1,7 @@
 (() => {
   'use strict';
-  const STORAGE_KEY = 'herbarium.observations.v1';
+  const DB_NAME = 'herbarium.local.v1';
+  const STORE_NAME = 'observations';
   const MAX_IMAGE_EDGE = 1600;
   const JPEG_QUALITY = 0.78;
   const inputs = [...document.querySelectorAll('input[type=file]')];
@@ -9,18 +10,44 @@
   const observationCount = document.getElementById('observationCount');
   const speciesCount = document.getElementById('speciesCount');
 
-  const loadObservations = () => {
+  const openDb = () => new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) return reject(new Error('IndexedDB non disponibile.'));
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Database locale non disponibile.'));
+  });
+
+  const countObservations = async () => {
+    const db = await openDb();
     try {
-      const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      return Array.isArray(value) ? value : [];
-    } catch {
-      return [];
-    }
+      return await new Promise((resolve, reject) => {
+        const request = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).count();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    } finally { db.close(); }
   };
 
-  const renderStats = () => {
-    const observations = loadObservations();
-    observationCount.textContent = String(observations.length);
+  const saveObservation = async observation => {
+    const db = await openDb();
+    try {
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).add(observation);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error || new Error('Salvataggio locale fallito.'));
+        tx.onabort = () => reject(tx.error || new Error('Salvataggio locale annullato.'));
+      });
+    } finally { db.close(); }
+  };
+
+  const renderStats = async () => {
+    try { observationCount.textContent = String(await countObservations()); }
+    catch { observationCount.textContent = '—'; }
     speciesCount.textContent = '0'; // UNKNOWN observations never become verified species.
   };
 
@@ -46,6 +73,10 @@
     image.src = dataUrl;
   });
 
+  const canvasToBlob = canvas => new Promise((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Compressione foto fallita.')), 'image/jpeg', JPEG_QUALITY);
+  });
+
   const prepareEvidenceImage = async file => {
     const original = await fileToDataUrl(file);
     const image = await loadImage(original);
@@ -58,12 +89,7 @@
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Canvas non disponibile.');
     context.drawImage(image, 0, 0, width, height);
-    return {
-      image: canvas.toDataURL('image/jpeg', JPEG_QUALITY),
-      width,
-      height,
-      originalBytes: file.size || null
-    };
+    return { blob: await canvasToBlob(canvas), width, height, originalBytes: file.size || null };
   };
 
   inputs.forEach(input => input.addEventListener('change', update));
@@ -73,34 +99,25 @@
     analyse.disabled = true;
     result.textContent = 'Preparazione e salvataggio locale delle prove fotografiche…';
     try {
-      const evidence = await Promise.all(selected.map(async input => {
-        const prepared = await prepareEvidenceImage(input.files[0]);
-        return {
-          role: input.id,
-          name: input.files[0].name || null,
-          type: 'image/jpeg',
-          ...prepared
-        };
-      }));
-      const observations = loadObservations();
-      observations.push({
+      const evidence = await Promise.all(selected.map(async input => ({
+        role: input.id,
+        name: input.files[0].name || null,
+        type: 'image/jpeg',
+        ...(await prepareEvidenceImage(input.files[0]))
+      })));
+      await saveObservation({
         id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
         createdAt: new Date().toISOString(),
         roles: evidence.map(item => item.role),
         evidence,
         status: 'UNKNOWN'
       });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
-      result.textContent = 'UNKNOWN — prove fotografiche ottimizzate e salvate solo su questo dispositivo; nessuna identificazione automatica simulata.';
-      renderStats();
+      result.textContent = 'UNKNOWN — prove fotografiche ottimizzate e salvate nel database locale del dispositivo; nessuna identificazione automatica simulata.';
+      await renderStats();
     } catch (error) {
       console.error(error);
-      result.textContent = error && error.name === 'QuotaExceededError'
-        ? 'UNKNOWN — spazio locale insufficiente. Nessuna osservazione incompleta è stata registrata.'
-        : 'UNKNOWN — salvataggio locale non riuscito. Nessuna osservazione incompleta è stata registrata.';
-    } finally {
-      update();
-    }
+      result.textContent = 'UNKNOWN — salvataggio locale non riuscito. Nessuna osservazione incompleta è stata registrata.';
+    } finally { update(); }
   });
 
   document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
