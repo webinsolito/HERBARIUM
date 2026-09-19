@@ -100,21 +100,23 @@ Editing rules:
 - If there is no clearly safe useful change, answer exactly: NOOP
 
 Output protocol:
-Return ONLY valid JSON with this exact shape, no markdown fences and no prose:
-{
-  "summary": "short factual description",
-  "edits": [
-    {
-      "path": "src/app.js",
-      "find": "exact existing UTF-8 text copied from context",
-      "replace": "replacement UTF-8 text"
-    }
-  ]
-}
+Prefer a standard unified git diff because code snippets contain backslashes,
+regexes and quotes that small models often escape incorrectly in JSON.
 
-You may use multiple edit objects for the same file or for tests, but all edits
-together must represent ONE coherent improvement. Never use placeholders,
-ellipsis or line numbers in find/replace.
+Return EXACTLY this form, with no markdown fence and no prose before/after:
+
+SUMMARY: short factual description
+BEGIN_PATCH
+diff --git a/src/app.js b/src/app.js
+--- a/src/app.js
++++ b/src/app.js
+@@ ...
+...
+END_PATCH
+
+The patch must modify only existing files under src/ or tests/, touch at most
+3 files, and represent ONE coherent improvement. Do not create/delete/rename
+files. If there is no clearly safe useful change, answer exactly: NOOP.
 
 Repository context follows:
 
@@ -130,7 +132,8 @@ def call_model(prompt: str) -> str:
                     "role": "system",
                     "content": (
                         "You are a cautious senior software maintainer. "
-                        "Inspect current code before editing. Return only exact JSON."
+                        "Inspect current code before editing. Return only the requested "
+                        "SUMMARY/BEGIN_PATCH unified-diff protocol or NOOP."
                     ),
                 },
                 {"role": "user", "content": prompt},
@@ -150,6 +153,89 @@ def call_model(prompt: str) -> str:
     with urllib.request.urlopen(req, timeout=900) as response:
         data = json.load(response)
     return data["choices"][0]["message"]["content"]
+
+
+def parse_patch_proposal(output: str) -> tuple[str, str] | None:
+    raw = output.strip()
+    if raw == "NOOP":
+        return None
+    if len(raw) > MAX_OUTPUT_CHARS:
+        raise RuntimeError("Model output exceeds bounded size.")
+
+    start = raw.find("BEGIN_PATCH")
+    end = raw.rfind("END_PATCH")
+    if start < 0 or end < start:
+        return None
+
+    header = raw[:start].strip()
+    if not header.startswith("SUMMARY:"):
+        raise RuntimeError("Patch proposal is missing SUMMARY.")
+    summary = header[len("SUMMARY:") :].strip()
+    if not summary:
+        raise RuntimeError("Patch proposal summary is empty.")
+
+    patch = raw[start + len("BEGIN_PATCH") : end].strip()
+    if not patch.startswith("diff --git "):
+        raise RuntimeError("Patch proposal does not contain a unified git diff.")
+    if len(patch) > 40000:
+        raise RuntimeError("Patch proposal exceeds bounded patch size.")
+    return summary, patch + "\n"
+
+
+def validate_patch_paths(patch: str) -> list[str]:
+    files: list[str] = []
+    for line in patch.splitlines():
+        if line.startswith("diff --git "):
+            parts = line.split()
+            if len(parts) != 4:
+                raise RuntimeError("Malformed diff header.")
+            left, right = parts[2], parts[3]
+            if not left.startswith("a/") or not right.startswith("b/"):
+                raise RuntimeError("Patch must modify existing repository files.")
+            left_path = left[2:]
+            right_path = right[2:]
+            if left_path != right_path:
+                raise RuntimeError("Autopilot may not rename files.")
+            if not left_path.startswith(ALLOWED_PREFIXES):
+                raise RuntimeError(f"Protected or invalid patch path: {left_path}")
+            if not (ROOT / left_path).is_file():
+                raise RuntimeError(f"Patch may modify only existing files: {left_path}")
+            files.append(left_path)
+        elif line.startswith("--- ") or line.startswith("+++ "):
+            target = line[4:].strip()
+            if target == "/dev/null":
+                raise RuntimeError("Autopilot may not create or delete files.")
+
+    unique = list(dict.fromkeys(files))
+    if not unique:
+        raise RuntimeError("Patch contains no file changes.")
+    if len(unique) > MAX_CHANGED_FILES:
+        raise RuntimeError(f"Patch touches too many files: {unique}")
+    return unique
+
+
+def apply_patch_proposal(summary: str, patch: str) -> list[str]:
+    expected = validate_patch_paths(patch)
+    patch_file = Path("/tmp/herbarium-local-ai.patch")
+    patch_file.write_text(patch, encoding="utf-8")
+
+    check = sh("git", "apply", "--check", "--whitespace=error-all", str(patch_file), check=False)
+    if check.returncode:
+        raise RuntimeError(f"Generated git patch does not apply cleanly:\n{check.stdout}")
+
+    apply = sh("git", "apply", "--whitespace=error-all", str(patch_file), check=False)
+    if apply.returncode:
+        raise RuntimeError(f"Generated git patch failed to apply:\n{apply.stdout}")
+
+    files = validate_changed_files(expected)
+    if set(files) != set(expected):
+        raise RuntimeError(
+            f"Applied patch changed unexpected files: expected {expected}, got {files}"
+        )
+    Path("/tmp/herbarium-local-ai-proposal.txt").write_text(
+        f"SUMMARY: {summary}\nBEGIN_PATCH\n{patch}END_PATCH\n", encoding="utf-8"
+    )
+    return files
 
 
 def _repair_invalid_json_escapes(raw: str) -> str:
@@ -369,17 +455,21 @@ def main() -> int:
     output = call_model(prompt)
     Path("/tmp/herbarium-local-ai-output.txt").write_text(output, encoding="utf-8")
 
-    proposal = parse_proposal(output)
-    if proposal is None:
-        print("HERBARIUM local autopilot: NOOP")
-        return 0
-
-    Path("/tmp/herbarium-local-ai-proposal.json").write_text(
-        json.dumps(proposal, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    expected = apply_exact_edits(proposal)
-    files = validate_changed_files(expected)
+    patch_proposal = parse_patch_proposal(output)
+    if patch_proposal is not None:
+        summary, patch = patch_proposal
+        files = apply_patch_proposal(summary, patch)
+    else:
+        proposal = parse_proposal(output)
+        if proposal is None:
+            print("HERBARIUM local autopilot: NOOP")
+            return 0
+        Path("/tmp/herbarium-local-ai-proposal.json").write_text(
+            json.dumps(proposal, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        summary = proposal["summary"]
+        expected = apply_exact_edits(proposal)
+        files = validate_changed_files(expected)
 
     for js_file in [f for f in files if f.endswith(".js")]:
         syntax = sh("node", "--check", js_file, check=False)
@@ -391,7 +481,7 @@ def main() -> int:
     if tests.returncode:
         raise RuntimeError("Generated edit failed npm test.")
 
-    print("HERBARIUM local autopilot edit accepted:", proposal["summary"])
+    print("HERBARIUM local autopilot edit accepted:", summary)
     print("Changed files:", ", ".join(files))
     return 0
 
