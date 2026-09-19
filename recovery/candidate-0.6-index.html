@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#10271f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Herbarium" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./assets/icon-192.png" />
+  <link rel="stylesheet" href="./src/styles.css" />
+  <title>Herbarium — Test Candidate 0.6</title>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">HERBARIUM</p>
+        <h1>The Living Atlas</h1>
+      </div>
+      <div class="status-actions">
+        <span id="networkBadge" class="status-pill">Offline ready</span>
+        <button id="installBtn" class="ghost-button compact" type="button" hidden>Installa</button>
+        <button id="systemBtn" class="ghost-button icon-button" type="button" aria-label="Sistema Herbarium">⚙︎</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="homeView" class="view active" aria-labelledby="homeTitle">
+        <article class="hero-card hero-v3">
+          <div>
+            <span class="kicker">Discover · Explore · Learn · Preserve</span>
+            <h2 id="homeTitle">Costruisci un atlante della natura che hai davvero incontrato.</h2>
+            <p>Riconoscimento prudente, gioco di esplorazione, Academy botanica e un volume personale che cresce con ogni scoperta.</p>
+          </div>
+          <div class="hero-actions">
+            <button class="primary-button" data-nav="field" type="button">Scopri una pianta</button>
+            <button class="secondary-button" data-nav="book" type="button">Sfoglia il Volume I</button>
+          </div>
+        </article>
+
+        <div class="stats-grid" aria-label="Statistiche">
+          <article><strong id="statSpecies">0</strong><span>Specie verificate</span></article>
+          <article><strong id="statObservations">0</strong><span>Osservazioni</span></article>
+          <article><strong id="statTerritories">0</strong><span>Territori</span></article>
+          <article><strong id="statAchievements">0</strong><span>Sigilli</span></article>
+        </div>
+
+        <section id="activeExpeditionHome" class="section-block expedition-banner" hidden>
+          <div><span class="kicker">Spedizione attiva</span><h3 id="activeExpeditionHomeTitle">—</h3><p id="activeExpeditionHomeCopy" class="muted"></p></div>
+          <button class="secondary-button compact" data-nav="explore" type="button">Apri diario</button>
+        </section>
+
+        <section class="section-block progress-card">
+          <div class="section-heading">
+            <div><span class="kicker">Carriera</span><h3 id="rankTitle">Novizio</h3></div>
+            <span id="xpLabel" class="rank-chip">0 conoscenza</span>
+          </div>
+          <div class="progress-track"><span id="rankProgress"></span></div>
+          <p id="rankCopy" class="muted">La prima osservazione apre il tuo percorso da naturalista.</p>
+        </section>
+
+        <section class="section-block mission-feature">
+          <div class="section-heading">
+            <div><span class="kicker">Prossima impresa</span><h3 id="homeMissionTitle">Occhio botanico</h3></div>
+            <span id="homeMissionProgress" class="mission-mark">0/1</span>
+          </div>
+          <p id="homeMissionCopy" class="muted">Documenta una pianta con più viste.</p>
+          <button class="text-button" data-nav="explore" type="button">Vedi tutte le missioni →</button>
+        </section>
+
+        <section class="section-block ai-card">
+          <div class="section-heading">
+            <div><span class="kicker">Herbarium Field AI</span><h3 id="aiStatusTitle">Controllo motore locale…</h3></div>
+            <span id="aiStatusDot" class="dot"></span>
+          </div>
+          <p id="aiStatusCopy" class="muted">Herbarium non inventa mai un nome quando il modello botanico non è disponibile.</p>
+          <button id="manageAiBtn" class="text-button" type="button">Gestisci AI offline →</button>
+        </section>
+      </section>
+
+      <section id="fieldView" class="view" aria-labelledby="fieldTitle">
+        <div class="section-heading sticky-heading">
+          <button class="back-button" data-nav="home" type="button" aria-label="Torna alla home">←</button>
+          <div><span class="kicker">Field Mode</span><h2 id="fieldTitle">Osservazione</h2></div>
+          <span class="status-pill">offline-first</span>
+        </div>
+
+        <div id="fieldExpeditionTag" class="field-expedition-tag" hidden></div>
+
+        <section class="field-guide" aria-label="Viste consigliate">
+          <button type="button" class="shot-role active" data-role="whole"><span>01</span>Pianta</button>
+          <button type="button" class="shot-role" data-role="flower"><span>02</span>Fiore</button>
+          <button type="button" class="shot-role" data-role="leaf"><span>03</span>Foglia</button>
+          <button type="button" class="shot-role" data-role="detail"><span>04</span>Dettaglio</button>
+        </section>
+
+        <label class="capture-card" for="plantPhoto">
+          <input id="plantPhoto" type="file" accept="image/*" capture="environment" />
+          <div>
+            <span class="capture-icon">⌁</span>
+            <strong id="captureTitle">Fotografa la pianta intera</strong>
+            <span id="captureHint">Una pianta isolata, a fuoco e ben illuminata.</span>
+          </div>
+        </label>
+
+        <div id="shotGrid" class="shot-grid" aria-live="polite"></div>
+
+        <section id="qualityPanel" class="section-block" hidden>
+          <div class="section-heading">
+            <div><span class="kicker">Controllo qualità locale</span><h3 id="qualityTitle">Analisi</h3></div>
+            <span id="qualityScore" class="rank-chip">—</span>
+          </div>
+          <ul id="qualityList" class="check-list"></ul>
+        </section>
+
+        <section class="section-block context-card">
+          <div class="section-heading"><div><span class="kicker">Contesto</span><h3>Dati dell'osservazione</h3></div></div>
+          <div class="form-grid">
+            <label>Habitat<select id="habitatSelect"><option value="">Non indicato</option><option>Prato</option><option>Bosco</option><option>Giardino</option><option>Zona urbana</option><option>Zona umida</option><option>Riva</option><option>Roccia / ghiaione</option><option>Campo agricolo</option></select></label>
+            <label>Regione<select id="regionSelect"><option value="">Non indicata</option><option>Abruzzo</option><option>Basilicata</option><option>Calabria</option><option>Campania</option><option>Emilia-Romagna</option><option>Friuli Venezia Giulia</option><option>Lazio</option><option>Liguria</option><option>Lombardia</option><option>Marche</option><option>Molise</option><option>Piemonte</option><option>Puglia</option><option>Sardegna</option><option>Sicilia</option><option>Toscana</option><option>Trentino-Alto Adige</option><option>Umbria</option><option>Valle d'Aosta</option><option>Veneto</option></select></label>
+            <label>Quota (m)<input id="altitudeInput" type="number" min="-20" max="5000" inputmode="numeric" placeholder="automatica se disponibile" /></label>
+            <label class="wide-field">Nota luogo<input id="placeInput" type="text" maxlength="80" placeholder="es. sentiero, giardino, località" /></label>
+          </div>
+          <button id="locationBtn" class="secondary-button full-width" type="button">Aggiungi posizione GPS</button>
+          <p id="locationCopy" class="microcopy">La posizione resta nell'osservazione locale finché non decidi di condividerla.</p>
+        </section>
+
+        <section class="section-block proof-card">
+          <div class="section-heading"><div><span class="kicker">ProofID 5.0</span><h3>Determinazione verificabile</h3></div><span id="proofState" class="rank-chip">non avviata</span></div>
+          <p class="muted">Field AI propone candidati offline; ProofID 5.0 calibra i punteggi, controlla tassonomia, stagione, habitat, quota e look-alike. Il sigillo Verified richiede almeno due motori indipendenti con calibrazione Gold/Silver.</p>
+          <div id="proofResult" class="proof-result" hidden></div>
+        </section>
+
+        <div class="field-actions">
+          <button id="identifyBtn" class="primary-button" type="button" disabled>Analizza offline</button>
+          <button id="saveObservationBtn" class="secondary-button" type="button" disabled>Salva nel taccuino</button>
+        </div>
+      </section>
+
+      <section id="bookView" class="view" aria-labelledby="bookTitle">
+        <div class="section-heading sticky-heading">
+          <button class="back-button" data-nav="home" type="button">←</button>
+          <div><span class="kicker">Bibliotheca personalis · Book v5</span><h2 id="bookTitle">Herbarium — Volume I</h2></div>
+          <button id="printBookBtn" class="ghost-button compact" type="button">Stampa</button>
+        </div>
+
+        <article class="book-cover book-cover-v3">
+          <div class="book-corner c1"></div><div class="book-corner c2"></div><div class="book-corner c3"></div><div class="book-corner c4"></div>
+          <div class="book-frame"></div>
+          <div class="book-ornament">❦</div>
+          <small>HERBARIUM</small>
+          <h3>Flora Observata</h3>
+          <p>Volumen Primum</p>
+          <span id="bookCount">0 tavole</span>
+          <div class="cover-progress"><span id="bookVolumeProgress"></span></div>
+          <em id="bookVolumeLabel">0 / 100 species</em>
+        </article>
+
+        <section class="book-frontispiece book-frontispiece-v3">
+          <span>EX LIBRIS · THE LIVING ATLAS</span>
+          <h3>Un volume costruito sul campo</h3>
+          <p>Ogni tavola nasce da un'osservazione reale. Le determinazioni incerte restano nel taccuino scientifico e non vengono trasformate in certezza editoriale.</p>
+          <div id="bookMeta" class="book-meta"></div>
+        </section>
+
+        <section id="bookIndexSection" class="book-index" hidden>
+          <div class="index-heading"><span>INDEX SPECIEI</span><small>Volumen I</small></div>
+          <div id="bookIndex" class="index-grid"></div>
+        </section>
+
+        <div id="bookPages" class="book-pages"></div>
+        <section id="pendingSection" class="pending-section" hidden>
+          <div class="section-heading"><div><span class="kicker">Specimina incerta</span><h3>Osservazioni in attesa</h3></div><span id="pendingCount" class="rank-chip">0</span></div>
+          <div id="pendingList" class="pending-list"></div>
+        </section>
+      </section>
+
+      <section id="exploreView" class="view" aria-labelledby="exploreTitle">
+        <div class="section-heading sticky-heading">
+          <button class="back-button" data-nav="home" type="button">←</button>
+          <div><span class="kicker">Game World</span><h2 id="exploreTitle">Esplora</h2></div>
+          <span id="exploreSealCount" class="rank-chip">0 sigilli</span>
+        </div>
+
+        <section class="section-block expedition-card">
+          <div class="section-heading"><div><span class="kicker">Spedizione</span><h3 id="expeditionTitle">Inizia una spedizione botanica</h3></div><span class="expedition-compass">⌖</span></div>
+          <div id="expeditionIdle">
+            <p class="muted">Raggruppa le osservazioni di una passeggiata o di un viaggio in un vero capitolo del tuo Herbarium.</p>
+            <div class="expedition-start"><input id="expeditionName" type="text" maxlength="60" placeholder="es. Bosco del Dosso · settembre" /><button id="startExpeditionBtn" class="primary-button" type="button">Parti</button></div>
+          </div>
+          <div id="expeditionActive" hidden>
+            <p id="expeditionCopy" class="muted"></p>
+            <button id="endExpeditionBtn" class="secondary-button full-width" type="button">Concludi spedizione</button>
+          </div>
+        </section>
+
+        <div class="explore-stats">
+          <article><strong id="exploreTerritories">0</strong><span>Territori</span></article>
+          <article><strong id="exploreHabitats">0</strong><span>Habitat</span></article>
+          <article><strong id="exploreSpecies">0</strong><span>Specie</span></article>
+          <article><strong id="exploreMissions">0</strong><span>Imprese</span></article>
+        </div>
+
+        <section class="section-block atlas-card">
+          <div class="section-heading"><div><span class="kicker">Living Atlas · Italia</span><h3>Le tue osservazioni sulla carta</h3></div><span id="atlasCellCount" class="rank-chip">0 celle</span></div>
+          <p class="muted">I punti usano le coordinate reali delle tue osservazioni. La visualizzazione resta locale; per la privacy il progresso di gioco usa celle geografiche grossolane.</p>
+          <div id="atlasMap" class="atlas-map" role="img" aria-label="Atlante delle osservazioni in Italia"></div>
+          <div id="atlasRegions" class="atlas-regions"></div>
+          <p class="microcopy">v0.5: se installi il Map Pack ufficiale, l’Atlante usa confini reali offline. Senza pack resta disponibile la proiezione leggera delle coordinate.</p>
+        </section>
+
+        <section class="section-block">
+          <div class="section-heading"><div><span class="kicker">Quest Board</span><h3>Imprese botaniche</h3></div></div>
+          <div id="missionList" class="mission-list"></div>
+        </section>
+
+        <section class="section-block">
+          <div class="section-heading"><div><span class="kicker">Collection Cabinet</span><h3>Collezioni</h3></div></div>
+          <div id="collectionList" class="collection-list"></div>
+        </section>
+
+        <section class="section-block seal-cabinet">
+          <div class="section-heading"><div><span class="kicker">Cabinet of Curiosities</span><h3>Sigilli conquistati</h3></div></div>
+          <div id="sealList" class="seal-list"></div>
+        </section>
+      </section>
+
+      <section id="academyView" class="view" aria-labelledby="academyTitle">
+        <div class="section-heading sticky-heading">
+          <button class="back-button" data-nav="home" type="button">←</button>
+          <div><span class="kicker">Herbarium Academy</span><h2 id="academyTitle">Impara sul campo</h2></div>
+        </div>
+
+        <article class="lesson-card">
+          <span class="lesson-number">I</span>
+          <div><span class="kicker">Morfologia</span><h3>Leggere una foglia</h3><p>Forma, margine, nervature e disposizione sono caratteri utili per restringere una determinazione.</p></div>
+        </article>
+        <form id="academyQuiz" class="quiz-card">
+          <fieldset>
+            <legend>Quale termine indica un bordo fogliare con piccoli denti?</legend>
+            <label><input type="radio" name="q1" value="intero" /> Intero</label>
+            <label><input type="radio" name="q1" value="seghettato" /> Seghettato</label>
+            <label><input type="radio" name="q1" value="lobato" /> Lobato</label>
+          </fieldset>
+          <fieldset>
+            <legend>Per distinguere due specie simili, cosa è più utile?</legend>
+            <label><input type="radio" name="q2" value="colore" /> Solo il colore del fiore</label>
+            <label><input type="radio" name="q2" value="multi" /> Più organi e caratteri discriminanti</label>
+            <label><input type="radio" name="q2" value="nome" /> Il nome comune</label>
+          </fieldset>
+          <button class="primary-button" type="submit">Verifica lezione</button>
+          <p id="quizResult" class="microcopy" aria-live="polite"></p>
+        </form>
+
+        <section class="section-block">
+          <h3>Skill tree</h3>
+          <div class="skill-row"><span>Identificazione</span><progress id="skillIdentification" value="1" max="5"></progress></div>
+          <div class="skill-row"><span>Tassonomia</span><progress value="0" max="5"></progress></div>
+          <div class="skill-row"><span>Coltivazione</span><progress value="0" max="5"></progress></div>
+          <div class="skill-row"><span>Ecologia</span><progress value="0" max="5"></progress></div>
+        </section>
+      </section>
+
+      <section id="labView" class="view" aria-labelledby="labTitle">
+        <div class="section-heading sticky-heading">
+          <button class="back-button" data-nav="home" type="button">←</button>
+          <div><span class="kicker">Herbarium Lab · RC 0.6</span><h2 id="labTitle">Sistema & Test Center</h2></div>
+        </div>
+
+        <section class="section-block test-center-card">
+          <div class="section-heading"><div><span class="kicker">Release Candidate</span><h3>Test Center</h3></div><span id="testReadyBadge" class="rank-chip">non testata</span></div>
+          <p class="muted">Esegui un controllo completo del browser, prova il flusso Libro/Gioco con dati demo separati e scarica un report se qualcosa non funziona.</p>
+          <div class="split-actions">
+            <button id="runDiagnosticsBtn" class="primary-button" type="button">Esegui diagnostica</button>
+            <button id="loadDemoBtn" class="secondary-button" type="button">Carica dati demo</button>
+            <button id="clearDemoBtn" class="ghost-button" type="button">Rimuovi demo</button>
+          </div>
+          <div id="diagnosticSummary" class="diagnostic-summary" hidden></div>
+          <div id="diagnosticList" class="diagnostic-list"></div>
+          <div class="split-actions">
+            <button id="downloadDiagnosticBtn" class="ghost-button" type="button" disabled>Scarica report tecnico</button>
+            <button id="requestPersistBtn" class="ghost-button" type="button">Proteggi dati locali</button>
+          </div>
+          <p id="testCenterCopy" class="microcopy">Per il test completo su PC apri Herbarium da localhost. Su iPhone, per installazione PWA/offline completa serve un indirizzo HTTPS.</p>
+        </section>
+
+        <section class="section-block runtime-card">
+          <div class="section-heading"><div><span class="kicker">Runtime Watch</span><h3>Errori intercettati</h3></div><span id="runtimeErrorBadge" class="rank-chip">0</span></div>
+          <div id="runtimeErrorList" class="diagnostic-list"><p class="microcopy">Nessun errore JavaScript intercettato in questa sessione.</p></div>
+        </section>
+
+        <section class="section-block ai-install-card">
+          <div class="section-heading"><div><span class="kicker">AI locale reale</span><h3 id="labAiTitle">Stato motore</h3></div><span id="labAiBadge" class="rank-chip">—</span></div>
+          <p id="labAiCopy" class="muted"></p>
+          <div class="ai-pack-specs"><span><b>47 MB</b> modello</span><span><b>4.271</b> specie first-pass</span><span><b>~75 MB</b> pack completo</span></div>
+          <div id="aiInstallProgress" class="install-progress" hidden><div><span id="aiInstallProgressBar"></span></div><p id="aiInstallProgressCopy">Preparazione…</p></div>
+          <div class="split-actions">
+            <button id="installAiPackBtn" class="primary-button" type="button">Installa Field AI offline</button>
+            <button id="selfTestAiBtn" class="secondary-button" type="button" disabled>Self-test</button>
+            <button id="removeAiPackBtn" class="ghost-button" type="button" hidden>Rimuovi</button>
+          </div>
+          <p id="aiTestCopy" class="microcopy">Il modello è un primo passaggio locale: ProofID non lo considera da solo una verifica definitiva.</p>
+        </section>
+
+        <section class="section-block science-gate-card">
+          <div class="section-heading"><div><span class="kicker">ProofID MAX Gateway</span><h3>Motori indipendenti</h3></div><span id="engineGatewayBadge" class="rank-chip">—</span></div>
+          <p id="engineGatewayCopy" class="muted">Caricamento registry motori…</p>
+          <p class="microcopy">Nessun motore cloud viene simulato: gli adapter restano disattivati finché non sono configurati con API ufficiali e chiavi server-side.</p>
+        </section>
+
+        <section class="section-block science-gate-card">
+          <div class="section-heading"><div><span class="kicker">Confidence Calibration</span><h3>Punteggi che significano qualcosa</h3></div><span id="calibrationBadge" class="rank-chip">—</span></div>
+          <p id="calibrationCopy" class="muted">Caricamento calibrazione…</p>
+          <p class="microcopy">Il motore locale usa una calibrazione conservativa provvisoria. Finché non supera il Gold Benchmark non può generare da solo un sigillo Verified.</p>
+        </section>
+
+        <section class="section-block gold-card">
+          <div class="section-heading"><div><span class="kicker">Gold Standard</span><h3>Benchmark immutabile</h3></div><span id="goldBadge" class="rank-chip">—</span></div>
+          <p id="goldCopy" class="muted">Caricamento requisiti benchmark…</p>
+          <div class="gold-rules"><span><b>Training</b> vietato</span><span><b>False confident</b> metrica regina</span><span><b>Rollback</b> obbligatorio</span></div>
+        </section>
+
+        <section class="section-block flora-core-card">
+          <div class="section-heading"><div><span class="kicker">Flora Italia Core</span><h3>Tassonomia + contesto locale</h3></div><span id="floraCoreBadge" class="rank-chip">caricamento</span></div>
+          <p id="floraCoreCopy" class="muted">Caricamento del seed botanico verificabile…</p>
+          <div class="flora-stats"><span><b id="floraTaxa">—</b> taxa seed</span><span><b id="floraFamilies">—</b> famiglie</span><span><b id="floraGenera">—</b> generi</span></div>
+          <p class="microcopy">Questo seed non viene spacciato per checklist italiana completa: serve a validare la pipeline ProofID 5.0. Il Flora Pack Italia completo resterà installabile separatamente.</p>
+        </section>
+
+        <section class="section-block">
+          <div class="section-heading"><div><span class="kicker">Flora Packs</span><h3>Archivio modulare</h3></div><span id="packCount" class="rank-chip">0</span></div>
+          <p class="muted">Tassonomia, flora regionale e futuri modelli specializzati restano pacchetti opzionali: il Core non cresce inutilmente.</p>
+          <label class="file-button">Importa manifest pack<input id="packInput" type="file" accept="application/json,.json" /></label>
+          <div id="packList" class="pack-list"></div>
+        </section>
+
+        <section class="section-block map-pack-card">
+          <div class="section-heading"><div><span class="kicker">Map Pack Italia 2026</span><h3>Confini reali, Core leggero</h3></div><span id="mapPackBadge" class="rank-chip">non installato</span></div>
+          <p id="mapPackCopy" class="muted">Herbarium accetta un GeoJSON WGS84 delle regioni e lo valida prima di usarlo offline nell’Atlante.</p>
+          <div class="split-actions"><label class="file-button">Importa GeoJSON<input id="mapPackInput" type="file" accept="application/geo+json,application/json,.geojson,.json" /></label><button id="removeMapPackBtn" class="ghost-button" type="button">Rimuovi mappa</button></div>
+          <p class="microcopy">Fonte prevista: confini amministrativi Istat aggiornati al 1 gennaio 2026. La geometria non è incorporata nel Core per mantenere l’app leggera.</p>
+        </section>
+
+        <section class="section-block">
+          <div class="section-heading"><div><span class="kicker">Archiviazione</span><h3>Peso sotto controllo</h3></div><span id="storageBadge" class="rank-chip">—</span></div>
+          <p id="storageCopy" class="muted">Calcolo dello spazio usato…</p>
+        </section>
+
+        <section class="section-block">
+          <div class="section-heading"><div><span class="kicker">Dati</span><h3>Backup locale</h3></div></div>
+          <div class="split-actions"><button id="exportBtn" class="secondary-button" type="button">Esporta backup</button><label class="file-button">Importa backup<input id="backupInput" type="file" accept="application/json,.json" /></label></div>
+          <p id="backupCopy" class="microcopy">Nessun account necessario per conservare il tuo taccuino.</p>
+        </section>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navigazione principale">
+      <button data-nav="home" class="active" type="button"><span>⌂</span>Home</button>
+      <button data-nav="field" type="button"><span>◎</span>Field</button>
+      <button data-nav="book" type="button"><span>▤</span>Libro</button>
+      <button data-nav="explore" type="button"><span>⌖</span>Esplora</button>
+      <button data-nav="academy" type="button"><span>✦</span>Academy</button>
+    </nav>
+  </div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
