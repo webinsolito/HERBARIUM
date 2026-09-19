@@ -1,0 +1,92 @@
+name: HERBARIUM Guard
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: herbarium-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Repository contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f README.md
+          test -f DIRECTOR.md
+          test -f ROADMAP.md
+          test -f RECOVERY.md
+
+      - name: Secret sanity check
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE --exclude-dir=.git --exclude='*.md' '(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,})' .; then
+            echo "Potential secret committed."
+            exit 1
+          fi
+
+      - name: Validate HTML when present
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+
+          class P(HTMLParser):
+              pass
+
+          files = list(Path(".").rglob("*.html"))
+          for p in files:
+              if ".git" in p.parts:
+                  continue
+              data = p.read_text(encoding="utf-8", errors="strict")
+              parser = P()
+              parser.feed(data)
+              parser.close()
+              if "<html" not in data.lower() or "</html>" not in data.lower():
+                  raise SystemExit(f"Invalid HTML shell: {p}")
+          print(f"Validated {len(files)} HTML file(s).")
+          PY
+
+      - name: JavaScript syntax when Node files exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find . -type f -name '*.js' -not -path './.git/*')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No JavaScript files yet."
+            exit 0
+          fi
+          for f in "${files[@]}"; do
+            node --check "$f"
+          done
+
+      - name: Run project tests when declared
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f package.json ]; then
+            npm ci --ignore-scripts
+            npm test
+          elif [ -f Package.swift ]; then
+            swift test
+          else
+            echo "No package-level test runner declared yet."
+          fi
