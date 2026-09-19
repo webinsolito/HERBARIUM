@@ -37,7 +37,7 @@ jobs:
           /tmp/gh-aw compile herbarium-autopilot --strict
 
       - name: Upload compiled lockfile
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: herbarium-autopilot-lock
           path: .github/workflows/herbarium-autopilot.lock.yml
