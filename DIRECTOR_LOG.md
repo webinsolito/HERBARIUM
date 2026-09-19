@@ -51,3 +51,11 @@ This log is maintained by the hourly director.
 - Speed verification retry: controller syntax fix 875afef4 is now present on main; trigger Guard -> Local Autopilot again.
 
 - Direct-candidate speed verification: main controller fa4532f/e4297b9 removes PR bottleneck and obsolete automerge; trigger Guard -> Local Autopilot.
+
+## 2026-09-19 — Mission 001 / independent rejection audit
+- Independently inspected Local Autopilot run `35438997195`: the workflow was marked SUCCESS, but its model proposal was actually rejected as invalid JSON and no code change was accepted in that cycle. The SUCCESS label was therefore not sufficient evidence of a completed improvement.
+- Verified that the candidate already contains autopilot commit `ebf63d872bbe5bb8f2f9619b71db85ac69298952`, adding the IndexedDB `loadObservations()` read path and its smoke assertion. Because that bot push did not itself produce a new Guard run, it is not treated as externally green yet.
+- Fixed the controller workflow on main at `1e4b6baa2897e9c47542dc704e2c52544ba00272`: Local Autopilot now records its run output and explicitly fails the workflow when `LOCAL_AUTOPILOT_REJECTED` is emitted, instead of silently reporting a rejected cycle as SUCCESS.
+- This Director commit intentionally advances the candidate through a normal authenticated repository write so HERBARIUM Guard is triggered against the current candidate contents, including `ebf63d87`.
+- Mission 001 remains IN PROGRESS and main/stable product code remains unpromoted.
+- Next action: require HERBARIUM Guard green on this candidate head before preview synchronization or further recovery work.
