@@ -51,13 +51,55 @@ def read_context(path: str) -> str:
     return text
 
 
+def choose_micro_task() -> str:
+    js = read_context("src/app.js")
+    smoke = read_context("tests/smoke.mjs")
+
+    mime_markers = (
+        "file.type.startsWith('image/')",
+        'file.type.startsWith("image/")',
+        "file.type?.startsWith('image/')",
+        'file.type?.startsWith("image/")',
+    )
+    if not any(marker in js for marker in mime_markers):
+        return (
+            "Add an explicit early MIME-type reject guard in prepareEvidenceImage(file): "
+            "if file.type exists and does not start with image/, throw a clear local error "
+            "before FileReader/Image decoding. Add the smallest smoke assertion proving "
+            "the guard exists. Do not change any other behavior."
+        )
+
+    if "objectStore(STORE_NAME).getAll()" not in js and ".getAll()" not in js:
+        return (
+            "Add a small read-only IndexedDB helper that returns saved observations using "
+            "objectStore(STORE_NAME).getAll(), closes the database safely, and does not "
+            "invent or verify species. Add only the smallest smoke assertion for this helper."
+        )
+
+    if "file.size" not in js or "MAX_INPUT_BYTES" not in js:
+        return (
+            "Add a conservative local input-size guard before decoding evidence images, "
+            "using one named MAX_INPUT_BYTES constant and a clear error. Keep compression, "
+            "UNKNOWN semantics and storage unchanged. Add the smallest smoke assertion."
+        )
+
+    return (
+        "Continue CURRENT_MISSION with exactly one smallest missing reliability or "
+        "source-recovery improvement visible in src/app.js, plus the smallest matching "
+        "smoke assertion. Avoid cosmetic changes and do not duplicate existing behavior."
+    )
+
+
 def build_prompt() -> str:
     blocks = [f"===== {name} =====\n{read_context(name)}" for name in CONTEXT_FILES]
-    return """You are the LOCAL, ZERO-API coding worker for HERBARIUM.
+    task = choose_micro_task()
+    return f"""You are the LOCAL, ZERO-API coding worker for HERBARIUM.
 
-Read the CURRENT repository context carefully. Choose exactly ONE small,
-concrete improvement that advances CURRENT_MISSION without duplicating behavior
-that is already present. You are operating unattended, so be conservative.
+MANDATORY MICRO-TASK FOR THIS RUN:
+{task}
+
+Implement ONLY that micro-task. Do not choose another task and do not broaden
+scope. You are operating unattended, so be conservative.
 
 The current source ALREADY has UNKNOWN semantics, IndexedDB observation
 persistence, JPEG evidence compression and transaction-based saves. Do not
