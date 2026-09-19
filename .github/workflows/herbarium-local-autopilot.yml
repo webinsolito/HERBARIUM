@@ -12,6 +12,7 @@ on:
     paths:
       - ".github/workflows/herbarium-local-autopilot.yml"
       - "automation/local_autopilot.py"
+      - "automation/test_local_autopilot_parser.py"
 
 permissions:
   contents: write
@@ -54,6 +55,9 @@ jobs:
           ref: candidate/mission-001-source-recovery
           path: project
           fetch-depth: 0
+
+      - name: Test autopilot parser
+        run: python controller/automation/test_local_autopilot_parser.py
 
       - name: Refuse to stack unattended PRs
         id: gate
