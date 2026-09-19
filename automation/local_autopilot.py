@@ -18,19 +18,15 @@ from pathlib import Path
 
 ROOT = Path.cwd()
 SERVER = os.environ.get("HERBARIUM_LOCAL_LLM_URL", "http://127.0.0.1:8080/v1/chat/completions")
-MAX_FILE_CHARS = 18000
-MAX_OUTPUT_CHARS = 70000
+MAX_FILE_CHARS = 12000
+MAX_OUTPUT_CHARS = 30000
 MAX_EDITS = 6
 MAX_CHANGED_FILES = 3
 ALLOWED_PREFIXES = ("src/", "tests/")
 CONTEXT_FILES = (
     "CURRENT_MISSION.md",
-    "DIRECTOR_LOG.md",
-    "src/index.html",
     "src/app.js",
-    "src/styles.css",
     "tests/smoke.mjs",
-    "package.json",
 )
 
 
@@ -95,8 +91,7 @@ Editing rules:
 - Do not delete or weaken tests just to obtain green.
 - Prefer reliability/source-recovery work over cosmetics.
 - Keep the change small enough to review in one PR.
-- Every "find" string MUST be copied EXACTLY from the current repository context.
-- Use the smallest unique find string that is sufficient for the edit.
+- Prefer the smallest valid unified diff that implements the micro-task.
 - If there is no clearly safe useful change, answer exactly: NOOP
 
 Output protocol:
@@ -140,7 +135,7 @@ def call_model(prompt: str) -> str:
             ],
             "temperature": 0.05,
             "top_p": 0.85,
-            "max_tokens": 1200,
+            "max_tokens": 650,
             "stream": False,
         }
     ).encode("utf-8")
@@ -150,7 +145,7 @@ def call_model(prompt: str) -> str:
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=900) as response:
+    with urllib.request.urlopen(req, timeout=420) as response:
         data = json.load(response)
     return data["choices"][0]["message"]["content"]
 
