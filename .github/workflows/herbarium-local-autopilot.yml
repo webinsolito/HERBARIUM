@@ -20,7 +20,7 @@ permissions:
 
 concurrency:
   group: herbarium-local-autopilot
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   improve:
@@ -33,7 +33,9 @@ jobs:
     env:
       BASE_BRANCH: candidate/mission-001-source-recovery
       CACHE_DIR: /home/runner/.cache/herbarium-local-ai
-      LLAMA_COMMIT: b29c606e28a01b1bc8c1351026a0fa6e616bf6c4
+      LLAMA_RELEASE: b10964
+      LLAMA_ARCHIVE: llama-b10964-bin-ubuntu-x64.tar.gz
+      LLAMA_ARCHIVE_SHA256: 9abf88aea48a55d0f80edb1ee20220b186848cca0b4e919d71518cfd7ca67443
       MODEL_COMMIT: 2ab9f8f42af02fc212effaef7c4850c885e965f4
       MODEL_SHA256: aa8353e0d0fca3a0041828701e90db7635197400f040676d11d7798665fa316e
       MODEL_FILE: qwen2.5-coder-1.5b-instruct-q4_0.gguf
@@ -83,25 +85,31 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.CACHE_DIR }}
-          key: herbarium-local-ai-v3-${{ env.LLAMA_COMMIT }}-${{ env.MODEL_SHA256 }}
+          key: herbarium-local-ai-v2-b29c606e28a01b1bc8c1351026a0fa6e616bf6c4-${{ env.MODEL_SHA256 }}
 
-      - name: Build pinned llama.cpp if absent
+      - name: Install verified official llama.cpp runtime
         if: steps.gate.outputs.run == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$CACHE_DIR"
-          if [ ! -x "$CACHE_DIR/llama-server" ]; then
-            rm -rf /tmp/llama.cpp /tmp/llama.tar.gz
-            curl -fL --retry 4 --retry-delay 2 "https://github.com/ggml-org/llama.cpp/archive/$LLAMA_COMMIT.tar.gz" -o /tmp/llama.tar.gz
-            mkdir -p /tmp/llama.cpp
-            tar -xzf /tmp/llama.tar.gz --strip-components=1 -C /tmp/llama.cpp
-            test "$(git ls-remote https://github.com/ggml-org/llama.cpp.git "$LLAMA_COMMIT" | awk '{print $1}' | head -1)" = "$LLAMA_COMMIT" || true
-            cmake -S /tmp/llama.cpp -B /tmp/llama.cpp/build -DCMAKE_BUILD_TYPE=Release -DGGML_NATIVE=OFF -DLLAMA_CURL=OFF -DBUILD_SHARED_LIBS=OFF
-            cmake --build /tmp/llama.cpp/build --config Release -j2 --target llama-server
-            cp /tmp/llama.cpp/build/bin/llama-server "$CACHE_DIR/llama-server"
+          rm -rf /tmp/llama-runtime /tmp/llama-runtime.tar.gz
+          mkdir -p /tmp/llama-runtime
+          url="https://github.com/ggml-org/llama.cpp/releases/download/$LLAMA_RELEASE/$LLAMA_ARCHIVE"
+          curl -fL --retry 4 --retry-delay 2 "$url" -o /tmp/llama-runtime.tar.gz
+          echo "$LLAMA_ARCHIVE_SHA256  /tmp/llama-runtime.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/llama-runtime.tar.gz -C /tmp/llama-runtime
+
+          server="$(find /tmp/llama-runtime -type f -name llama-server | head -1)"
+          if [ -z "$server" ]; then
+            echo "llama-server not found in verified official runtime"
+            exit 1
           fi
-          "$CACHE_DIR/llama-server" --version
+          chmod +x "$server"
+
+          lib_dirs="$(find /tmp/llama-runtime -type f -name '*.so*' -printf '%h\n' | sort -u | paste -sd: -)"
+          echo "LLAMA_SERVER=$server" >> "$GITHUB_ENV"
+          echo "LD_LIBRARY_PATH=$lib_dirs" >> "$GITHUB_ENV"
+          LD_LIBRARY_PATH="$lib_dirs" "$server" --version
 
       - name: Download pinned Apache-2.0 coding model if absent
         if: steps.gate.outputs.run == 'true'
@@ -123,7 +131,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup "$CACHE_DIR/llama-server" -m "$CACHE_DIR/$MODEL_FILE" -c 12288 -t 2 --host 127.0.0.1 --port 8080 >/tmp/herbarium-llama.log 2>&1 &
+          nohup "$LLAMA_SERVER" -m "$CACHE_DIR/$MODEL_FILE" -c 12288 -t 2 --host 127.0.0.1 --port 8080 >/tmp/herbarium-llama.log 2>&1 &
           echo $! >/tmp/herbarium-llama.pid
           for i in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then
