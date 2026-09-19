@@ -32,6 +32,17 @@
     } finally { db.close(); }
   };
 
+  const loadObservations = async () => {
+    const db = await openDb();
+    try {
+      return await new Promise((resolve, reject) => {
+        const request = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('Lettura osservazioni locali fallita.'));
+      });
+    } finally { db.close(); }
+  };
+
   const saveObservation = async observation => {
     const db = await openDb();
     try {

@@ -10,6 +10,7 @@ assert.match(js,/Motore botanico validato non installato/);
 assert.match(js,/indexedDB\.open\(DB_NAME, 1\)/);
 assert.match(js,/createObjectStore\(STORE_NAME, \{ keyPath: 'id' \}\)/);
 assert.match(js,/objectStore\(STORE_NAME\)\.add\(observation\)/);
+assert.match(js,/objectStore\(STORE_NAME\)\.getAll\(\)/);
 assert.match(js,/status: 'UNKNOWN'/);
 assert.match(js,/speciesCount\.textContent = '0'/);
 assert.match(js,/readAsDataURL\(file\)/);
