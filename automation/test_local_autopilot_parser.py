@@ -55,6 +55,55 @@ class ParserTests(unittest.TestCase):
             self.assertEqual(touched, ["src/app.js"])
             self.assertEqual((root / "src/app.js").read_text(encoding="utf-8"), "NEW")
 
+
+    def test_regex_style_find_is_literalized_and_noop_is_ignored(self) -> None:
+        proposal = {
+            "summary": "small safe edit",
+            "edits": [
+                {
+                    "path": "src/app.js",
+                    "find": r"speciesCount\.textContent = '0'",
+                    "replace": "speciesCount.textContent = '0'",
+                },
+                {
+                    "path": "src/app.js",
+                    "find": "OLD",
+                    "replace": "NEW",
+                },
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src/app.js").write_text(
+                "speciesCount.textContent = '0';\nOLD", encoding="utf-8"
+            )
+            previous_root = autopilot.ROOT
+            autopilot.ROOT = root
+            try:
+                touched = autopilot.apply_exact_edits(proposal)
+            finally:
+                autopilot.ROOT = previous_root
+            self.assertEqual(touched, ["src/app.js"])
+            self.assertEqual(
+                (root / "src/app.js").read_text(encoding="utf-8"),
+                "speciesCount.textContent = '0';\nNEW",
+            )
+
+    def test_real_old_model_shape_parses_after_escape_repair(self) -> None:
+        raw = r'''{
+          "summary": "Add IndexedDB object storage.",
+          "edits": [
+            {"path":"src/app.js","find":"indexedDB.open\(DB_NAME, 1\)","replace":"indexedDB.open('herbarium.local.v1', 1)"},
+            {"path":"src/app.js","find":"createObjectStore\(STORE_NAME, \{ keyPath: 'id' \}\)","replace":"createObjectStore('observations', { keyPath: 'id' })"},
+            {"path":"src/app.js","find":"speciesCount\.textContent = '0'","replace":"speciesCount.textContent = '0'"},
+            {"path":"src/app.js","find":"status:\s*['\"]VERIFIED['\"]/","replace":"status:\s*['\"]VERIFIED['\"]/"} 
+          ]
+        }'''
+        proposal = autopilot.parse_proposal(raw)
+        self.assertEqual(proposal["summary"], "Add IndexedDB object storage.")
+        self.assertEqual(len(proposal["edits"]), 4)
+
     def test_missing_required_edit_field_still_rejected(self) -> None:
         proposal = {
             "summary": "bad edit",
