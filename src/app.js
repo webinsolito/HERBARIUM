@@ -30,20 +30,43 @@
       : 'UNKNOWN — aggiungi almeno una foto.';
   };
 
+  const fileToDataUrl = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error('Impossibile leggere la foto.'));
+    reader.readAsDataURL(file);
+  });
+
   inputs.forEach(input => input.addEventListener('change', update));
-  analyse.addEventListener('click', () => {
-    const roles = inputs.filter(input => input.files && input.files.length).map(input => input.id);
-    if (!roles.length) return;
-    const observations = loadObservations();
-    observations.push({
-      id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-      createdAt: new Date().toISOString(),
-      roles,
-      status: 'UNKNOWN'
-    });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
-    result.textContent = 'UNKNOWN — osservazione salvata localmente; nessuna identificazione automatica simulata.';
-    renderStats();
+  analyse.addEventListener('click', async () => {
+    const selected = inputs.filter(input => input.files && input.files.length);
+    if (!selected.length) return;
+    analyse.disabled = true;
+    result.textContent = 'Salvataggio locale delle prove fotografiche…';
+    try {
+      const evidence = await Promise.all(selected.map(async input => ({
+        role: input.id,
+        name: input.files[0].name || null,
+        type: input.files[0].type || 'application/octet-stream',
+        image: await fileToDataUrl(input.files[0])
+      })));
+      const observations = loadObservations();
+      observations.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+        createdAt: new Date().toISOString(),
+        roles: evidence.map(item => item.role),
+        evidence,
+        status: 'UNKNOWN'
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
+      result.textContent = 'UNKNOWN — foto e osservazione salvate solo su questo dispositivo; nessuna identificazione automatica simulata.';
+      renderStats();
+    } catch (error) {
+      console.error(error);
+      result.textContent = 'UNKNOWN — salvataggio locale non riuscito. Nessuna osservazione incompleta è stata registrata.';
+    } finally {
+      update();
+    }
   });
 
   document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
