@@ -13,6 +13,7 @@ assert.match(js,/objectStore\(STORE_NAME\)\.add\(observation\)/);
 assert.match(js,/status: 'UNKNOWN'/);
 assert.match(js,/speciesCount\.textContent = '0'/);
 assert.match(js,/readAsDataURL\(file\)/);
+assert.match(js,/file\.type && !file\.type\.startsWith\('image\/'\)/);
 assert.match(js,/MAX_IMAGE_EDGE = 1600/);
 assert.match(js,/JPEG_QUALITY = 0\.78/);
 assert.match(js,/canvas\.toBlob/);

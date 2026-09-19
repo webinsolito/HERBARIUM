@@ -78,6 +78,9 @@
   });
 
   const prepareEvidenceImage = async file => {
+    if (file.type && !file.type.startsWith('image/')) {
+      throw new Error("Il file selezionato non è un'immagine.");
+    }
     const original = await fileToDataUrl(file);
     const image = await loadImage(original);
     const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(image.naturalWidth, image.naturalHeight));
