@@ -1,9 +1,7 @@
 name: HERBARIUM Autopilot Merge
 
 on:
-  workflow_run:
-    workflows: ["HERBARIUM Guard"]
-    types: [completed]
+  workflow_dispatch:
 
 permissions:
   contents: write
