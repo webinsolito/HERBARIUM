@@ -1,11 +1,6 @@
 name: HERBARIUM Local Autopilot
 
 on:
-  workflow_run:
-    workflows: ["HERBARIUM Guard"]
-    types: [completed]
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
 permissions:
   contents: write
