@@ -178,7 +178,7 @@ def call_model(prompt: str) -> str:
             ],
             "temperature": 0.05,
             "top_p": 0.85,
-            "max_tokens": 650,
+            "max_tokens": 1000,
             "stream": False,
         }
     ).encode("utf-8")
@@ -202,7 +202,9 @@ def parse_patch_proposal(output: str) -> tuple[str, str] | None:
 
     start = raw.find("BEGIN_PATCH")
     end = raw.rfind("END_PATCH")
-    if start < 0 or end < start:
+    if start >= 0 and end < start:
+        raise RuntimeError("Model patch output is truncated or missing END_PATCH.")
+    if start < 0:
         return None
 
     header = raw[:start].strip()
