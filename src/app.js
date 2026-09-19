@@ -1,6 +1,8 @@
 (() => {
   'use strict';
   const STORAGE_KEY = 'herbarium.observations.v1';
+  const MAX_IMAGE_EDGE = 1600;
+  const JPEG_QUALITY = 0.78;
   const inputs = [...document.querySelectorAll('input[type=file]')];
   const analyse = document.getElementById('analyse');
   const result = document.getElementById('result');
@@ -37,19 +39,49 @@
     reader.readAsDataURL(file);
   });
 
+  const loadImage = dataUrl => new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Impossibile decodificare la foto.'));
+    image.src = dataUrl;
+  });
+
+  const prepareEvidenceImage = async file => {
+    const original = await fileToDataUrl(file);
+    const image = await loadImage(original);
+    const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(image.naturalWidth, image.naturalHeight));
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Canvas non disponibile.');
+    context.drawImage(image, 0, 0, width, height);
+    return {
+      image: canvas.toDataURL('image/jpeg', JPEG_QUALITY),
+      width,
+      height,
+      originalBytes: file.size || null
+    };
+  };
+
   inputs.forEach(input => input.addEventListener('change', update));
   analyse.addEventListener('click', async () => {
     const selected = inputs.filter(input => input.files && input.files.length);
     if (!selected.length) return;
     analyse.disabled = true;
-    result.textContent = 'Salvataggio locale delle prove fotografiche…';
+    result.textContent = 'Preparazione e salvataggio locale delle prove fotografiche…';
     try {
-      const evidence = await Promise.all(selected.map(async input => ({
-        role: input.id,
-        name: input.files[0].name || null,
-        type: input.files[0].type || 'application/octet-stream',
-        image: await fileToDataUrl(input.files[0])
-      })));
+      const evidence = await Promise.all(selected.map(async input => {
+        const prepared = await prepareEvidenceImage(input.files[0]);
+        return {
+          role: input.id,
+          name: input.files[0].name || null,
+          type: 'image/jpeg',
+          ...prepared
+        };
+      }));
       const observations = loadObservations();
       observations.push({
         id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
@@ -59,11 +91,13 @@
         status: 'UNKNOWN'
       });
       localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
-      result.textContent = 'UNKNOWN — foto e osservazione salvate solo su questo dispositivo; nessuna identificazione automatica simulata.';
+      result.textContent = 'UNKNOWN — prove fotografiche ottimizzate e salvate solo su questo dispositivo; nessuna identificazione automatica simulata.';
       renderStats();
     } catch (error) {
       console.error(error);
-      result.textContent = 'UNKNOWN — salvataggio locale non riuscito. Nessuna osservazione incompleta è stata registrata.';
+      result.textContent = error && error.name === 'QuotaExceededError'
+        ? 'UNKNOWN — spazio locale insufficiente. Nessuna osservazione incompleta è stata registrata.'
+        : 'UNKNOWN — salvataggio locale non riuscito. Nessuna osservazione incompleta è stata registrata.';
     } finally {
       update();
     }
