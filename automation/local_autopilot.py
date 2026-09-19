@@ -501,6 +501,33 @@ def apply_deterministic_fast_path() -> tuple[str, list[str]] | None:
         smoke.write_text(tests, encoding="utf-8")
         return "Reject non-image evidence before local decoding", ["src/app.js", "tests/smoke.mjs"]
 
+    if "const loadObservations = async () =>" not in js:
+        anchor = """  const saveObservation = async observation => {"""
+        helper = """  const loadObservations = async () => {
+    const db = await openDb();
+    try {
+      return await new Promise((resolve, reject) => {
+        const request = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('Lettura osservazioni locali fallita.'));
+      });
+    } finally { db.close(); }
+  };
+
+"""
+        if js.count(anchor) == 1:
+            js = js.replace(anchor, helper + anchor, 1)
+            assertion = "assert.match(js,/objectStore\\(STORE_NAME\\)\\.getAll\\(\\)/);"
+            if assertion not in tests:
+                test_anchor = "assert.match(js,/objectStore\\(STORE_NAME\\)\\.add\\(observation\\)/);"
+                if tests.count(test_anchor) != 1:
+                    return None
+                tests = tests.replace(test_anchor, test_anchor + "\n" + assertion, 1)
+
+            app.write_text(js, encoding="utf-8")
+            smoke.write_text(tests, encoding="utf-8")
+            return "Add local read path for saved observations", ["src/app.js", "tests/smoke.mjs"]
+
     return None
 
 
