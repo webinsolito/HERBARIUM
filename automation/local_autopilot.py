@@ -483,7 +483,7 @@ def apply_deterministic_fast_path() -> tuple[str, list[str]] | None:
     const original = await fileToDataUrl(file);"""
         new = """  const prepareEvidenceImage = async file => {
     if (file.type && !file.type.startsWith('image/')) {
-      throw new Error('Il file selezionato non è un\'immagine.');
+      throw new Error("Il file selezionato non è un'immagine.");
     }
     const original = await fileToDataUrl(file);"""
         if js.count(old) != 1:
