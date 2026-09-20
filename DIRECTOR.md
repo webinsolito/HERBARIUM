@@ -17,8 +17,9 @@ Mai ricominciare da zero se esiste una base recuperabile. Ogni ciclo parte dall'
 8. Esegui regressione pertinente.
 9. Se fallisce, correggi e ripeti. Non promuovere.
 10. Solo con test realmente verdi puoi proporre/promuovere la candidate.
-11. Aggiorna `DIRECTOR_LOG.md` o issue/PR con ciò che è stato realmente fatto.
-12. Definisci la missione successiva in base al nuovo stato, non in base a una roadmap astratta.
+11. **Gate di modifica reale obbligatoria:** un ciclo autonomo può essere dichiarato completato solo se produce almeno una modifica reale e utile al prodotto (codice, test eseguibili, UX, robustezza o asset funzionale) coerente con la missione. Aggiornamenti soltanto a `DIRECTOR_LOG.md`, `CURRENT_MISSION.md`, report, commenti, issue o TODO NON contano come miglioramento. Se dopo i controlli non esiste una modifica sicura eseguibile, il ciclo deve terminare come **BLOCCATO**, spiegando il motivo, e non come DONE/PASS.
+12. Aggiorna `DIRECTOR_LOG.md` o issue/PR con ciò che è stato realmente fatto.
+13. Definisci la missione successiva in base al nuovo stato, non in base a una roadmap astratta.
 
 ## Priorità di prodotto
 Ordine generale, modificabile solo se emerge un bug/blocco più urgente:
@@ -51,6 +52,7 @@ Non accumulare cinque cambiamenti scollegati nello stesso ciclo. Una macro-area 
 
 ## Definizione di DONE
 Una missione è DONE solo se:
+- almeno una modifica reale utile al prodotto è stata implementata; modifiche solo documentali/report non soddisfano questo gate;
 - codice/file realmente modificati;
 - test pertinenti realmente eseguiti;
 - nessuna regressione nota introdotta;
