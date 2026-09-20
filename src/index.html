@@ -12,7 +12,7 @@
 <body>
   <main class="shell">
     <header class="app-header"><div class="brand"><small>HERBARIUM</small><h1>The Living Atlas</h1></div><span id="network" class="status-pill">offline-first</span></header>
-    <section class="hero"><p class="eyebrow">Discover · Explore · Learn · Preserve</p><h2>Il tuo atlante della natura, costruito da osservazioni reali.</h2><p class="hero-copy">Raccogli prove fotografiche sul dispositivo. Se l'evidenza non basta, HERBARIUM resta prudente.</p><button class="primary-action" data-view="field">Scopri una pianta</button><button class="secondary-action" data-view="book">Apri il volume</button></section>
+    <section class="hero"><p class="eyebrow">Discover · Explore · Learn · Preserve</p><h2>Il tuo atlante della natura, costruito da osservazioni reali.</h2><p class="hero-copy">Raccogli prove fotografiche sul dispositivo. Se l'evidenza non basta, HERBARIUM resta prudente.</p><button class="primary-action" data-view="field">Scopri una pianta</button><button class="secondary-action" data-view="book">Apri il volume</button><button class="secondary-action" data-view="atlas">Apri l'atlante</button></section>
 
     <section id="home" class="view active">
       <div class="section-head"><div><p class="eyebrow">Il tuo erbario</p><h2>Osservazioni locali</h2></div><span class="privacy-badge">Privato · locale</span></div>
@@ -39,6 +39,15 @@
       <article class="book-cover"><small>HERBARIUM</small><h3>Flora Observata</h3><p>Volumen Primum</p><strong id="bookCount">0 osservazioni</strong></article>
       <p class="notice"><strong>Nessuna certezza inventata.</strong> Le osservazioni UNKNOWN restano in attesa e non diventano tavole di specie verificate.</p>
       <section class="book-section"><div class="section-head"><div><p class="eyebrow">Specimina incerta</p><h2>Osservazioni in attesa</h2></div><span id="pendingCount" class="unknown-badge">0</span></div><div id="pendingList" class="pending-list" aria-live="polite"></div></section>
+      <div class="actions"><button class="secondary-action" data-view="home">Torna alla home</button></div>
+    </section>
+
+    <section id="atlas" class="view" aria-labelledby="atlasTitle">
+      <div class="section-head"><div><p class="eyebrow">Living Atlas · locale</p><h2 id="atlasTitle">Atlante delle osservazioni</h2></div><span class="privacy-badge">Nessun cloud</span></div>
+      <p class="lead">Questa recovery non inventa territori o coordinate: mostra soltanto dati geografici realmente presenti nelle osservazioni locali.</p>
+      <div class="stats atlas-stats"><article><b id="atlasLocatedCount">0</b><span>Osservazioni localizzate</span></article><article><b id="atlasRegionCount">0</b><span>Regioni reali</span></article></div>
+      <section class="step-card"><div class="section-head"><div><p class="eyebrow">Copertura</p><h2>Regioni osservate</h2></div></div><div id="atlasRegions" class="atlas-regions" aria-live="polite"></div></section>
+      <p class="notice"><strong>Privacy geografica.</strong> Nessuna coordinata viene inviata o aggiunta automaticamente. Le osservazioni senza posizione restano fuori dall'atlante.</p>
       <div class="actions"><button class="secondary-action" data-view="home">Torna alla home</button></div>
     </section>
   </main>
