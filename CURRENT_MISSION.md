@@ -8,7 +8,7 @@ Port the best real HERBARIUM baseline into this repository as a reproducible, te
 ### Current state
 IN PROGRESS on `candidate/mission-001-source-recovery`.
 
-A first reproducible source slice now exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local serve command and an automated smoke test. This is intentionally NOT promoted to main and is NOT claimed equivalent to the recovered v0.5/0.6 product yet.
+A first reproducible source slice now exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local serve command and an automated smoke test. The candidate also contains a shared mobile UI foundation and a coherent Home/capture visual shell; these are recovery-layer improvements only and do not claim feature parity with v0.5/0.6. This is intentionally NOT promoted to main.
 
 ### Remaining required work
 1. Compare the recovered RC3 standalone and candidate 0.6 behavior feature-by-feature.

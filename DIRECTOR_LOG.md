@@ -67,3 +67,15 @@ This log is maintained by the hourly director.
 - Mission 001 remains IN PROGRESS; the candidate source slice is reproducible/tested but is not yet claimed equivalent to recovered v0.5/v0.6.
 - This log update is intentionally the only repository change in this cycle; it must itself pass HERBARIUM Guard before it can become the new externally green candidate head.
 - Next action after green Guard: synchronize the public candidate preview to this validated head, then continue feature-parity recovery without opening unrelated features.
+
+
+## 2026-09-20 — Mission 001 / UI consistency slice
+- Re-read README, DIRECTOR, CURRENT_MISSION, DIRECTOR_LOG and ROADMAP before acting.
+- Verified prior UI foundation head `01edccfeaa0d621406f7aaf3b23731494b44d71f`: HERBARIUM Guard #89 (push) SUCCESS and #90 (pull_request) SUCCESS.
+- Created rollback branch `rollback/mission-001-ui-consistency-01edccfe` before the new non-trivial UI change.
+- Single mission for this cycle: improve visual consistency of the existing recovery Home and capture flow without adding or simulating product capabilities.
+- Unified section headers, privacy/status badges, step cards, action hierarchy, capture tiles and the conservative UNKNOWN result presentation.
+- Preserved all four existing image inputs, offline/local semantics and conservative UNKNOWN behavior; no species identification was added.
+- No real-iPhone or real-browser visual test is claimed in this cycle.
+- This candidate head must pass HERBARIUM Guard before preview synchronization or any further UI recovery work.
+- Next action after a green Guard: synchronize the validated candidate preview, then continue Mission 001 with the next highest-priority verified recovery gap.
