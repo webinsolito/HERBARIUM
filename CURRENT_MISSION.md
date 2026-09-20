@@ -10,39 +10,37 @@ IN PROGRESS on `candidate/mission-001-source-recovery`.
 
 A reproducible source slice exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local IndexedDB evidence persistence, explicit local/offline/error states, separate document-level mobile pages with distinct URLs, and recovered Collection, Book, Atlas and conservative Academy read surfaces backed only by real local observations. These are recovery-layer improvements only and do not claim complete feature parity with v0.5/0.6. This is intentionally NOT promoted to main.
 
-### Recovered and guarded in current source
-- camera/library-compatible image inputs and multi-view evidence roles;
-- bounded local image preparation and IndexedDB persistence;
-- conservative UNKNOWN-only observation semantics;
-- Home/capture mobile UI foundation;
-- Collection read path for real UNKNOWN observations only, with no starter plants or fake verified species;
-- Book / Volume I pending-observation read path with no fake species;
-- Atlas read path for already-stored finite coordinates and region names, with no cloud/map/GPS request added;
-- Academy read path tied only to real UNKNOWN observations, using existing multi-view evidence to suggest documentation exercises without inventing lessons, species or progress.
+### Completed slice — explicit negative/non-plant gate
+The candidate now connects an explicit user-provided negative signal to the real save path. `object`, `animal`, `print` and `tablecloth` produce REJECT; absent or unknown signals remain UNKNOWN. Executable fixture tests cover those four categories and assert that the gate never returns VERIFIED. Candidate head `b1345025` passed HERBARIUM Guard #152.
 
-### Active slice — executable negative/non-plant gate
-Independent audit on 2026-09-20 found that `tests/fixtures/non-plant.json` contains object/animal/print/tablecloth cases and `src/app.js` defines REJECT categories, but the save path currently calls the classifier with `null`. Therefore those fixtures do NOT prove real non-plant rejection and no REJECT capability may be claimed from them.
+This is deliberately NOT described as automatic image recognition: no local pixel detector/model is installed yet, and the UI states that the negative signal is not inferred automatically from the image.
 
-Required next work is deliberately narrow:
-1. keep every unclassified photo UNKNOWN;
-2. connect REJECT only to evidence that is actually evaluated by an executable local rule/model or an explicit user-provided negative signal;
-3. add executable regression tests proving the connected path cannot become VERIFIED;
-4. do not infer non-plant status from filenames, synthetic confidence, network calls or paid/cloud APIs;
-5. preserve camera/library, IndexedDB, offline/privacy and the six-page navigation baseline.
+### Active slice — local automatic plant-vs-non-plant detector feasibility
+One coherent next step only: determine and, only if technically/licensing-safe, integrate the smallest local/offline detector that can consume actual image pixels before save and return only a negative/non-plant signal or UNKNOWN. Do not identify species in this slice.
 
-### Remaining required work
-1. Complete the executable negative/non-plant gate above before any identification claim.
-2. Continue feature-by-feature comparison against the recovered RC3 standalone and candidate 0.6.
-3. Recover only additional validated application structure/assets that can be justified from recovered evidence; do not reintroduce synthetic achievements, territories or species.
-4. Preserve offline/privacy behavior and avoid synthetic species, territories, coordinates or achievements.
-5. Verify GitHub Actions green on every candidate product/test head before preview synchronization or promotion.
+Required work:
+1. evaluate candidate local/open-source components for license, maintenance, browser/iPhone compatibility, model size and commercial reuse;
+2. prefer a deterministic local model/runtime with no paid/cloud API and no upload requirement;
+3. keep UNKNOWN as mandatory fallback for unavailable runtime, model-load failure, unsupported browser, low confidence or ambiguous output;
+4. REJECT may be emitted automatically only from an actually executed pixel/model result with a documented conservative threshold; no filename/metadata/colour-only shortcut may masquerade as recognition;
+5. preserve the explicit manual negative signal as a separate auditable path;
+6. add executable tests for model unavailable/error/ambiguous cases and negative fixtures before any automatic REJECT claim;
+7. do not publish an accuracy percentage until a separate benchmark is built and calibrated.
 
 ### Exit gate for active slice
-- no dormant/dead REJECT path is presented as working protection;
-- object/animal/print/tablecloth fixtures exercise a real connected gate or remain explicitly benchmark-only;
-- UNKNOWN remains the fallback for insufficient evidence;
-- no code path promotes a negative case to VERIFIED;
-- automated tests are repeatable and GitHub Actions is green on the candidate head.
+- selected component has documented license/commercial-use status and compatibility notes, or the slice records a justified NO-GO without adding unsafe code;
+- actual pixel inference is wired before any automatic REJECT claim;
+- model/runtime failure and ambiguity always resolve to UNKNOWN, never VERIFIED;
+- no network/cloud dependency is required by the core path;
+- explicit manual REJECT continues to work independently;
+- automated regressions are repeatable and GitHub Actions is green on the resulting candidate head.
+
+### Remaining Mission 001 work
+1. Complete the detector feasibility/integration slice above.
+2. Continue feature-by-feature comparison against the recovered RC3 standalone and candidate 0.6.
+3. Recover only additional validated application structure/assets justified from recovered evidence; do not reintroduce synthetic achievements, territories or species.
+4. Preserve offline/privacy behavior and avoid synthetic species, territories, coordinates or achievements.
+5. Verify GitHub Actions green on every candidate product/test head before preview synchronization or promotion.
 
 ### Mission 001 exit gate
 - complete source-of-truth baseline lives in the repo;
