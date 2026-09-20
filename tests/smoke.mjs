@@ -67,6 +67,6 @@ for(const fixture of negativeFixtures){assert.equal(fixture.expected,'REJECT');a
 assert.match(js,/NEGATIVE_CATEGORIES/);assert.match(js,/REJECT/);assert.match(js,/negativeCategory/);
 assert.doesNotMatch(js,/negativeCategory[^\n]{0,160}status:\s*['"]VERIFIED['"]/);
 
-assert.match(guard,/pull_request:/);
-assert.doesNotMatch(guard,/'candidate\/\*\*'/);
+assert.match(guard,/'candidate\/\*\*'/);
+assert.doesNotMatch(guard,/pull_request:/);
 console.log('HERBARIUM smoke PASS');
