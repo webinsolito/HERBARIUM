@@ -8,14 +8,22 @@ Port the best real HERBARIUM baseline into this repository as a reproducible, te
 ### Current state
 IN PROGRESS on `candidate/mission-001-source-recovery`.
 
-A first reproducible source slice now exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local serve command and an automated smoke test. The candidate also contains a shared mobile UI foundation and a coherent Home/capture visual shell; these are recovery-layer improvements only and do not claim feature parity with v0.5/0.6. This is intentionally NOT promoted to main.
+A reproducible source slice now exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local IndexedDB evidence persistence, explicit local/offline/error states, and recovered read-only Book and Atlas surfaces backed only by real local observations. These are recovery-layer improvements only and do not claim complete feature parity with v0.5/0.6. This is intentionally NOT promoted to main.
+
+### Recovered and guarded in current source
+- camera/library-compatible image inputs and multi-view evidence roles;
+- bounded local image preparation and IndexedDB persistence;
+- conservative UNKNOWN-only observation semantics;
+- Home/capture mobile UI foundation;
+- Book / Volume I pending-observation read path with no fake species;
+- Atlas read path for already-stored finite coordinates and region names, with no cloud/map/GPS request added.
 
 ### Remaining required work
-1. Compare the recovered RC3 standalone and candidate 0.6 behavior feature-by-feature.
-2. Recover the complete application structure/assets needed by candidate 0.6 instead of keeping only a minimal shell.
-3. Preserve camera/library flow, local persistence, offline/privacy behavior, collection/book/atlas/academy features that are actually present and validated.
-4. Add regression tests for recovered core flows and explicit non-plant/UNKNOWN safeguards.
-5. Verify GitHub Actions green on the candidate head before any promotion.
+1. Continue feature-by-feature comparison against the recovered RC3 standalone and candidate 0.6.
+2. Recover remaining validated application structure/assets instead of keeping a partial shell, especially Collection/Academy where justified by recovered evidence.
+3. Add explicit negative/non-plant safeguards and regression fixtures for objects, animals, prints and tablecloth-like inputs before any identification claim.
+4. Preserve offline/privacy behavior and avoid synthetic species, territories, coordinates or achievements.
+5. Verify GitHub Actions green on every candidate product/test head before preview synchronization or promotion.
 
 ### Exit gate
 - complete source-of-truth baseline lives in the repo;
