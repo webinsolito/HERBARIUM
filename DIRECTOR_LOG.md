@@ -120,3 +120,12 @@ This log is maintained by the hourly director.
 - Reduced duplicate HERBARIUM Guard notifications by removing the candidate push trigger while retaining PR-to-main validation plus main push validation. With the standing draft PR, candidate updates now require one Guard run instead of two.
 - Added regressions asserting real page files/URLs, absence of data-view/hash routing, mobile single-column capture, and the single candidate CI trigger policy.
 - No claim is made that personal GitHub/Gmail notification preferences were changed.
+
+
+### Final verification — real pages + single candidate Guard
+- Supersedes the earlier wording about retaining PR validation: the final CI policy for this cycle is one automatic Guard on each candidate push (plus main push and manual dispatch), with no duplicate pull_request Guard. This avoids the previous two-runs-per-change pattern that produced duplicate failure notifications.
+- Final candidate head `9d4b782932e7b69481f136e19bd4d22dd55d62a9` passed HERBARIUM Guard #145: SUCCESS across HTML validation, JavaScript syntax and project smoke tests.
+- The source now contains six real documents with distinct URLs: `index.html`, `observe.html`, `collection.html`, `book.html`, `atlas.html`, `academy.html`. The previous hash/screen router is removed.
+- Public preview synchronized from the green head in `webinsolito/webinsolito` commit `7eb6da34f03b60b853da66a31073f54e63ba68a0`; Pages build/deploy run #223 completed SUCCESS. Preview assets include the green-head marker and cache-busting query suffixes for CSS/JS.
+- The failed #141/#142 notifications came from the earlier intermediate navigation commit whose smoke test still asserted the old router. That intermediate was corrected before publication and is not the current candidate.
+- Personal GitHub/Gmail notification preferences were not changed.
