@@ -70,3 +70,16 @@ This log is maintained by the hourly director.
 - Product/test head is `54522e931109601ce2602fb3ba5547baf8f33fe4`. At log-write time HERBARIUM Guard #107 for that head was queued, so this slice is NOT yet declared complete or previewable.
 - No real-browser, real-iPhone or real-offline test is claimed.
 - Next action: require Guard green on the latest candidate head; only then synchronize `/herbarium/`. If Guard fails, fix that failure before any other feature-parity work.
+
+## 2026-09-20 — Mission 001 / conservative local Atlas recovery slice
+- Independent control re-read README, DIRECTOR, CURRENT_MISSION, DIRECTOR_LOG and ROADMAP; main remains unpromoted and draft PR #1 is the only open issue/PR.
+- Verified previous candidate head `da3b62add7627dca8ee898658e25c9946399ee81`: HERBARIUM Guard #109 push and #110 pull_request both completed SUCCESS. The previous log's pending-guard statement is therefore superseded by this verification.
+- Inspected `recovery/candidate-0.6-index.html` and confirmed the recovered baseline contained a Living Atlas surface based on real observation coordinates/regions.
+- Created rollback `rollback/mission-001-atlas-recovery-da3b62ad` before product changes.
+- Single mission: recover a conservative Atlas read-only slice backed exclusively by fields already present in local IndexedDB records; no GPS request, map service, cloud call, synthetic territory or fake coordinate was added.
+- Added Atlas navigation, counts for observations with finite stored coordinates, distinct stored region names, explicit empty/error states and privacy wording. Observations without geographic data remain excluded.
+- Extended smoke regression guards for Atlas structure, real-coordinate checks, region reads, empty/error behavior and absence of `fetch`, XMLHttpRequest or geolocation calls in the current core.
+- Candidate product/test head `6461c32e3b6a7b67ec93647697c90307f669913d` passed HERBARIUM Guard #111 push and #112 pull_request: SUCCESS, including repository contract, secret sanity, HTML validation, JavaScript syntax and project tests.
+- Public preview was synchronized from that green head to `webinsolito/webinsolito` commit `9a6b2bd1fb670b7aaa05015dd0e2b0c78e28f453`, labelled `CANDIDATE PREVIEW · 6461c32e`; repository contents were re-read and match the expected marker and Atlas surface.
+- No real-browser HTTP rendering, real-iPhone, real-offline-network or GPS permission test is claimed.
+- Mission 001 remains IN PROGRESS. Next highest-priority recovery gap is a real Collection/Academy slice or explicit negative/non-plant safeguard work, one coherent cycle at a time.
