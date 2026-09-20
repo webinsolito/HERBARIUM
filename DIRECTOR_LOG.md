@@ -59,3 +59,11 @@ This log is maintained by the hourly director.
 - This Director commit intentionally advances the candidate through a normal authenticated repository write so HERBARIUM Guard is triggered against the current candidate contents, including `ebf63d87`.
 - Mission 001 remains IN PROGRESS and main/stable product code remains unpromoted.
 - Next action: require HERBARIUM Guard green on this candidate head before preview synchronization or further recovery work.
+
+## 2026-09-20 — Mission 001 / candidate guard verified
+- Re-read README, DIRECTOR, CURRENT_MISSION, DIRECTOR_LOG and ROADMAP before acting.
+- Verified candidate `9a878f76bdaa5df1c2ee8b12dda54ec6ec99acd2`: HERBARIUM Guard run #85 (push) completed SUCCESS and run #86 (pull_request) completed SUCCESS.
+- Compared `main` to `candidate/mission-001-source-recovery`: candidate remains diverged (32 commits ahead, 59 behind), so no unsafe merge/reset or stable promotion was attempted.
+- Mission 001 remains IN PROGRESS; the candidate source slice is reproducible/tested but is not yet claimed equivalent to recovered v0.5/v0.6.
+- This log update is intentionally the only repository change in this cycle; it must itself pass HERBARIUM Guard before it can become the new externally green candidate head.
+- Next action after green Guard: synchronize the public candidate preview to this validated head, then continue feature-parity recovery without opening unrelated features.
