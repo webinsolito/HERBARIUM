@@ -15,4 +15,18 @@ assert.match(js,/await renderCollection\(\)/);assert.match(js,/button\.dataset\.
 assert.match(js,/readAsDataURL\(file\)/);assert.match(js,/file\.type&&!file\.type\.startsWith\('image\/'\)/);assert.match(js,/MAX_INPUT_BYTES=12\*1024\*1024/);assert.match(js,/MAX_IMAGE_EDGE=1600/);assert.match(js,/JPEG_QUALITY=0\.78/);assert.match(js,/canvas\.toBlob/);
 assert.match(js,/database locale del dispositivo/);assert.match(js,/offline · dati locali/);assert.match(js,/online · dati locali/);assert.match(js,/Nessun dato è stato salvato/);assert.match(js,/Nessuna osservazione incompleta è stata registrata/);
 assert.doesNotMatch(js,/localStorage\.setItem/);assert.doesNotMatch(html,/\b\d{1,3}%\b/);assert.doesNotMatch(js,/status:\s*['"]VERIFIED['"]/);assert.doesNotMatch(js,/fake|mockSpecies|starterPlants/i);assert.doesNotMatch(js,/fetch\(|XMLHttpRequest|navigator\.geolocation/);
+
+// P1 negative/non-plant contract: before any identification engine exists, known negative
+// categories must have explicit regression fixtures and may never map to a plant verdict.
+const negativeFixtures=JSON.parse(fs.readFileSync('tests/fixtures/non-plant.json','utf8'));
+assert.deepEqual(negativeFixtures.map(item=>item.category).sort(),['animal','object','print','tablecloth']);
+for(const fixture of negativeFixtures){
+  assert.equal(fixture.expected,'REJECT');
+  assert.equal(fixture.plant,false);
+  assert.ok(fixture.id&&fixture.description);
+}
+assert.match(js,/NEGATIVE_CATEGORIES/);
+assert.match(js,/REJECT/);
+assert.match(js,/negativeCategory/);
+assert.doesNotMatch(js,/negativeCategory[^\n]{0,160}status:\s*['"]VERIFIED['"]/);
 console.log('HERBARIUM smoke PASS');
