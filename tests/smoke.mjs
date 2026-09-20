@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import { classifyNegativeEvidence, NEGATIVE_CATEGORIES } from '../src/negative-gate.mjs';
 
 const read=p=>fs.readFileSync(p,'utf8');
 const home=read('src/index.html');
@@ -63,7 +64,19 @@ for(const html of [home,observe,collection,book,atlas,academy])assert.doesNotMat
 
 const negativeFixtures=JSON.parse(read('tests/fixtures/non-plant.json'));
 assert.deepEqual(negativeFixtures.map(item=>item.category).sort(),['animal','object','print','tablecloth']);
-for(const fixture of negativeFixtures){assert.equal(fixture.expected,'REJECT');assert.equal(fixture.plant,false);assert.ok(fixture.id&&fixture.description);}
+assert.deepEqual([...NEGATIVE_CATEGORIES].sort(),['animal','object','print','tablecloth']);
+for(const fixture of negativeFixtures){
+  assert.equal(fixture.expected,'REJECT');assert.equal(fixture.plant,false);assert.ok(fixture.id&&fixture.description);
+  const outcome=classifyNegativeEvidence(fixture.category);
+  assert.equal(outcome.status,'REJECT');
+  assert.equal(outcome.negativeCategory,fixture.category);
+  assert.notEqual(outcome.status,'VERIFIED');
+}
+for(const signal of [null,undefined,'','plant','unknown','OBJECT']){
+  const outcome=classifyNegativeEvidence(signal);
+  assert.deepEqual(outcome,{status:'UNKNOWN',negativeCategory:null});
+  assert.notEqual(outcome.status,'VERIFIED');
+}
 assert.match(js,/NEGATIVE_CATEGORIES/);assert.match(js,/REJECT/);assert.match(js,/negativeCategory/);
 assert.doesNotMatch(js,/negativeCategory[^\n]{0,160}status:\s*['"]VERIFIED['"]/);
 
