@@ -8,7 +8,7 @@ Port the best real HERBARIUM baseline into this repository as a reproducible, te
 ### Current state
 IN PROGRESS on `candidate/mission-001-source-recovery`.
 
-A reproducible source slice now exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local IndexedDB evidence persistence, explicit local/offline/error states, and recovered Collection, Book, Atlas and conservative Academy read surfaces backed only by real local observations. These are recovery-layer improvements only and do not claim complete feature parity with v0.5/0.6. This is intentionally NOT promoted to main.
+A reproducible source slice now exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local IndexedDB evidence persistence, explicit local/offline/error states, isolated hash-addressable mobile screens, and recovered Collection, Book, Atlas and conservative Academy read surfaces backed only by real local observations. These are recovery-layer improvements only and do not claim complete feature parity with v0.5/0.6. This is intentionally NOT promoted to main.
 
 ### Recovered and guarded in current source
 - camera/library-compatible image inputs and multi-view evidence roles;

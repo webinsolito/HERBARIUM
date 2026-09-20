@@ -96,3 +96,14 @@ This log is maintained by the hourly director.
 - Public preview synchronized from that green product/test head; repository preview now shows `CANDIDATE PREVIEW · dca4b9c1` and contains matching Academy/Collection/Book/Atlas HTML plus candidate app logic.
 - No real-browser HTTP rendering, real-iPhone, real-offline-network or Core ML test is claimed.
 - Mission 001 remains IN PROGRESS. Next priority is explicit negative/non-plant safeguard fixtures and gates for objects, animals, prints and tablecloth-like inputs before any future identification claim.
+
+
+## 2026-09-20 — Mission 001 / isolated mobile-screen navigation fix
+- User-reported real UX regression confirmed from the public preview screenshot: the persistent Home hero stayed above feature content, making Collection/Book/Atlas/Academy and capture feel stacked on one long page instead of distinct app screens.
+- Re-read README, DIRECTOR, CURRENT_MISSION, DIRECTOR_LOG and ROADMAP; verified starting head `ad1a2968527f92be6c4c27481bdf9cc798a3b3cc` had Guard #139/#140 SUCCESS.
+- Created rollback `rollback/mission-001-screen-navigation-ad1a2968`.
+- Single-cycle mission: fix navigation/screen separation only. No recognition capability, fake content or cloud dependency added.
+- Moved the hero/dashboard inside the Home screen, converted all product areas to mutually exclusive `.screen` views, added hash/history navigation and scroll-to-top, and replaced the stacked Home buttons with a compact mobile feature-card grid.
+- Added per-screen toolbar/back controls so capture, Collection, Volume, Atlas and Academy open as visually distinct screens instead of appearing below the Home content.
+- Extended smoke regressions for isolated screens, hash/history navigation and removal of the obsolete `.view` router.
+- No real-iPhone/browser rendering PASS is claimed until external preview validation is available.
