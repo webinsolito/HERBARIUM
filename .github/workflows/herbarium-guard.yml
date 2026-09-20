@@ -2,6 +2,14 @@ name: HERBARIUM Guard
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'candidate/**'
+  pull_request:
+    branches:
+      - main
+
 permissions:
   contents: read
 
