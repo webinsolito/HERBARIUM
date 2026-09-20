@@ -107,3 +107,16 @@ This log is maintained by the hourly director.
 - Added per-screen toolbar/back controls so capture, Collection, Volume, Atlas and Academy open as visually distinct screens instead of appearing below the Home content.
 - Extended smoke regressions for isolated screens, hash/history navigation and removal of the obsolete `.view` router.
 - No real-iPhone/browser rendering PASS is claimed until external preview validation is available.
+
+
+## 2026-09-20 — Mission 001 / real page separation + CI notification reduction
+- User provided a real iPhone screenshot proving the previous hash-screen fix did not satisfy the requirement: capture/content still appeared as one app document and the expected separation was not achieved.
+- The same cycle produced Guard #141/#142 failures from an outdated test assertion, which generated duplicate failure notifications because both candidate push and pull_request triggers ran.
+- Verified corrected starting head `bd5d460a200e1c614f7e69680395e50c2361e0a4` had Guard #143 push and #144 pull_request SUCCESS before this change.
+- Created rollback `rollback/mission-001-real-pages-bd5d460a`.
+- Replaced the single-document screen router with six real HTML documents: Home, observe, Collection, Book, Atlas and Academy. Home navigation now uses normal links to distinct URLs; feature pages use real links back to Home. No hash router/history simulation remains.
+- Refactored shared app.js so each page initializes only the DOM/data functions it actually contains, preserving the same local IndexedDB store and UNKNOWN/REJECT safety contract across pages.
+- Hardened the iPhone capture layout: one column below 520px and file inputs constrained to page width.
+- Reduced duplicate HERBARIUM Guard notifications by removing the candidate push trigger while retaining PR-to-main validation plus main push validation. With the standing draft PR, candidate updates now require one Guard run instead of two.
+- Added regressions asserting real page files/URLs, absence of data-view/hash routing, mobile single-column capture, and the single candidate CI trigger policy.
+- No claim is made that personal GitHub/Gmail notification preferences were changed.
