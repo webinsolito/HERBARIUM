@@ -1,0 +1,6 @@
+[
+  {"id":"object-generic","category":"object","description":"Oggetto artificiale non vegetale","plant":false,"expected":"REJECT"},
+  {"id":"animal-generic","category":"animal","description":"Animale senza evidenza vegetale","plant":false,"expected":"REJECT"},
+  {"id":"print-generic","category":"print","description":"Immagine o stampa di materiale vegetale, non esemplare reale","plant":false,"expected":"REJECT"},
+  {"id":"tablecloth-generic","category":"tablecloth","description":"Tessuto o tovaglia con motivo vegetale","plant":false,"expected":"REJECT"}
+]
