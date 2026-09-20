@@ -59,3 +59,14 @@ This log is maintained by the hourly director.
 - Public preview synchronized to the green candidate and labelled `CANDIDATE PREVIEW · 922be5a7`; preview repo commits `d49f9ce9` and `34768aa4` update the HTML marker and candidate app logic.
 - No real-iPhone, real-browser, permission-dialog or offline-network test is claimed; these remain unverified by this cycle.
 - Mission 001 remains IN PROGRESS. Next priority is feature-parity recovery of the missing baseline structure (collection/book/atlas/academy) and explicit negative/non-plant safeguards, one coherent slice at a time.
+
+## 2026-09-20 — Mission 001 / real local Book recovery slice
+- Independent control re-read the operational files and confirmed candidate head `568c8b233312ea58921cab3aee9c368103304696` had Guard #99 push and #100 pull_request SUCCESS; draft PR #1 remains open and main/stable was not promoted.
+- Inspected the recovered candidate 0.6 artifact and confirmed it contained a Book/Volume I surface with a pending/uncertain observation section; current source lacked that structure.
+- Created rollback `rollback/mission-001-book-recovery-568c8b23` before product changes.
+- Single mission: recover a conservative Book slice backed only by real IndexedDB observations already saved by the current candidate.
+- Added Volume I navigation and a pending-observations renderer. Only records with `status === 'UNKNOWN'` are shown; no species name, verified state, starter plant or fake collection data is generated.
+- Added empty/error states that do not mutate local data and extended smoke guards for Book presence, UNKNOWN-only filtering and absence of fake/starter species fixtures.
+- Product/test head is `54522e931109601ce2602fb3ba5547baf8f33fe4`. At log-write time HERBARIUM Guard #107 for that head was queued, so this slice is NOT yet declared complete or previewable.
+- No real-browser, real-iPhone or real-offline test is claimed.
+- Next action: require Guard green on the latest candidate head; only then synchronize `/herbarium/`. If Guard fails, fix that failure before any other feature-parity work.
