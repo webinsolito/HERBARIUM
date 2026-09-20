@@ -83,3 +83,16 @@ This log is maintained by the hourly director.
 - Public preview was synchronized from that green head to `webinsolito/webinsolito` commit `9a6b2bd1fb670b7aaa05015dd0e2b0c78e28f453`, labelled `CANDIDATE PREVIEW · 6461c32e`; repository contents were re-read and match the expected marker and Atlas surface.
 - No real-browser HTTP rendering, real-iPhone, real-offline-network or GPS permission test is claimed.
 - Mission 001 remains IN PROGRESS. Next highest-priority recovery gap is a real Collection/Academy slice or explicit negative/non-plant safeguard work, one coherent cycle at a time.
+
+## 2026-09-20 — Mission 001 / conservative Academy recovery slice
+- Independent control re-read README, DIRECTOR, CURRENT_MISSION, DIRECTOR_LOG and ROADMAP; checked main, candidate, open issues/PR and Actions. Main remains unpromoted; draft PR #1 remains the only open issue/PR.
+- Verified previous candidate `a61ea3e23571575667fa0b50ff014e0cc6a352c4`: HERBARIUM Guard #123 push and #124 pull_request both SUCCESS. The Collection binding is therefore accepted as the starting green baseline.
+- Inspected recovered candidate 0.6 and confirmed Academy is part of the historical product direction; chose only a conservative Academy read slice, not synthetic course content or achievements.
+- Created rollback `rollback/mission-001-collection-a61ea3e2` before product changes.
+- Added an Academy surface backed exclusively by real local observations with `status === 'UNKNOWN'`. It counts real observations and those with at least two recorded evidence roles, and gives evidence-quality prompts without naming a species or claiming identification.
+- Added explicit empty/error states; no cloud, API, geolocation, verified species, fake lesson catalogue or percentage accuracy was introduced.
+- Extended `tests/smoke.mjs` to guard Academy structure, UNKNOWN-only read semantics, multi-view threshold, empty/error behavior, navigation and post-save refresh.
+- Candidate product/test head `dca4b9c1eadfcfdb323b3fce195717497cd95571` passed HERBARIUM Guard #129 push and #130 pull_request: SUCCESS.
+- Public preview synchronized from that green product/test head; repository preview now shows `CANDIDATE PREVIEW · dca4b9c1` and contains matching Academy/Collection/Book/Atlas HTML plus candidate app logic.
+- No real-browser HTTP rendering, real-iPhone, real-offline-network or Core ML test is claimed.
+- Mission 001 remains IN PROGRESS. Next priority is explicit negative/non-plant safeguard fixtures and gates for objects, animals, prints and tablecloth-like inputs before any future identification claim.
