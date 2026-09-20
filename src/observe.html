@@ -33,8 +33,20 @@
       </div>
     </div>
 
+    <div class="step-card">
+      <div class="step-title"><span class="step-number">2</span><div><strong>Segnale negativo esplicito</strong><small>Usalo solo se sai già che la foto non mostra una pianta. Non viene dedotto automaticamente dall’immagine.</small></div></div>
+      <label for="negativeSignal"><span>Questa osservazione mostra</span></label>
+      <select id="negativeSignal" aria-label="Segnale negativo esplicito">
+        <option value="">Non so / possibile pianta — resta UNKNOWN</option>
+        <option value="object">Un oggetto, non una pianta</option>
+        <option value="animal">Un animale, non una pianta</option>
+        <option value="print">Una stampa o immagine di una pianta</option>
+        <option value="tablecloth">Una tovaglia o motivo decorativo</option>
+      </select>
+    </div>
+
     <div class="step-card analysis-card">
-      <div class="step-title"><span class="step-number">2</span><div><strong>Salva senza forzare</strong><small>Le prove restano locali e l’esito prudente resta UNKNOWN.</small></div><span class="unknown-badge">UNKNOWN</span></div>
+      <div class="step-title"><span class="step-number">3</span><div><strong>Salva senza forzare</strong><small>Senza segnale negativo esplicito l’esito prudente resta UNKNOWN.</small></div><span class="unknown-badge">UNKNOWN / REJECT</span></div>
       <button id="analyse" class="primary-action" disabled>Analizza offline</button>
       <output id="result" class="result-state" role="status" aria-live="polite">UNKNOWN — aggiungi almeno una foto.</output>
     </div>
