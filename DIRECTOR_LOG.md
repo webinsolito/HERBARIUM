@@ -79,3 +79,11 @@ This log is maintained by the hourly director.
 - No real-iPhone or real-browser visual test is claimed in this cycle.
 - This candidate head must pass HERBARIUM Guard before preview synchronization or any further UI recovery work.
 - Next action after a green Guard: synchronize the validated candidate preview, then continue Mission 001 with the next highest-priority verified recovery gap.
+
+
+### Validation result
+- Candidate UI-consistency head `c7b8df05c477b936503797faeef0642e58b18162` passed HERBARIUM Guard #91 (push): SUCCESS across repository contract, secret sanity, HTML validation, JavaScript syntax and project tests.
+- Public preview publishable files were synchronized to `webinsolito/webinsolito` in commit `fb4879cdddfd0a11d60530fdab5bf422caa2c37e`, with visible label `CANDIDATE PREVIEW · c7b8df05`.
+- GitHub contents verification confirms the preview files carry the validated candidate UI and app.js; direct HTTP verification of the Pages URL was attempted but the available web fetch could not access that URL, so no browser-response claim is made.
+- Mission 001 remains IN PROGRESS and main/stable is not promoted.
+- Next UI recovery priority: improve explicit offline/privacy/permission/error states while preserving UNKNOWN semantics and local-only behavior.
