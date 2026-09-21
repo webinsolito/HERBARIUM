@@ -5,7 +5,10 @@ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42
 async function addPhoto(page,{reject=false}={}){
   await page.goto('/observe.html');
   await page.locator('#detail').setInputFiles({name:'plant.png',mimeType:'image/png',buffer:png});
-  if(reject)await page.locator('#negativeSignal').selectOption('object');
+  if(reject){
+    await page.locator('.advanced-check summary').click();
+    await page.locator('#negativeSignal').selectOption('object');
+  }
   await expect(page.locator('#analyse')).toBeEnabled();
   await Promise.all([
     page.waitForURL(/result\.html\?id=/),

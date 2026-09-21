@@ -51,7 +51,7 @@ assert.match(app,/storage\.estimate/);
 assert.match(app,/storage\?\.persist/);
 assert.match(app,/MAX_PIXELS=40_000_000/);
 assert.match(app,/inspectImageFile/);
-assert.match(app,/exifStripped:true/);
+assert.match(app,/exifStripped:true/);assert.match(app,/const data=await blob\.arrayBuffer\(\)/);assert.match(app,/new Blob\(\[payload\]/);
 assert.match(app,/identification:\{status:'UNAVAILABLE',species:null,confidence:null\}/);
 assert.match(app,/speciesEngine:'unavailable'/);
 assert.match(app,/classifyPixelsLocally\(\{decodedEvidence:evidence\.length\},null\)/);

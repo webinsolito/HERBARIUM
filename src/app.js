@@ -96,8 +96,11 @@ function statusInfo(item){
 }
 function evidenceCount(item){return Array.isArray(item?.evidence)?item.evidence.length:0;}
 function firstImageUrl(item){
-  const entry=(Array.isArray(item?.evidence)?item.evidence:[]).find(x=>x?.blob instanceof Blob);
-  return entry?trackUrl(entry.blob):null;
+  const entry=(Array.isArray(item?.evidence)?item.evidence:[]).find(x=>x&&(x.blob instanceof Blob||x.data instanceof ArrayBuffer||ArrayBuffer.isView(x.data)));
+  if(!entry)return null;
+  if(entry.blob instanceof Blob)return trackUrl(entry.blob);
+  const payload=entry.data instanceof ArrayBuffer?entry.data:entry.data.buffer;
+  return trackUrl(new Blob([payload],{type:entry.type||'image/jpeg'}));
 }
 function el(tag,className,text){
   const node=document.createElement(tag);
@@ -271,7 +274,8 @@ async function prepareEvidenceImage(file){
   const ctx=canvas.getContext('2d',{alpha:false});if(!ctx)throw new Error('Canvas non disponibile.');
   ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.drawImage(image,0,0,width,height);
   const blob=await canvasToBlob(canvas);
-  return{blob,type:'image/jpeg',width,height,bytes:blob.size,originalBytes:file.size||null,sourceType:inspected.detected,exifStripped:true};
+  const data=await blob.arrayBuffer();
+  return{data,type:'image/jpeg',width,height,bytes:blob.size,originalBytes:file.size||null,sourceType:inspected.detected,exifStripped:true};
 }
 async function setupObserve(){
   const analyse=byId('analyse'),result=byId('result'),negativeSignal=byId('negativeSignal');
