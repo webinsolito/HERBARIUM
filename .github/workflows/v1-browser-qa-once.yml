@@ -1,0 +1,45 @@
+name: HERBARIUM V1 Browser QA Once
+
+on:
+  push:
+    branches:
+      - candidate/herbarium-v1-functional
+
+permissions:
+  contents: read
+
+concurrency:
+  group: herbarium-v1-browser-qa
+  cancel-in-progress: true
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install Playwright test runner
+        run: npm install --no-save --ignore-scripts @playwright/test@1.63.0
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Start local HERBARIUM server
+        run: |
+          python3 -m http.server 8080 -d src >/tmp/herbarium-http.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8080/index.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/herbarium-http.log
+          exit 1
+      - name: Browser QA
+        run: npx playwright test --config=playwright.v1.config.mjs
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: herbarium-v1-browser-qa
+          path: |
+            test-results/**
+          if-no-files-found: ignore
+          retention-days: 3
