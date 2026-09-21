@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111611">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Bellis perennis — 3D Lab</title>
+  <link rel="stylesheet" href="./bellis-lab.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three-r186/three.module.js",
+      "three/addons/": "./vendor/three-r186/"
+    }
+  }
+  </script>
+</head>
+<body>
+<main class="lab">
+  <header class="lab-header">
+    <div>
+      <p class="lab-kicker">HERBARIUM · MODEL LAB</p>
+      <h1>Bellis perennis</h1>
+      <p class="lab-subtitle">Margherita comune · laboratorio 3D isolato</p>
+    </div>
+    <div class="lab-status" id="assetStatus" data-state="blocked">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span>ASSET NOT APPROVED</span>
+    </div>
+  </header>
+
+  <section class="viewer-shell" aria-label="Laboratorio 3D Bellis perennis">
+    <canvas id="bellisCanvas" class="viewer-canvas" aria-label="Viewer 3D Bellis perennis"></canvas>
+    <div class="viewer-empty" id="viewerEmpty">
+      <p class="empty-eyebrow">PRIMA IL MODELLO, POI IL SITO</p>
+      <h2>Nessun modello Bellis approvato.</h2>
+      <p>Carica localmente un GLB da sottoporre ad audit. Il file resta sul dispositivo e non viene inviato a server.</p>
+      <label class="asset-picker">
+        <input id="assetInput" type="file" accept=".glb,model/gltf-binary">
+        <span>Seleziona GLB per audit</span>
+      </label>
+      <small>Limite laboratorio: 25 MB · GLB only · nessun upload</small>
+    </div>
+
+    <aside class="audit-panel">
+      <div class="audit-heading">
+        <div>
+          <span>SCENE GRAPH</span>
+          <strong id="auditTitle">In attesa di asset</strong>
+        </div>
+        <button id="collapseAudit" type="button" aria-label="Riduci pannello">−</button>
+      </div>
+      <div class="audit-body" id="auditBody">
+        <dl class="metrics">
+          <div><dt>Mesh</dt><dd id="meshCount">—</dd></div>
+          <div><dt>Triangoli</dt><dd id="triangleCount">—</dd></div>
+          <div><dt>Dimensione</dt><dd id="assetSize">—</dd></div>
+        </dl>
+        <div class="gate">
+          <p>Gate nodi obbligatori</p>
+          <ul id="nodeGate">
+            <li data-key="FLOWER_HEAD">FLOWER_HEAD <span>—</span></li>
+            <li data-key="PETALS">PETALS / RAY_FLORETS <span>—</span></li>
+            <li data-key="DISC">DISC / CENTRAL_HEAD <span>—</span></li>
+            <li data-key="INVOLUCRE">INVOLUCRE <span>—</span></li>
+            <li data-key="STEM">STEM <span>—</span></li>
+            <li data-key="LEAVES">LEAVES <span>—</span></li>
+            <li data-key="ROOT_SYSTEM">ROOT_SYSTEM <span>—</span></li>
+            <li data-key="SEEDS">SEEDS <span>opzionale</span></li>
+          </ul>
+        </div>
+        <div class="selection">
+          <span>Parte selezionata</span>
+          <strong id="selectedPart">Nessuna</strong>
+          <p id="selectionNote">La selezione deve avvenire sulla geometria reale tramite raycasting.</p>
+        </div>
+      </div>
+    </aside>
+
+    <div class="viewer-controls" role="toolbar" aria-label="Controlli viewer">
+      <button id="autoRotate" type="button">Auto rotate</button>
+      <button id="explode" type="button" disabled>Esplodi</button>
+      <button id="reset" type="button" disabled>Reset</button>
+    </div>
+  </section>
+
+  <footer class="lab-footer">
+    <p><strong>Stato:</strong> laboratorio asset. Non è riconoscimento specie e non produce VERIFIED.</p>
+    <p id="runtimeStatus">Three.js r186 locale · GLTFLoader locale · nessun CDN.</p>
+  </footer>
+</main>
+<script type="module" src="./bellis-lab.js"></script>
+</body>
+</html>

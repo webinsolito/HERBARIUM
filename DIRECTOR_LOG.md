@@ -40,3 +40,15 @@ This log is maintained by the hourly director.
 - Fixed the assertion escaping without weakening the UI contract.
 - Final product/test head `0d40c2633418bfdd76d283ba68c781c99f0b597d` passed HERBARIUM Guard #180.
 - Preview synchronization is permitted only after this documentation head also passes Guard.
+
+
+## 2026-09-21 — Bellis Lab V1 / Day 1
+- Froze immersive candidate `197e686`; no further integration on that branch.
+- Created `candidate/bellis-lab-v1` from rollback `025fef8`.
+- Did not modify Home, Collection, Book, Atlas or Academy.
+- Evaluated Bellis asset sources. Rejected `SM-Sclass/3D-virtual-herbal-plant/public/assets/models/daisies.glb` despite ~1.4 MB size because the repository declares no license.
+- Kept CC-BY Sketchfab Bellis/daisy candidates on HOLD pending direct asset and node inspection.
+- Selected Three.js r186 locally vendored (MIT) with GLTFLoader + OrbitControls.
+- Added isolated Bellis lab with local GLB audit, node gate, real raycasting path, orbit/zoom/reset/auto-rotate and designed exploded-view logic that remains disabled until scene graph passes.
+- No scientific facts, recognition result or VERIFIED state added.
+- Visual approval remains NOT VERIFIED until a real licensed model is loaded and screenshots/browser/device QA are produced.

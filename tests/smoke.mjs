@@ -13,6 +13,10 @@ const academy=read('src/academy.html');
 const css=read('src/styles.css');
 const js=read('src/app.js');
 const guard=read('.github/workflows/herbarium-guard.yml');
+const bellisLab=read('src/species-bellis-lab.html');
+const bellisLabCss=read('src/bellis-lab.css');
+const bellisLabJs=read('src/bellis-lab.js');
+const bellisAudit=read('BELLIS_ASSET_AUDIT.md');
 for(const html of [home,observe,collection,book,atlas,academy]){assert.match(html,/<!doctype html>/i);assert.match(html,/<script src="\.\/app\.js"><\/script>/);assert.match(html,/href="\.\/index\.html"/);assert.doesNotMatch(html,/data-view=/);}
 assert.match(home,/href="\.\/observe\.html"/);assert.match(home,/href="\.\/collection\.html"/);assert.match(home,/href="\.\/book\.html"/);assert.match(home,/href="\.\/atlas\.html"/);assert.match(home,/href="\.\/academy\.html"/);
 assert.match(home,/class="fidelity-hero"/);assert.match(home,/Scopri/);assert.match(home,/Scatta una foto/);assert.match(home,/Scegli dalla libreria/);assert.match(home,/Le mie osservazioni/);assert.match(home,/Il libro botanico/);assert.match(home,/hero-approved\.webp/);assert.match(home,/class="mobile-tabbar fidelity-tabbar"/);assert.match(home,/Un futuro più verde/);
@@ -34,3 +38,9 @@ assert.equal((await classifyPixelsLocally({pixels:true},{infer:async()=>({execut
 assert.deepEqual(await classifyPixelsLocally({pixels:true},{infer:async()=>({executed:true,nonPlantScore:0.999,category:'object'})}),{status:'REJECT',negativeCategory:'object',reason:'local-pixel-inference'});
 for(const bad of [NaN,-1,2])assert.equal((await classifyPixelsLocally({pixels:true},{infer:async()=>({executed:true,nonPlantScore:bad})})).status,'UNKNOWN');
 assert.match(js,/NEGATIVE_CATEGORIES/);assert.match(js,/REJECT/);assert.match(js,/negativeCategory/);assert.doesNotMatch(js,/negativeCategory[^\n]{0,160}status:\s*['"]VERIFIED['"]/);assert.match(guard,/'candidate\/\*\*'/);assert.doesNotMatch(guard,/pull_request:/);console.log('HERBARIUM smoke PASS');
+
+assert.match(bellisLab,/ASSET NOT APPROVED/);assert.match(bellisLab,/id="bellisCanvas"/);assert.match(bellisLab,/accept=".glb/);assert.match(bellisLab,/id="explode"/);assert.match(bellisLab,/three-r186/);
+assert.match(bellisLabJs,/GLTFLoader/);assert.match(bellisLabJs,/OrbitControls/);assert.match(bellisLabJs,/MAX_BYTES=25\*1024\*1024/);assert.match(bellisLabJs,/Raycaster/);assert.match(bellisLabJs,/intersectObject\(model,true\)/);assert.match(bellisLabJs,/toggleExplode/);assert.match(bellisLabJs,/visibilitychange/);assert.match(bellisLabJs,/Math\.min\(window\.devicePixelRatio\|\|1,1\.5\)/);
+for(const part of ['FLOWER_HEAD','PETALS','DISC','INVOLUCRE','STEM','LEAVES','ROOT_SYSTEM'])assert.match(bellisLabJs,new RegExp(part));
+assert.match(bellisAudit,/No Bellis model is approved for integration yet/);assert.match(bellisAudit,/REJECTED — SM-Sclass/);assert.match(bellisAudit,/A green CI run is not visual approval/);
+assert.doesNotMatch(bellisLabJs,/fetch\([^)]*https?:\/\//);

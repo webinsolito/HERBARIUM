@@ -1,0 +1,87 @@
+:root{
+  color-scheme:dark;
+  --bg:#10140f;
+  --panel:#171d16;
+  --panel-soft:rgba(23,29,22,.84);
+  --line:rgba(223,231,215,.13);
+  --text:#edf1e8;
+  --muted:#9ea99b;
+  --sage:#9fbaa0;
+  --cream:#ddd5bf;
+  --amber:#d6b767;
+  --danger:#d88173;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+body{min-height:100svh;background:
+  radial-gradient(circle at 50% 34%,rgba(82,104,76,.16),transparent 32rem),
+  linear-gradient(180deg,#121710,#0c100c)}
+button,input{font:inherit}
+button{color:inherit}
+.lab{width:min(100%,1500px);margin:auto;padding:18px}
+.lab-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:4px 4px 16px}
+.lab-kicker{margin:0 0 7px;color:var(--sage);font-size:.62rem;font-weight:800;letter-spacing:.19em}
+.lab h1{margin:0;font-size:clamp(2rem,4.6vw,4rem);font-weight:600;letter-spacing:-.055em;line-height:.95}
+.lab-subtitle{margin:7px 0 0;color:var(--muted);font-size:.78rem}
+.lab-status{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(15,20,15,.7);font-size:.62rem;font-weight:800;letter-spacing:.08em}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 5px rgba(216,129,115,.09)}
+.lab-status[data-state="ready"] .status-dot{background:var(--sage);box-shadow:0 0 0 5px rgba(159,186,160,.1)}
+.lab-status[data-state="audit"] .status-dot{background:var(--amber);box-shadow:0 0 0 5px rgba(214,183,103,.1)}
+.viewer-shell{position:relative;min-height:calc(100svh - 165px);overflow:hidden;border:1px solid var(--line);border-radius:28px;background:
+  radial-gradient(circle at 50% 40%,#263226 0,#151b15 44%,#0d120e 100%);
+  box-shadow:0 24px 70px rgba(0,0,0,.28)}
+.viewer-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.viewer-empty{position:absolute;z-index:3;left:50%;top:50%;width:min(440px,calc(100% - 38px));transform:translate(-50%,-50%);padding:28px;border:1px solid var(--line);border-radius:22px;background:rgba(15,20,15,.78);backdrop-filter:blur(20px);text-align:center;box-shadow:0 20px 55px rgba(0,0,0,.28)}
+.viewer-empty[hidden]{display:none}
+.empty-eyebrow{margin:0 0 9px;color:var(--sage);font-size:.59rem;font-weight:850;letter-spacing:.16em}
+.viewer-empty h2{margin:0;font-size:1.5rem;letter-spacing:-.03em}
+.viewer-empty>p:not(.empty-eyebrow){margin:12px auto 18px;max-width:38ch;color:var(--muted);font-size:.79rem;line-height:1.55}
+.viewer-empty small{display:block;margin-top:11px;color:#7e897c;font-size:.59rem}
+.asset-picker{display:inline-flex;position:relative;overflow:hidden;padding:12px 16px;border-radius:999px;color:#11170f;background:#dce8d8;font-size:.73rem;font-weight:850;cursor:pointer}
+.asset-picker input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.audit-panel{position:absolute;z-index:4;top:16px;right:16px;width:min(330px,calc(100% - 32px));overflow:hidden;border:1px solid var(--line);border-radius:20px;background:var(--panel-soft);backdrop-filter:blur(18px);box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.audit-heading{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;border-bottom:1px solid var(--line)}
+.audit-heading span{display:block;color:var(--sage);font-size:.54rem;font-weight:800;letter-spacing:.16em}
+.audit-heading strong{display:block;margin-top:3px;font-size:.82rem}
+.audit-heading button{width:30px;height:30px;border:1px solid var(--line);border-radius:50%;background:transparent;cursor:pointer}
+.audit-panel.collapsed .audit-body{display:none}
+.audit-body{padding:14px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:0}
+.metrics div{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}
+.metrics dt{color:var(--muted);font-size:.52rem}
+.metrics dd{margin:4px 0 0;font-size:.77rem;font-weight:750}
+.gate{margin-top:13px}
+.gate>p,.selection>span{margin:0 0 7px;color:var(--muted);font-size:.57rem;font-weight:750;text-transform:uppercase;letter-spacing:.09em}
+.gate ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.gate li{display:flex;justify-content:space-between;gap:12px;padding:7px 1px;border-bottom:1px solid var(--line);font-size:.61rem}
+.gate li span{color:#778176}
+.gate li.ok span{color:#a9c7aa}
+.gate li.fail span{color:#d18a7f}
+.selection{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.selection strong{display:block;font-size:.85rem}
+.selection p{margin:6px 0 0;color:var(--muted);font-size:.64rem;line-height:1.45}
+.viewer-controls{position:absolute;z-index:5;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:6px;padding:6px;border:1px solid var(--line);border-radius:999px;background:rgba(14,19,14,.82);backdrop-filter:blur(16px);box-shadow:0 12px 32px rgba(0,0,0,.2)}
+.viewer-controls button{border:0;border-radius:999px;padding:10px 13px;background:transparent;color:#b4beb1;font-size:.65rem;font-weight:760;cursor:pointer}
+.viewer-controls button:hover:not(:disabled),.viewer-controls button.active{background:#dce8d8;color:#11170f}
+.viewer-controls button:disabled{opacity:.32;cursor:not-allowed}
+.lab-footer{display:flex;justify-content:space-between;gap:18px;padding:12px 4px 0;color:var(--muted);font-size:.61rem}
+.lab-footer p{margin:0}
+.lab-footer strong{color:#d6ded2}
+@media(max-width:720px){
+  .lab{padding:10px}
+  .lab-header{align-items:flex-start;padding:4px 4px 12px}
+  .lab-status{max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .viewer-shell{min-height:calc(100svh - 135px);border-radius:22px}
+  .audit-panel{top:10px;right:10px;width:min(290px,calc(100% - 20px))}
+  .audit-panel:not(.collapsed){max-height:44svh;overflow:auto}
+  .viewer-controls{bottom:max(10px,env(safe-area-inset-bottom));width:calc(100% - 20px);justify-content:center}
+  .viewer-controls button{flex:1;padding:11px 7px}
+  .lab-footer{display:none}
+}
+@media(max-width:460px){
+  .lab-status{font-size:.52rem;padding:7px 9px}
+  .lab h1{font-size:2rem}
+  .lab-subtitle{font-size:.67rem}
+  .audit-panel{width:calc(100% - 20px)}
+}
