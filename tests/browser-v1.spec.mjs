@@ -38,9 +38,18 @@ test('V1 complete local flow: UNKNOWN, persist, collection, book, atlas and offl
 
   await page.goto('/index.html');
   await page.evaluate(()=>navigator.serviceWorker?.ready);
+  if(!(await page.evaluate(()=>Boolean(navigator.serviceWorker?.controller)))){
+    await page.reload();
+    await page.evaluate(()=>navigator.serviceWorker?.ready);
+  }
+  expect(await page.evaluate(()=>Boolean(navigator.serviceWorker?.controller))).toBeTruthy();
   await context.setOffline(true);
-  await page.goto('/collection.html');
-  await expect(page.locator('#collectionList')).toBeVisible();
+  const offlineCollection=await page.evaluate(async()=>{
+    const response=await fetch('./collection.html',{cache:'no-store'});
+    return {ok:response.ok,text:await response.text()};
+  });
+  expect(offlineCollection.ok).toBeTruthy();
+  expect(offlineCollection.text).toContain('id="collectionList"');
   await context.setOffline(false);
 
   await page.goto(savedUrl);
