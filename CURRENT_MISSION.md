@@ -2,69 +2,63 @@
 
 ## Mission 001 — Rebuild the source of truth
 
-### Objective
-Port the best real HERBARIUM baseline into this repository as a reproducible, testable project without regressing validated behavior.
-
 ### Current state
-IN PROGRESS on `candidate/mission-001-source-recovery`.
+IN PROGRESS on `candidate/mission-001-source-recovery`. Main/stable is not promoted.
 
-A reproducible source slice exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local IndexedDB evidence persistence, explicit local/offline/error states, separate document-level mobile pages with distinct URLs, and recovered Collection, Book, Atlas and conservative Academy read surfaces backed only by real local observations. These are recovery-layer improvements only and do not claim complete feature parity with v0.5/0.6. This is intentionally NOT promoted to main.
+The recovered application still preserves local IndexedDB evidence storage, camera/library inputs, UNKNOWN/REJECT behavior, collection/book surfaces and no mandatory cloud/API dependency.
 
-### Completed slice — explicit negative/non-plant gate
-The candidate connects an explicit user-provided negative signal to the real save path. `object`, `animal`, `print` and `tablecloth` produce REJECT; absent or unknown signals remain UNKNOWN. Executable fixture tests cover those four categories and assert that the gate never returns VERIFIED.
+### Completed conservative evidence slice
+Explicit user-provided non-plant signals `object`, `animal`, `print` and `tablecloth` can produce REJECT. Missing or ambiguous evidence remains UNKNOWN. This is not species recognition.
 
-This is deliberately NOT described as automatic image recognition: no validated local pixel detector/model is installed yet.
+### Open recognition slice
+A real species-recognition engine is still NOT connected. Until one is validated, HERBARIUM must not convert user photos into named species or invented confidence values.
 
-### Open slice — local automatic plant-vs-non-plant detector feasibility
-Evaluate and, only if technically/licensing-safe, integrate a local/offline detector that consumes actual image pixels before save and returns only a negative/non-plant signal or UNKNOWN. Do not identify species in this slice.
+### Active slice — Immersive 3D architecture + Bellis demo
 
-Required constraints:
-1. license/commercial use, maintenance, browser/iPhone compatibility and model size must be checked;
-2. no mandatory paid/cloud API;
-3. unavailable runtime, model-load failure, unsupported browser, low confidence or ambiguity => UNKNOWN;
-4. automatic REJECT only from actually executed pixel/model inference with conservative threshold;
-5. explicit manual negative signal remains separate and auditable;
-6. executable regressions required before any automatic REJECT claim;
-7. no accuracy percentage before a separate calibrated benchmark.
+The previously published editorial/card-based Home was rejected. The active visual direction is now an immersive natural encyclopedia in which the 3D organism is the primary interface.
 
-### Active slice — UI rebuild: approved compact Home fidelity
-The prior Home rebuild remained visually too close to a desktop landing page and diverged materially from the user-approved mobile mockup. The current correction treats that as a blocking UX regression.
+Implemented candidate baseline:
+- `src/index.html`: full-screen immersive Home centered on a real WebGL canvas instead of hero + cards;
+- `src/immersive.css`: new dark natural/cinematic design system, responsive overlays and mobile-first adaptations;
+- `src/plant3d.js`: zero-network native WebGL engine with custom shaders and procedural 3D plant geometry;
+- `src/species-bellis.html`: separate Bellis perennis demo URL with species panel, contextual part panel, hotspots and viewer controls;
+- actual pointer/touch rotation, wheel/two-pointer zoom, auto-rotate, reset and camera focus;
+- actual animated exploded view: petals, central head, involucre, stem, leaves, roots and demo seeds move apart as separate 3D meshes;
+- discrete part selection via hotspots and part rail;
+- WebGL-unavailable fallback surface;
+- no CDN, fetch or mandatory network dependency in the 3D engine;
+- existing camera/library flow remains linked from the Home;
+- rollback: `rollback/mission-001-pre-immersive-025fef8d`.
 
-Implemented:
-- Home constrained to a compact app viewport with `max-width:520px` even on desktop instead of expanding into a wide two-column landing;
-- new local photographic botanical hero asset `src/assets/hero-approved.webp` derived from the approved visual direction;
-- headline, photographic hero and green primary camera CTA composed as one mobile-first section;
-- three compact visual cards immediately below for Library, Observations and Botanical Book;
-- compact environmental banner and bottom navigation;
-- visible technical network badge removed from the Home while the `network` element remains available to existing application logic through a visually-hidden status;
-- existing routes, local counters, privacy/offline behavior and conservative status logic preserved;
-- rollback: `rollback/ui-major-home-before-cc72a38e`;
-- final product/test head `0d40c2633418bfdd76d283ba68c781c99f0b597d` passed HERBARIUM Guard #180.
+Validated product/test head:
+- `c2830d75948365250305a2bc6a34e573b1262931`
+- HERBARIUM Guard #183: SUCCESS.
 
-Exit gate for this UI slice:
-- Home remains visually compact/app-like on wide screens rather than stretching into a desktop landing;
-- approved photographic hero asset is present locally in the candidate;
-- Camera, Library, Observations, Book, Academy and Atlas navigation remain available;
-- local stats IDs remain wired;
-- smoke tests protect the 520px Home constraint, hero asset and new structural classes;
-- no fake species or synthetic observations are introduced;
-- final candidate head must be green before preview synchronization.
+### What is deliberately NOT claimed
+- The procedural Bellis geometry is an interaction prototype, NOT a scientifically validated Bellis GLB/GLTF reconstruction.
+- The Bellis page is NOT the output of user-photo recognition and explicitly labels recognition as not connected.
+- No real species confidence, similar-species result or scientific measurement has been invented.
+- "Sections" remains disabled/placeholder.
+- Mesh raycasting is not yet implemented; part selection currently uses hotspots and the part rail.
+- Microscopic/cellular progressive zoom is not yet implemented.
+- A real GLB/GLTF species catalog is not yet integrated.
+- Real iPhone/Android/browser GPU performance has not been tested.
+- Local Chromium visual validation was attempted but the execution environment could not initialize EGL/ANGLE/WebGL, so no browser-render PASS is claimed.
 
-The detector feasibility work remains open and resumes after the visual recovery is accepted.
+### Architecture direction
+The first prototype uses native WebGL to keep the experiment dependency-free and offline. For the real species catalog, evaluate Three.js + GLTF/GLB loaders, Draco and KTX2 only when real model assets are introduced and after license/performance review.
 
-### Remaining Mission 001 work
-1. Complete the detector feasibility/integration slice above.
-2. Continue feature-by-feature comparison against the recovered RC3 standalone and candidate 0.6.
-3. Recover only validated application structure/assets justified from evidence; do not reintroduce synthetic achievements, territories or species.
-4. Preserve offline/privacy behavior and avoid synthetic species, territories, coordinates or achievements.
-5. Verify GitHub Actions green on every candidate product/test head before preview synchronization or promotion.
+### Exit gate for active slice
+- final candidate head green in HERBARIUM Guard;
+- Home remains organism-first rather than card/landing-first;
+- Bellis demo is a separate real page;
+- rotation, zoom, exploded separation, reset and part focus remain implemented in code;
+- no recognition or scientific-accuracy claim is implied by the demo;
+- no mandatory network dependency for the first 3D scene;
+- fallback remains present;
+- public candidate preview updated only after final documentation head is green.
 
-### Mission 001 exit gate
-- complete source-of-truth baseline lives in the repo;
-- local build/serve command documented;
-- automated tests repeatable and green;
-- GitHub Actions green on candidate head;
-- no known regression versus recovered baseline;
-- differences from live reference documented honestly.
+### Next coherent slice
+Replace the procedural Bellis interaction prototype with a properly sourced/validated, optimized GLB/GLTF Bellis asset or a justified alternative; then add true mesh selection/raycasting and validate performance in an actual browser/device environment before expanding to more species.
 
 Status: IN PROGRESS — DO NOT PROMOTE

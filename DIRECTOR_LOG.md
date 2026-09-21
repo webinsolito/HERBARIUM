@@ -40,3 +40,20 @@ This log is maintained by the hourly director.
 - Fixed the assertion escaping without weakening the UI contract.
 - Final product/test head `0d40c2633418bfdd76d283ba68c781c99f0b597d` passed HERBARIUM Guard #180.
 - Preview synchronization is permitted only after this documentation head also passes Guard.
+
+
+## 2026-09-21 — Mission 001 / immersive 3D architecture
+- User explicitly rejected the prior editorial/card-based Home and supplied a new direction: an immersive 3D natural encyclopedia with the organism as the primary interface.
+- Read the active candidate and created rollback `rollback/mission-001-pre-immersive-025fef8d`.
+- Replaced the Home with a full-screen WebGL-first experience while preserving links into the existing local observation flow.
+- Added `src/immersive.css`, `src/plant3d.js` and the separate `src/species-bellis.html` demo page.
+- The new 3D engine is native WebGL with no CDN/network dependency. It contains custom shaders, separate procedural meshes, pointer/touch rotation, wheel/pinch zoom, camera focus, auto-rotation and an animated exploded view.
+- Bellis demo exposes petals, capolino/head, involucre, stem, leaves, roots and demo seeds as separate 3D components. Part selection currently uses hotspots/part rail; mesh raycasting is not yet implemented.
+- The Bellis page explicitly states it is a catalog/demo experience and NOT a recognition result. Existing user-photo recognition remains unconnected.
+- Product commit: `a7565492841609e53c3b56302f7aa66576beb4bb`.
+- Test-contract commit: `c2830d75948365250305a2bc6a34e573b1262931`.
+- HERBARIUM Guard #183 completed SUCCESS on `c2830d75`.
+- Local Node syntax check on the 3D script passed.
+- Browser visual validation was attempted in local Chromium, but the container could not initialize EGL/ANGLE/WebGL; therefore no real-browser, real-iPhone or GPU-performance PASS is claimed.
+- Procedural geometry is a real WebGL 3D interaction prototype, but it is NOT claimed as a scientifically validated Bellis model.
+- Next: final documentation Guard, then candidate preview sync. After acceptance, source/validate a real optimized Bellis 3D asset and add mesh-level raycasting.
