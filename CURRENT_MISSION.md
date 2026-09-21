@@ -15,7 +15,7 @@ The candidate now connects an explicit user-provided negative signal to the real
 
 This is deliberately NOT described as automatic image recognition: no local pixel detector/model is installed yet, and the UI states that the negative signal is not inferred automatically from the image.
 
-### Active slice — local automatic plant-vs-non-plant detector feasibility
+### Open slice — local automatic plant-vs-non-plant detector feasibility
 One coherent next step only: determine and, only if technically/licensing-safe, integrate the smallest local/offline detector that can consume actual image pixels before save and return only a negative/non-plant signal or UNKNOWN. Do not identify species in this slice.
 
 Required work:
@@ -34,6 +34,28 @@ Required work:
 - no network/cloud dependency is required by the core path;
 - explicit manual REJECT continues to work independently;
 - automated regressions are repeatable and GitHub Actions is green on the resulting candidate head.
+
+### Active slice — UI rebuild: design system + Home
+
+User review of the public preview identified the recovered UI as materially below the desired product quality. This cycle therefore treats visual/UX recovery as part of rebuilding the source of truth, without changing the scientific status model or local persistence path.
+
+Implemented candidate slice:
+- rebuilt `src/index.html` around four obvious mobile actions: camera observation, library observation, collection and botanical book;
+- replaced the dark technical visual system with a light botanical design system using ivory/cream surfaces, forest/sage hierarchy, warm bronze accents, softer cards and larger touch targets;
+- added a mobile bottom navigation while preserving every existing document URL;
+- preserved local stats IDs, IndexedDB-backed app wiring, UNKNOWN/REJECT behavior and the existing observation routes;
+- extended executable smoke coverage to lock the new Home structure and core design tokens;
+- rollback point: `rollback/mission-001-ui-pre-rebuild-728381e5`;
+- product/test head `88452d50e92a207b7e7ee04067d17b4e7a223a25` passed HERBARIUM Guard #164.
+
+Exit gate for this slice:
+- Home and shared design system are materially rebuilt rather than recolored;
+- camera/library, collection, book, atlas and academy links remain present;
+- mobile breakpoint and capture layout regression assertions remain executable;
+- no VERIFIED species or synthetic product data is introduced;
+- GitHub Actions is green on the final candidate head before preview synchronization.
+
+The local automatic detector feasibility work remains open and resumes after this UI recovery slice; it has not been declared complete.
 
 ### Remaining Mission 001 work
 1. Complete the detector feasibility/integration slice above.
