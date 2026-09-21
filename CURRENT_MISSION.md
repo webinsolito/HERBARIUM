@@ -11,56 +11,51 @@ IN PROGRESS on `candidate/mission-001-source-recovery`.
 A reproducible source slice exists in `src/` with mobile-first capture inputs, conservative UNKNOWN behavior, local IndexedDB evidence persistence, explicit local/offline/error states, separate document-level mobile pages with distinct URLs, and recovered Collection, Book, Atlas and conservative Academy read surfaces backed only by real local observations. These are recovery-layer improvements only and do not claim complete feature parity with v0.5/0.6. This is intentionally NOT promoted to main.
 
 ### Completed slice — explicit negative/non-plant gate
-The candidate now connects an explicit user-provided negative signal to the real save path. `object`, `animal`, `print` and `tablecloth` produce REJECT; absent or unknown signals remain UNKNOWN. Executable fixture tests cover those four categories and assert that the gate never returns VERIFIED. Candidate head `b1345025` passed HERBARIUM Guard #152.
+The candidate connects an explicit user-provided negative signal to the real save path. `object`, `animal`, `print` and `tablecloth` produce REJECT; absent or unknown signals remain UNKNOWN. Executable fixture tests cover those four categories and assert that the gate never returns VERIFIED.
 
-This is deliberately NOT described as automatic image recognition: no local pixel detector/model is installed yet, and the UI states that the negative signal is not inferred automatically from the image.
+This is deliberately NOT described as automatic image recognition: no validated local pixel detector/model is installed yet.
 
 ### Open slice — local automatic plant-vs-non-plant detector feasibility
-One coherent next step only: determine and, only if technically/licensing-safe, integrate the smallest local/offline detector that can consume actual image pixels before save and return only a negative/non-plant signal or UNKNOWN. Do not identify species in this slice.
+Evaluate and, only if technically/licensing-safe, integrate a local/offline detector that consumes actual image pixels before save and returns only a negative/non-plant signal or UNKNOWN. Do not identify species in this slice.
 
-Required work:
-1. evaluate candidate local/open-source components for license, maintenance, browser/iPhone compatibility, model size and commercial reuse;
-2. prefer a deterministic local model/runtime with no paid/cloud API and no upload requirement;
-3. keep UNKNOWN as mandatory fallback for unavailable runtime, model-load failure, unsupported browser, low confidence or ambiguous output;
-4. REJECT may be emitted automatically only from an actually executed pixel/model result with a documented conservative threshold; no filename/metadata/colour-only shortcut may masquerade as recognition;
-5. preserve the explicit manual negative signal as a separate auditable path;
-6. add executable tests for model unavailable/error/ambiguous cases and negative fixtures before any automatic REJECT claim;
-7. do not publish an accuracy percentage until a separate benchmark is built and calibrated.
+Required constraints:
+1. license/commercial use, maintenance, browser/iPhone compatibility and model size must be checked;
+2. no mandatory paid/cloud API;
+3. unavailable runtime, model-load failure, unsupported browser, low confidence or ambiguity => UNKNOWN;
+4. automatic REJECT only from actually executed pixel/model inference with conservative threshold;
+5. explicit manual negative signal remains separate and auditable;
+6. executable regressions required before any automatic REJECT claim;
+7. no accuracy percentage before a separate calibrated benchmark.
 
-### Exit gate for active slice
-- selected component has documented license/commercial-use status and compatibility notes, or the slice records a justified NO-GO without adding unsafe code;
-- actual pixel inference is wired before any automatic REJECT claim;
-- model/runtime failure and ambiguity always resolve to UNKNOWN, never VERIFIED;
-- no network/cloud dependency is required by the core path;
-- explicit manual REJECT continues to work independently;
-- automated regressions are repeatable and GitHub Actions is green on the resulting candidate head.
+### Active slice — UI rebuild: approved compact Home fidelity
+The prior Home rebuild remained visually too close to a desktop landing page and diverged materially from the user-approved mobile mockup. The current correction treats that as a blocking UX regression.
 
-### Active slice — UI rebuild: design system + Home
+Implemented:
+- Home constrained to a compact app viewport with `max-width:520px` even on desktop instead of expanding into a wide two-column landing;
+- new local photographic botanical hero asset `src/assets/hero-approved.webp` derived from the approved visual direction;
+- headline, photographic hero and green primary camera CTA composed as one mobile-first section;
+- three compact visual cards immediately below for Library, Observations and Botanical Book;
+- compact environmental banner and bottom navigation;
+- visible technical network badge removed from the Home while the `network` element remains available to existing application logic through a visually-hidden status;
+- existing routes, local counters, privacy/offline behavior and conservative status logic preserved;
+- rollback: `rollback/ui-major-home-before-cc72a38e`;
+- final product/test head `0d40c2633418bfdd76d283ba68c781c99f0b597d` passed HERBARIUM Guard #180.
 
-User review of the public preview identified the recovered UI as materially below the desired product quality. This cycle therefore treats visual/UX recovery as part of rebuilding the source of truth, without changing the scientific status model or local persistence path.
+Exit gate for this UI slice:
+- Home remains visually compact/app-like on wide screens rather than stretching into a desktop landing;
+- approved photographic hero asset is present locally in the candidate;
+- Camera, Library, Observations, Book, Academy and Atlas navigation remain available;
+- local stats IDs remain wired;
+- smoke tests protect the 520px Home constraint, hero asset and new structural classes;
+- no fake species or synthetic observations are introduced;
+- final candidate head must be green before preview synchronization.
 
-Implemented candidate slice:
-- rebuilt `src/index.html` around four obvious mobile actions: camera observation, library observation, collection and botanical book;
-- replaced the dark technical visual system with a light botanical design system using ivory/cream surfaces, forest/sage hierarchy, warm bronze accents, softer cards and larger touch targets;
-- added a mobile bottom navigation while preserving every existing document URL;
-- preserved local stats IDs, IndexedDB-backed app wiring, UNKNOWN/REJECT behavior and the existing observation routes;
-- extended executable smoke coverage to lock the new Home structure and core design tokens;
-- rollback point: `rollback/mission-001-ui-pre-rebuild-728381e5`;
-- product/test head `88452d50e92a207b7e7ee04067d17b4e7a223a25` passed HERBARIUM Guard #164.
-
-Exit gate for this slice:
-- Home and shared design system are materially rebuilt rather than recolored;
-- camera/library, collection, book, atlas and academy links remain present;
-- mobile breakpoint and capture layout regression assertions remain executable;
-- no VERIFIED species or synthetic product data is introduced;
-- GitHub Actions is green on the final candidate head before preview synchronization.
-
-The local automatic detector feasibility work remains open and resumes after this UI recovery slice; it has not been declared complete.
+The detector feasibility work remains open and resumes after the visual recovery is accepted.
 
 ### Remaining Mission 001 work
 1. Complete the detector feasibility/integration slice above.
 2. Continue feature-by-feature comparison against the recovered RC3 standalone and candidate 0.6.
-3. Recover only additional validated application structure/assets justified from recovered evidence; do not reintroduce synthetic achievements, territories or species.
+3. Recover only validated application structure/assets justified from evidence; do not reintroduce synthetic achievements, territories or species.
 4. Preserve offline/privacy behavior and avoid synthetic species, territories, coordinates or achievements.
 5. Verify GitHub Actions green on every candidate product/test head before preview synchronization or promotion.
 

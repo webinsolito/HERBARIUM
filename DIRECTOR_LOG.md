@@ -25,3 +25,18 @@ This log is maintained by the hourly director.
 - Scientific status behavior, IndexedDB persistence and UNKNOWN/REJECT rules were not changed in this slice.
 - Final documentation head still requires its own Guard before preview synchronization.
 - Next after preview sync: continue the UX rebuild on observation/capture and result presentation, then resume the still-open local detector integration slice.
+
+
+## 2026-09-21 — Mission 001 / blocking Home fidelity correction
+- User review showed the public Home still behaved like a wide desktop landing and diverged materially from the approved mobile mockup.
+- Confirmed candidate head before the correction at `cc72a38e83242ab84d6759b83ef0d438f37aae7e`.
+- Created rollback `rollback/ui-major-home-before-cc72a38e`.
+- Rebuilt the Home around a hard compact app constraint (`max-width:520px`) so desktop no longer expands the UI into a wide two-column landing.
+- Added local photographic hero asset `src/assets/hero-approved.webp` from the approved visual direction and replaced the flat vector-led hero composition.
+- Moved the green camera CTA into the hero, added three compact visual destination cards, compact banner, local summary and fixed bottom navigation.
+- Hid the technical network badge visually while retaining the `network` element required by existing application logic.
+- Preserved routes, local counters, IndexedDB behavior and conservative UNKNOWN/REJECT data rules.
+- Initial Guard #179 failed only because the new smoke-test regex was over-escaped; application HTML/CSS validation had passed.
+- Fixed the assertion escaping without weakening the UI contract.
+- Final product/test head `0d40c2633418bfdd76d283ba68c781c99f0b597d` passed HERBARIUM Guard #180.
+- Preview synchronization is permitted only after this documentation head also passes Guard.
