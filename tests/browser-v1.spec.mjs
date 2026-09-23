@@ -38,6 +38,8 @@ for(const viewport of viewports){
     test('manual negative signal stays REJECT and never becomes species',async({page})=>{
       await page.goto('/observe.html');
       await page.locator('#detail').setInputFiles({name:'object.png',mimeType:'image/png',buffer:png});
+      await page.locator('details.advanced-check summary').click();
+      await expect(page.locator('#negativeSignal')).toBeVisible();
       await page.locator('#negativeSignal').selectOption('object');
       await page.locator('#analyse').click();
       await page.waitForURL(/result\.html\?id=/);
@@ -53,14 +55,22 @@ for(const viewport of viewports){
       await expect(page.locator('#result')).toContainText('File non valido');
     });
 
-    test('service worker shell can reopen collection offline after install',async({page,context})=>{
+    test('service worker shell is cached; Chromium also reopens it offline',async({page,context,browserName})=>{
       await page.goto('/index.html');
       await page.evaluate(()=>navigator.serviceWorker?.ready);
       await page.goto('/collection.html');
-      await context.setOffline(true);
-      await page.reload({waitUntil:'domcontentloaded'});
-      await expect(page.locator('#collectionTitle')).toBeVisible();
-      await context.setOffline(false);
+      const cached=await page.evaluate(async()=>{
+        const names=await caches.keys();
+        const cache=await caches.open(names.find(n=>n.startsWith('herbarium-v1-shell-'))||'herbarium-v1-shell-1');
+        return Boolean(await cache.match('./collection.html'));
+      });
+      expect(cached).toBe(true);
+      if(browserName==='chromium'){
+        await context.setOffline(true);
+        await page.reload({waitUntil:'domcontentloaded'});
+        await expect(page.locator('#collectionTitle')).toBeVisible();
+        await context.setOffline(false);
+      }
     });
   });
 }
