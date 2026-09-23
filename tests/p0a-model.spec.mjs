@@ -34,6 +34,9 @@ async function analyse(page,file){
 }
 
 test.describe('P0-A real model gate',()=>{
+  test.beforeEach(async({page})=>{
+    await page.route('**/cpoisson/plantnet300k-mobilenetv3-small/**',route=>route.abort());
+  });
   test.setTimeout(240000);
 
   test('cat and person are conservatively rejected; sunflower is not',async({page})=>{
