@@ -7,13 +7,14 @@
 - User image pixels are processed in-browser; no image upload endpoint is used.
 
 ## Selected model
-- MediaPipe EfficientDet-Lite0 COCO2017 INT8/UINT8 ONNX conversion
-- Source: ketiswp/mediapipe-EfficientDet-Lite0-COCO2017-int8-uint8-onnx
+- SSD-MobileNetV1-12 INT8 ONNX from the ONNX Model Zoo
+- Source: onnxmodelzoo/ssd_mobilenet_v1_12-int8
 - License declared by model repository: Apache-2.0
-- Size: about 3.95 MiB
-- Input: 320x320 RGB uint8
-- 80 COCO object classes
+- Size: about 9.5 MB
+- Input: RGB uint8 NHWC; the exported model accepts dynamic image dimensions
+- COCO object classes
 - Model is loaded lazily only when automatic gate analysis is needed.
+- Reason for replacement: the previous EfficientDet conversion failed ONNX Runtime Web session creation with ShapeInferenceError on both Chromium and WebKit; it was not kept as a hidden fallback.
 
 ## Conservative policy
 This is NOT a plant classifier and never outputs a species.
