@@ -16,7 +16,7 @@ for(const width of [360,390,430]){
 test('offline reopen keeps core shell available',async({page,context})=>{
   await page.goto('/index.html');
   await expect(page.locator('body')).toBeVisible();
-  await page.evaluate(()=>navigator.serviceWorker?.ready);
+  await page.evaluate(async()=>{await navigator.serviceWorker.ready;return true;});
   await page.reload();
   await context.setOffline(true);
   await page.goto('/collection.html');
