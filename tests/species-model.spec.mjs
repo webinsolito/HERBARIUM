@@ -36,7 +36,7 @@ test.describe('P0-B real species runtime',()=>{
     expect(item).toBeTruthy();
     expect(item.status).not.toBe('VERIFIED');
     expect(item.analysis?.automaticGate?.status).not.toBe('REJECT');
-    expect(item.analysis?.speciesEngine?.version).toBe('plantnet300k-dual-consensus-v2');
+    expect(item.analysis?.speciesEngine?.version).toBe('plantnet-bioclip-consensus-v3');
     expect(item.analysis?.speciesEngine?.status).not.toBe('UNAVAILABLE');
     expect(item.analysis?.speciesEngine?.calibrated).toBe(false);
     expect(Number.isFinite(item.analysis?.speciesEngine?.rawScore)).toBe(true);
