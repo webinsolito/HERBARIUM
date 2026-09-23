@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { classifyNegativeEvidence, NEGATIVE_CATEGORIES } from '../src/negative-gate.mjs';
-import { classifyPixelsLocally, DEFAULT_NON_PLANT_THRESHOLD } from '../src/local-detector.mjs';
+import { classifyPixelsLocally, aggregateLabelEvidence, DEFAULT_NON_PLANT_THRESHOLD, DEFAULT_MIN_MARGIN } from '../src/local-detector.mjs';
 import { sniffImageBytes, declaredMimeCompatible, MAX_INPUT_BYTES, MAX_IMAGE_EDGE } from '../src/image-security.mjs';
 
 const read=p=>fs.readFileSync(p,'utf8');
@@ -23,99 +23,30 @@ for(const html of pages){
   assert.match(html,/<script type="module" src="\.\/app\.js"><\/script>/);
   assert.doesNotMatch(html,/data-view=/);
 }
-assert.match(home,/href="\.\/observe\.html"/);
-assert.match(home,/href="\.\/collection\.html"/);
-assert.match(home,/href="\.\/book\.html"/);
-assert.match(home,/href="\.\/atlas\.html"/);
-assert.match(home,/href="\.\/academy\.html"/);
-
-assert.match(observe,/accept="image\/\*"/);
-assert.match(observe,/capture="environment"/);
-assert.match(observe,/id="whole"/);
-assert.match(observe,/id="detail"/);
-assert.match(observe,/id="negativeSignal"/);
+assert.match(home,/href="\.\/observe\.html"/);assert.match(home,/href="\.\/collection\.html"/);assert.match(home,/href="\.\/book\.html"/);assert.match(home,/href="\.\/atlas\.html"/);assert.match(home,/href="\.\/academy\.html"/);
+assert.match(observe,/accept="image\/\*"/);assert.match(observe,/capture="environment"/);assert.match(observe,/id="whole"/);assert.match(observe,/id="detail"/);assert.match(observe,/id="negativeSignal"/);
 for(const category of ['object','animal','print','tablecloth'])assert.match(observe,new RegExp(`value="${category}"`));
+assert.match(resultPage,/id="resultPage"/);assert.match(resultPage,/id="resultMainTitle"/);assert.match(resultPage,/id="resultDelete"/);assert.match(resultPage,/Nessuna specie viene inventata/);assert.match(resultPage,/species-bellis-demo\.html/);
+assert.match(app,/indexedDB\.open\(DB_NAME,1\)/);assert.match(app,/objectStore\(STORE_NAME\)\.add\(observation\)/);assert.match(app,/objectStore\(STORE_NAME\)\.delete\(id\)/);assert.match(app,/Verifica del salvataggio locale fallita/);assert.match(app,/Verifica eliminazione fallita/);assert.match(app,/storage\.estimate/);assert.match(app,/storage\?\.persist/);assert.match(app,/MAX_PIXELS=40_000_000/);assert.match(app,/inspectImageFile/);assert.match(app,/exifStripped:true/);assert.match(app,/const data=await blob\.arrayBuffer\(\)/);assert.match(app,/new Blob\(\[payload\]/);assert.match(app,/identification:\{status:'UNAVAILABLE',species:null,confidence:null\}/);assert.match(app,/speciesEngine:'unavailable'/);assert.match(app,/classifyPixelsLocally\(\{decodedEvidence:evidence\.length\},null\)/);assert.match(app,/location\.assign\(.*result\.html/);assert.match(app,/item\.status==='REJECT'/);assert.match(app,/item\.status==='VERIFIED'/);assert.doesNotMatch(app,/status\s*:\s*['"]VERIFIED['"]/);assert.doesNotMatch(app,/innerHTML\s*=/);assert.doesNotMatch(app,/https?:\/\//);
 
-assert.match(resultPage,/id="resultPage"/);
-assert.match(resultPage,/id="resultMainTitle"/);
-assert.match(resultPage,/id="resultDelete"/);
-assert.match(resultPage,/Nessuna specie viene inventata/);
-assert.match(resultPage,/species-bellis-demo\.html/);
-
-assert.match(app,/indexedDB\.open\(DB_NAME,1\)/);
-assert.match(app,/objectStore\(STORE_NAME\)\.add\(observation\)/);
-assert.match(app,/objectStore\(STORE_NAME\)\.delete\(id\)/);
-assert.match(app,/Verifica del salvataggio locale fallita/);
-assert.match(app,/Verifica eliminazione fallita/);
-assert.match(app,/storage\.estimate/);
-assert.match(app,/storage\?\.persist/);
-assert.match(app,/MAX_PIXELS=40_000_000/);
-assert.match(app,/inspectImageFile/);
-assert.match(app,/exifStripped:true/);assert.match(app,/const data=await blob\.arrayBuffer\(\)/);assert.match(app,/new Blob\(\[payload\]/);
-assert.match(app,/identification:\{status:'UNAVAILABLE',species:null,confidence:null\}/);
-assert.match(app,/speciesEngine:'unavailable'/);
-assert.match(app,/classifyPixelsLocally\(\{decodedEvidence:evidence\.length\},null\)/);
-assert.match(app,/location\.assign\(.*result\.html/);
-assert.match(app,/item\.status==='REJECT'/);
-assert.match(app,/item\.status==='VERIFIED'/);
-assert.doesNotMatch(app,/status\s*:\s*['"]VERIFIED['"]/);
-assert.doesNotMatch(app,/innerHTML\s*=/);
-assert.doesNotMatch(app,/https?:\/\//);
-
-assert.equal(MAX_INPUT_BYTES,12*1024*1024);
-assert.equal(MAX_IMAGE_EDGE,1600);
-assert.equal(sniffImageBytes(new Uint8Array([0xff,0xd8,0xff,0x00])),'image/jpeg');
-assert.equal(sniffImageBytes(new Uint8Array([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a])),'image/png');
-assert.equal(sniffImageBytes(new Uint8Array([0x52,0x49,0x46,0x46,0,0,0,0,0x57,0x45,0x42,0x50])),'image/webp');
-assert.equal(sniffImageBytes(new Uint8Array([1,2,3,4,5,6,7,8])),null);
-assert.equal(declaredMimeCompatible('image/jpeg','image/jpeg'),true);
-assert.equal(declaredMimeCompatible('image/jpeg','image/png'),false);
-assert.equal(declaredMimeCompatible('text/plain','image/jpeg'),false);
+assert.equal(MAX_INPUT_BYTES,12*1024*1024);assert.equal(MAX_IMAGE_EDGE,1600);assert.equal(sniffImageBytes(new Uint8Array([0xff,0xd8,0xff,0x00])),'image/jpeg');assert.equal(sniffImageBytes(new Uint8Array([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a])),'image/png');assert.equal(sniffImageBytes(new Uint8Array([0x52,0x49,0x46,0x46,0,0,0,0,0x57,0x45,0x42,0x50])),'image/webp');assert.equal(sniffImageBytes(new Uint8Array([1,2,3,4,5,6,7,8])),null);assert.equal(declaredMimeCompatible('image/jpeg','image/jpeg'),true);assert.equal(declaredMimeCompatible('image/jpeg','image/png'),false);assert.equal(declaredMimeCompatible('text/plain','image/jpeg'),false);
 
 const negativeFixtures=JSON.parse(read('tests/fixtures/non-plant.json'));
-assert.deepEqual(negativeFixtures.map(x=>x.category).sort(),['animal','object','print','tablecloth']);
-assert.deepEqual([...NEGATIVE_CATEGORIES].sort(),['animal','object','print','tablecloth']);
-for(const fixture of negativeFixtures){
-  const outcome=classifyNegativeEvidence(fixture.category);
-  assert.equal(outcome.status,'REJECT');
-  assert.notEqual(outcome.status,'VERIFIED');
-}
-for(const signal of [null,undefined,'','plant','unknown','OBJECT']){
-  assert.deepEqual(classifyNegativeEvidence(signal),{status:'UNKNOWN',negativeCategory:null});
-}
-assert.equal(DEFAULT_NON_PLANT_THRESHOLD,0.985);
-assert.equal((await classifyPixelsLocally(null,null)).status,'UNKNOWN');
-assert.equal((await classifyPixelsLocally({pixels:true},null)).reason,'runtime-unavailable');
+assert.deepEqual(negativeFixtures.map(x=>x.category).sort(),['animal','object','print','tablecloth']);assert.deepEqual([...NEGATIVE_CATEGORIES].sort(),['animal','object','print','tablecloth']);
+for(const fixture of negativeFixtures){const outcome=classifyNegativeEvidence(fixture.category);assert.equal(outcome.status,'REJECT');assert.notEqual(outcome.status,'VERIFIED');}
+for(const signal of [null,undefined,'','plant','unknown','OBJECT'])assert.deepEqual(classifyNegativeEvidence(signal),{status:'UNKNOWN',negativeCategory:null});
+assert.equal(DEFAULT_NON_PLANT_THRESHOLD,0.985);assert.equal(DEFAULT_MIN_MARGIN,0.20);
+assert.equal((await classifyPixelsLocally(null,null)).status,'UNKNOWN');assert.equal((await classifyPixelsLocally({pixels:true},null)).reason,'runtime-unavailable');
 assert.equal((await classifyPixelsLocally({pixels:true},{infer:async()=>({executed:true,nonPlantScore:.984,category:'object'})})).status,'UNKNOWN');
-assert.deepEqual(await classifyPixelsLocally({pixels:true},{infer:async()=>({executed:true,nonPlantScore:.999,category:'object'})}),{status:'REJECT',negativeCategory:'object',reason:'local-pixel-inference'});
+assert.equal((await classifyPixelsLocally({pixels:true},{infer:async()=>({executed:true,nonPlantScore:.999,plantScore:.90,topMargin:.099,category:'object'})})).reason,'plant-disagreement');
+assert.equal((await classifyPixelsLocally({pixels:true},{infer:async()=>({executed:true,nonPlantScore:.999,plantScore:.01,topMargin:.10,category:'object'})})).reason,'weak-margin');
+assert.deepEqual(await classifyPixelsLocally({pixels:true},{infer:async()=>({executed:true,nonPlantScore:.999,plantScore:.01,topMargin:.989,category:'object'})}),{status:'REJECT',negativeCategory:'object',reason:'local-pixel-inference'});
+const agg=aggregateLabelEvidence([{label:'leaf',score:.91},{label:'dog',score:.99}],{plantLabels:['leaf'],nonPlantLabels:['dog']});
+assert.deepEqual(agg,{nonPlantScore:.99,plantScore:.91,topMargin:.07999999999999996,category:'dog'});
+assert.equal((await classifyPixelsLocally({pixels:true},{infer:async()=>({executed:true,...agg})})).status,'UNKNOWN');
 
-assert.match(collection,/id="collectionList"/);
-assert.match(book,/id="pendingList"/);
-assert.match(bookPlates,/item\.status==='VERIFIED'/);
-assert.match(bookPlates,/scientificName/);
-assert.doesNotMatch(bookPlates,/Bellis perennis|Rosa canina|Lavandula/);
-assert.match(atlas,/Mostra soltanto dati geografici realmente presenti/);
-assert.match(app,/Number\.isFinite\(x\.location\.latitude\)/);
-assert.match(academy,/Nessun corso fittizio/);
-
-assert.match(sw,/herbarium-v1-shell-1/);
-assert.match(sw,/caches\.open/);
-assert.match(sw,/request\.mode==='navigate'/);
-assert.match(sw,/url\.origin!==self\.location\.origin/);
-assert.doesNotMatch(sw,/https?:\/\//);
-
-assert.match(demo,/DEMO 3D/);assert.match(demo,/MODELLO PROCEDURALE V2/);
-assert.match(demoJs,/getContext\('webgl'/);
-assert.match(demoJs,/toggleExplode/);
-assert.match(demoJs,/pointerdown/);
-assert.match(demoJs,/wheel/);assert.match(demoJs,/stripGeometry\('petal'/);assert.match(demoJs,/stripGeometry\('leaf'/);assert.match(demoJs,/for\(let ring=0;ring<2;ring\+\+\)/);assert.match(demoJs,/for\(let k=0;k<78;k\+\+\)/);
-assert.match(lab,/ASSET NOT APPROVED/);
-assert.match(labJs,/GLTFLoader/);
-assert.match(labJs,/Raycaster/);
-assert.match(labJs,/intersectObject\(model,true\)/);
-
-assert.match(css,/\.result-detail-card/);
-assert.match(css,/\.observation-delete/);
-assert.match(guard,/'candidate\/\*\*'/);
-assert.doesNotMatch(guard,/pull_request:/);
+assert.match(collection,/id="collectionList"/);assert.match(book,/id="pendingList"/);assert.match(bookPlates,/item\.status==='VERIFIED'/);assert.match(bookPlates,/scientificName/);assert.doesNotMatch(bookPlates,/Bellis perennis|Rosa canina|Lavandula/);assert.match(atlas,/Mostra soltanto dati geografici realmente presenti/);assert.match(app,/Number\.isFinite\(x\.location\.latitude\)/);assert.match(academy,/Nessun corso fittizio/);
+assert.match(sw,/herbarium-v1-shell-1/);assert.match(sw,/caches\.open/);assert.match(sw,/request\.mode==='navigate'/);assert.match(sw,/url\.origin!==self\.location\.origin/);assert.doesNotMatch(sw,/https?:\/\//);
+assert.match(demo,/DEMO 3D/);assert.match(demo,/MODELLO PROCEDURALE V2/);assert.match(demoJs,/getContext\('webgl'/);assert.match(demoJs,/toggleExplode/);assert.match(demoJs,/pointerdown/);assert.match(demoJs,/wheel/);assert.match(demoJs,/stripGeometry\('petal'/);assert.match(demoJs,/stripGeometry\('leaf'/);assert.match(demoJs,/for\(let ring=0;ring<2;ring\+\+\)/);assert.match(demoJs,/for\(let k=0;k<78;k\+\+\)/);assert.match(lab,/ASSET NOT APPROVED/);assert.match(labJs,/GLTFLoader/);assert.match(labJs,/Raycaster/);assert.match(labJs,/intersectObject\(model,true\)/);
+assert.match(css,/\.result-detail-card/);assert.match(css,/\.observation-delete/);assert.match(guard,/'candidate\/\*\*'/);assert.doesNotMatch(guard,/pull_request:/);
 console.log('HERBARIUM V1 smoke PASS');
