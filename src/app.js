@@ -322,7 +322,7 @@ async function setupObserve(){
         privacy:{localOnly:true,exifStripped:true}
       };
       await saveObservation(observation);
-      navigator.storage?.persist?.().catch(()=>false);
+      if(navigator.storage?.persist)navigator.storage.persist().catch(()=>false);
       setResult(status==='REJECT'?'Salvata come REJECT. Nessuna specie associata.':'Salvata come UNKNOWN. Identificazione non disponibile.',status);
       location.assign(`./result.html?id=${encodeURIComponent(id)}`);
     }catch(error){
