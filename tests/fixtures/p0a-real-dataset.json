@@ -1,0 +1,32 @@
+[
+  {
+    "id": "cat",
+    "kind": "negative",
+    "url": "https://raw.githubusercontent.com/google-coral/test_data/master/cat.bmp",
+    "expected": "REJECT"
+  },
+  {
+    "id": "bird",
+    "kind": "negative",
+    "url": "https://raw.githubusercontent.com/google-coral/test_data/master/bird.bmp",
+    "expected": "REJECT"
+  },
+  {
+    "id": "person",
+    "kind": "negative",
+    "url": "https://raw.githubusercontent.com/google-coral/test_data/master/grace_hopper.bmp",
+    "expected": "REJECT"
+  },
+  {
+    "id": "hotdog",
+    "kind": "negative",
+    "url": "https://raw.githubusercontent.com/google-coral/test_data/master/hot_dog.jpg",
+    "expected": "REJECT_OR_UNKNOWN"
+  },
+  {
+    "id": "sunflower",
+    "kind": "plant",
+    "url": "https://raw.githubusercontent.com/google-coral/test_data/master/sunflower.bmp",
+    "expected": "UNKNOWN"
+  }
+]

@@ -1,11 +1,13 @@
 import { classifyNegativeEvidence } from './negative-gate.mjs';
 import { classifyPixelsLocally } from './local-detector.mjs';
 import { inspectImageFile, MAX_INPUT_BYTES, MAX_IMAGE_EDGE, JPEG_QUALITY } from './image-security.mjs';
+import { createAutomaticNonPlantAdapter, P0A_GATE_VERSION } from './nonplant-onnx.mjs';
 
 const DB_NAME='herbarium.local.v1';
 const STORE_NAME='observations';
 const MAX_PIXELS=40_000_000;
 const activeUrls=new Set();
+let automaticGateAdapter=null;
 const byId=id=>document.getElementById(id);
 
 function openDb(){
@@ -210,7 +212,12 @@ async function renderAcademy(){
 }
 function resultCopy(item){
   if(item.status==='REJECT')return{
-    eyebrow:'Esito conservativo',title:'Non associata a una pianta',message:'Questa osservazione è stata esclusa in base al segnale negativo fornito. Nessuna specie è stata associata.',badge:'REJECT'
+    eyebrow:'Esito conservativo',
+    title:'Non associata a una pianta',
+    message:item?.analysis?.automaticGate?.status==='REJECT'
+      ?'Il controllo automatico locale ha trovato un forte segnale non vegetale. Nessuna specie è stata associata.'
+      :'Questa osservazione è stata esclusa in base al segnale negativo fornito. Nessuna specie è stata associata.',
+    badge:'REJECT'
   };
   if(item.status==='VERIFIED'&&item.scientificName)return{
     eyebrow:'Determinazione validata',title:item.scientificName,message:'Questa determinazione proviene da dati validati presenti nell’osservazione.',badge:'VERIFIED'
@@ -310,14 +317,29 @@ async function setupObserve(){
       }
       await ensureStorageCapacity(evidence.reduce((n,x)=>n+(x.bytes||0),0));
       const gate=classifyNegativeEvidence(negativeSignal?.value||null);
-      const detector=await classifyPixelsLocally({decodedEvidence:evidence.length},null);
+      let detector={status:'UNKNOWN',negativeCategory:null,reason:'manual-negative-signal'};
+      if(gate.status!=='REJECT'){
+        setResult('Controllo automatico locale in corso…');
+        automaticGateAdapter??=createAutomaticNonPlantAdapter();
+        detector=await classifyPixelsLocally({evidence},automaticGateAdapter);
+      }
       const status=gate.status==='REJECT'?'REJECT':detector.status;
       const id=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`;
       const observation={
         id,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
-        status,negativeCategory:gate.negativeCategory,
+        status,negativeCategory:gate.status==='REJECT'?gate.negativeCategory:detector.negativeCategory,
         identification:{status:'UNAVAILABLE',species:null,confidence:null},
-        analysis:{localDetector:detector.reason||'runtime-unavailable',speciesEngine:'unavailable'},
+        analysis:{
+          localDetector:detector.reason||'runtime-unavailable',
+          automaticGate:gate.status==='REJECT'?{version:P0A_GATE_VERSION,status:'SKIPPED_MANUAL'}:{
+            version:P0A_GATE_VERSION,
+            status:automaticGateAdapter?.last?.status||'UNKNOWN',
+            reason:automaticGateAdapter?.last?.reason||detector.reason||'unknown',
+            category:automaticGateAdapter?.last?.category||null,
+            label:automaticGateAdapter?.last?.label||null
+          },
+          speciesEngine:'unavailable'
+        },
         roles:evidence.map(x=>x.role),evidence,location:null,region:null,
         privacy:{localOnly:true,exifStripped:true}
       };

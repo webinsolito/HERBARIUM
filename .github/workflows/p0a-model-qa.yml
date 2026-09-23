@@ -1,0 +1,58 @@
+name: HERBARIUM P0-A Model QA
+
+on:
+  push:
+    branches:
+      - candidate/herbarium-v1-functional
+    paths:
+      - 'src/nonplant-onnx.mjs'
+      - 'src/local-detector.mjs'
+      - 'src/app.js'
+      - 'src/observe.html'
+      - 'src/sw.js'
+      - 'tests/p0a-model.spec.mjs'
+      - 'tests/fixtures/p0a-real-dataset.json'
+      - 'playwright.p0a.config.mjs'
+      - '.github/workflows/p0a-model-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: herbarium-p0a-model-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  p0a-real-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install browsers
+        run: |
+          npm install --no-save @playwright/test@1.63.0
+          npx playwright install --with-deps chromium webkit
+      - name: Download real Apache-2.0 fixtures
+        run: |
+          mkdir -p tests/p0a-assets
+          base=https://raw.githubusercontent.com/google-coral/test_data/master
+          curl -fsSL "$base/cat.bmp" -o tests/p0a-assets/cat.bmp
+          curl -fsSL "$base/bird.bmp" -o tests/p0a-assets/bird.bmp
+          curl -fsSL "$base/grace_hopper.bmp" -o tests/p0a-assets/grace_hopper.bmp
+          curl -fsSL "$base/hot_dog.jpg" -o tests/p0a-assets/hot_dog.jpg
+          curl -fsSL "$base/sunflower.bmp" -o tests/p0a-assets/sunflower.bmp
+      - name: Serve candidate
+        run: |
+          python3 -m http.server 8080 -d src >/tmp/herbarium-p0a.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8080/observe.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/herbarium-p0a.log
+          exit 1
+      - name: Run real model QA
+        run: npx playwright test --config=playwright.p0a.config.mjs
