@@ -1,0 +1,49 @@
+name: HERBARIUM Release QA
+
+on:
+  push:
+    branches:
+      - candidate/herbarium-v1-functional
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'playwright.release.config.mjs'
+      - 'package.json'
+      - '.github/workflows/release-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: herbarium-release-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Unit and contract tests
+        run: |
+          npm ci --ignore-scripts
+          npm test
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.63.0
+          npx playwright install --with-deps chromium webkit
+      - name: Serve candidate
+        run: |
+          python3 -m http.server 8080 -d src >/tmp/herbarium-release.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8080/index.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/herbarium-release.log
+          exit 1
+      - name: Release browser QA
+        run: npx playwright test --config=playwright.release.config.mjs
