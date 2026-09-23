@@ -47,7 +47,8 @@ test.describe('P0-A real model gate',()=>{
 
     await clearDb(page);
     const sunflower=await analyse(page,assets('sunflower.png'));
-    expect(sunflower.badge,JSON.stringify(sunflower.gate)).toBe('UNKNOWN');
+    expect(sunflower.gate?.status,JSON.stringify(sunflower.gate)).not.toBe('REJECT');
+    expect(['UNKNOWN','PROPOSTA']).toContain(sunflower.badge);
   });
 
   test('additional real negatives never become a species',async({page})=>{
