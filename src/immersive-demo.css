@@ -26,3 +26,15 @@ body{overflow-x:hidden}.immersive-app{position:relative;min-height:100svh;backgr
 @media(max-width:560px){.hero-copy{top:31%}.hero-copy p{max-width:27ch}.hero-actions{flex-direction:column;align-items:stretch;bottom:88px;width:calc(100% - 44px)}.hero-actions a{justify-content:center}.species-left{width:calc(100% - 24px);right:12px;max-height:180px;overflow:auto}.part-rail{display:none}.viewer-controls button{padding:10px 11px;font-size:.62rem}.species-right{bottom:78px}}
 
 .demo-warning{position:fixed;z-index:100;left:50%;top:12px;transform:translateX(-50%);padding:7px 11px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(9,15,11,.82);color:#eadba8;font:800 .55rem/1 system-ui;letter-spacing:.08em;white-space:nowrap;pointer-events:none}
+
+/* Bellis 3D V2 — focused refinement only */
+.species-left{max-width:300px}
+.species-left p{font-size:.78rem;line-height:1.6}
+.species-right p{font-size:.78rem}
+.interaction-hint{position:absolute;z-index:14;left:50%;bottom:76px;transform:translateX(-50%);padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:#92a399;background:rgba(8,17,13,.44);backdrop-filter:blur(12px);font-size:.56rem;letter-spacing:.04em;white-space:nowrap;pointer-events:none}
+.viewer-controls{bottom:max(18px,env(safe-area-inset-bottom))}
+.demo-chip{color:#d8e5da}
+.part-rail button{transition:.18s ease}
+.part-rail button.active{background:rgba(188,222,194,.18);box-shadow:inset 0 0 0 1px rgba(188,222,194,.14)}
+@media(max-width:900px){.interaction-hint{bottom:72px}.species-left{max-width:none}}
+@media(max-width:560px){.interaction-hint{display:none}.species-left{max-height:168px}.viewer-controls{gap:4px}.viewer-controls button{font-size:.59rem;padding:10px 9px}}

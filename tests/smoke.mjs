@@ -104,11 +104,11 @@ assert.match(sw,/request\.mode==='navigate'/);
 assert.match(sw,/url\.origin!==self\.location\.origin/);
 assert.doesNotMatch(sw,/https?:\/\//);
 
-assert.match(demo,/DEMO 3D TECNICA/);
+assert.match(demo,/DEMO 3D/);assert.match(demo,/MODELLO PROCEDURALE V2/);
 assert.match(demoJs,/getContext\('webgl'/);
 assert.match(demoJs,/toggleExplode/);
 assert.match(demoJs,/pointerdown/);
-assert.match(demoJs,/wheel/);
+assert.match(demoJs,/wheel/);assert.match(demoJs,/stripGeometry\('petal'/);assert.match(demoJs,/stripGeometry\('leaf'/);assert.match(demoJs,/for\(let ring=0;ring<2;ring\+\+\)/);assert.match(demoJs,/for\(let k=0;k<78;k\+\+\)/);
 assert.match(lab,/ASSET NOT APPROVED/);
 assert.match(labJs,/GLTFLoader/);
 assert.match(labJs,/Raycaster/);

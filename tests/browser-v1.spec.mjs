@@ -100,7 +100,7 @@ for(const viewport of viewports){
 
 test('Bellis demo is explicitly technical, not recognition',async({page})=>{
   await page.goto('/species-bellis-demo.html');
-  await expect(page.getByText(/DEMO 3D TECNICA/i).first()).toBeVisible();
+  await expect(page.getByText(/DEMO 3D/i).first()).toBeVisible();
   await expect(page.locator('#plantCanvas')).toBeVisible();
   await expect(page.getByText(/non.*riconoscimento/i).first()).toBeVisible();
 });
