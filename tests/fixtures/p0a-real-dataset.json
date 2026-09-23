@@ -3,30 +3,56 @@
     "id": "cat",
     "kind": "negative",
     "url": "https://raw.githubusercontent.com/google-coral/test_data/master/cat.bmp",
-    "expected": "REJECT"
+    "expected": "REJECT",
+    "license": "Apache-2.0 (google-coral/test_data repository)"
   },
   {
     "id": "bird",
     "kind": "negative",
     "url": "https://raw.githubusercontent.com/google-coral/test_data/master/bird.bmp",
-    "expected": "REJECT"
+    "expected": "REJECT",
+    "license": "Apache-2.0 (google-coral/test_data repository)"
   },
   {
     "id": "person",
     "kind": "negative",
     "url": "https://raw.githubusercontent.com/google-coral/test_data/master/grace_hopper.bmp",
-    "expected": "REJECT"
+    "expected": "REJECT",
+    "license": "Apache-2.0 (google-coral/test_data repository)"
   },
   {
     "id": "hotdog",
     "kind": "negative",
     "url": "https://raw.githubusercontent.com/google-coral/test_data/master/hot_dog.jpg",
-    "expected": "REJECT_OR_UNKNOWN"
+    "expected": "REJECT_OR_UNKNOWN",
+    "license": "Apache-2.0 (google-coral/test_data repository)"
   },
   {
     "id": "sunflower",
     "kind": "plant",
     "url": "https://raw.githubusercontent.com/google-coral/test_data/master/sunflower.bmp",
-    "expected": "UNKNOWN"
+    "expected": "UNKNOWN",
+    "license": "Apache-2.0 (google-coral/test_data repository)"
+  },
+  {
+    "id": "tablecloth",
+    "kind": "negative-ood",
+    "url": "https://commons.wikimedia.org/wiki/File:Serweta-na.drutach2.jpg",
+    "license": "Public domain (author Julo)",
+    "expected": "REJECT_OR_UNKNOWN"
+  },
+  {
+    "id": "floral-print",
+    "kind": "negative-ood",
+    "url": "https://commons.wikimedia.org/wiki/File:Floral_print_MET_66232.jpg",
+    "license": "CC0 1.0 (Metropolitan Museum of Art)",
+    "expected": "REJECT_OR_UNKNOWN"
+  },
+  {
+    "id": "laptop-screen",
+    "kind": "negative",
+    "url": "https://commons.wikimedia.org/wiki/File:LaptopScreen.png",
+    "license": "CC BY-SA 4.0",
+    "expected": "REJECT_OR_UNKNOWN"
   }
 ]
