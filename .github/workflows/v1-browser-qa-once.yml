@@ -1,9 +1,7 @@
 name: HERBARIUM V1 Browser QA Once
 
 on:
-  push:
-    branches:
-      - candidate/herbarium-v1-functional
+  workflow_dispatch:
 
 permissions:
   contents: read
