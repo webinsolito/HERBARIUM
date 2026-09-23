@@ -148,14 +148,13 @@ async function renderCollection(){
       const actions=el('div','observation-actions');
       const open=el('a','observation-open','Apri risultato');open.href=`./result.html?id=${encodeURIComponent(item.id)}`;
       const del=el('button','observation-delete','Elimina');del.type='button';del.dataset.deleteId=item.id;
+      del.addEventListener('click',async()=>{
+        const id=item.id;if(!id||!confirm('Eliminare questa osservazione e le sue foto locali?'))return;
+        del.disabled=true;
+        try{await deleteObservation(id);await renderCollection();}catch{del.disabled=false;alert('Eliminazione non riuscita. I dati non sono stati modificati.');}
+      });
       actions.append(open,del);body.append(top,title,meta,actions);card.append(media,body);list.append(card);
     }
-    list.addEventListener('click',async event=>{
-      const button=event.target.closest('[data-delete-id]');if(!button)return;
-      const id=button.dataset.deleteId;if(!id||!confirm('Eliminare questa osservazione e le sue foto locali?'))return;
-      button.disabled=true;
-      try{await deleteObservation(id);await renderCollection();}catch{button.disabled=false;alert('Eliminazione non riuscita. I dati non sono stati modificati.');}
-    },{once:true});
   }catch{
     count.textContent='—';verified.textContent='—';list.replaceChildren(emptyState('Raccolta non disponibile.','Non riesco a leggere IndexedDB. Nessun dato è stato modificato.'));
   }
