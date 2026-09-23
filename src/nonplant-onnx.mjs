@@ -44,7 +44,8 @@ function boxArea(box){
   return Math.max(0,Math.min(1,y2)-Math.max(0,y1))*Math.max(0,Math.min(1,x2)-Math.max(0,x1));
 }
 function thresholdFor(label){
-  if(GROUPS.animal.has(label)||GROUPS.person.has(label)||GROUPS.vehicle.has(label))return{score:.80,area:.12,category:GROUPS.animal.has(label)?'animal':GROUPS.person.has(label)?'person':'object'};
+  if(GROUPS.person.has(label))return{score:.70,area:.50,category:'person'};
+  if(GROUPS.animal.has(label)||GROUPS.vehicle.has(label))return{score:.80,area:.12,category:GROUPS.animal.has(label)?'animal':'object'};
   if(GROUPS.screen.has(label))return{score:.82,area:.20,category:'screen'};
   if(GROUPS.hardObject.has(label))return{score:.90,area:.30,category:'object'};
   return null;
