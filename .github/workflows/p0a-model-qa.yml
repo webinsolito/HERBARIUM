@@ -36,7 +36,7 @@ jobs:
         run: |
           npm install --no-save @playwright/test@1.63.0
           npx playwright install --with-deps chromium webkit
-      - name: Download and convert real Apache-2.0 fixtures
+      - name: Download and convert real licensed fixtures
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq imagemagick
@@ -47,6 +47,9 @@ jobs:
           curl -fsSL "$base/grace_hopper.bmp" -o /tmp/grace_hopper.bmp
           curl -fsSL "$base/hot_dog.jpg" -o tests/p0a-assets/hot_dog.jpg
           curl -fsSL "$base/sunflower.bmp" -o /tmp/sunflower.bmp
+          curl -fsSL "https://commons.wikimedia.org/wiki/Special:Redirect/file/Serweta-na.drutach2.jpg" -o tests/p0a-assets/tablecloth.jpg
+          curl -fsSL "https://commons.wikimedia.org/wiki/Special:Redirect/file/Floral_print_MET_66232.jpg" -o tests/p0a-assets/floral_print.jpg
+          curl -fsSL "https://commons.wikimedia.org/wiki/Special:Redirect/file/LaptopScreen.png" -o tests/p0a-assets/laptop_screen.png
           convert /tmp/cat.bmp tests/p0a-assets/cat.png
           convert /tmp/bird.bmp tests/p0a-assets/bird.png
           convert /tmp/grace_hopper.bmp tests/p0a-assets/grace_hopper.png
