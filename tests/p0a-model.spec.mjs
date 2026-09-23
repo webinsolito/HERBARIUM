@@ -17,7 +17,20 @@ async function analyse(page,file){
   await expect(page.locator('#analyse')).toBeEnabled();
   await page.locator('#analyse').click();
   await page.waitForURL(/result\.html\?id=/,{timeout:120000});
-  return (await page.locator('#resultBadge').textContent())?.trim();
+  const badge=(await page.locator('#resultBadge').textContent())?.trim();
+  const gate=await page.evaluate(()=>new Promise((resolve,reject)=>{
+    const request=indexedDB.open('herbarium.local.v1');
+    request.onsuccess=()=>{
+      const db=request.result;
+      const tx=db.transaction('observations','readonly');
+      const q=tx.objectStore('observations').getAll();
+      q.onsuccess=()=>{const items=q.result||[];resolve(items.at(-1)?.analysis?.automaticGate||null);db.close();};
+      q.onerror=()=>reject(q.error);
+    };
+    request.onerror=()=>reject(request.error);
+  }));
+  console.log('P0A_DIAG',file,badge,JSON.stringify(gate));
+  return {badge,gate};
 }
 
 test.describe('P0-A real model gate',()=>{
@@ -26,22 +39,22 @@ test.describe('P0-A real model gate',()=>{
   test('cat and person are conservatively rejected; sunflower is not',async({page})=>{
     await clearDb(page);
     const cat=await analyse(page,assets('cat.png'));
-    expect(cat).toBe('REJECT');
+    expect(cat.badge,JSON.stringify(cat.gate)).toBe('REJECT');
 
     await clearDb(page);
     const person=await analyse(page,assets('grace_hopper.png'));
-    expect(person).toBe('REJECT');
+    expect(person.badge,JSON.stringify(person.gate)).toBe('REJECT');
 
     await clearDb(page);
     const sunflower=await analyse(page,assets('sunflower.png'));
-    expect(sunflower).toBe('UNKNOWN');
+    expect(sunflower.badge,JSON.stringify(sunflower.gate)).toBe('UNKNOWN');
   });
 
   test('additional real negatives never become a species',async({page})=>{
     for(const file of ['bird.png','hot_dog.jpg']){
       await clearDb(page);
       const result=await analyse(page,assets(file));
-      expect(['REJECT','UNKNOWN']).toContain(result);
+      expect(['REJECT','UNKNOWN']).toContain(result.badge);
       await expect(page.locator('#resultMainTitle')).not.toContainText(/Bellis|Rosa|Lavandula/i);
     }
   });
