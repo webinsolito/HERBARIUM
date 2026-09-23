@@ -2,12 +2,14 @@ import { classifyNegativeEvidence } from './negative-gate.mjs';
 import { classifyPixelsLocally } from './local-detector.mjs';
 import { inspectImageFile, MAX_INPUT_BYTES, MAX_IMAGE_EDGE, JPEG_QUALITY } from './image-security.mjs';
 import { createAutomaticNonPlantAdapter, P0A_GATE_VERSION } from './nonplant-onnx.mjs';
+import { assessEvidenceQuality, QUALITY_VERSION } from './image-quality.mjs';
+import { createSpeciesRecognitionAdapter, SPECIES_ENGINE_VERSION } from './species-onnx.mjs';
 
 const DB_NAME='herbarium.local.v1';
 const STORE_NAME='observations';
 const MAX_PIXELS=40_000_000;
 const activeUrls=new Set();
-let automaticGateAdapter=null;
+let automaticGateAdapter=null,speciesRecognitionAdapter=null;
 const byId=id=>document.getElementById(id);
 
 function openDb(){
@@ -223,7 +225,7 @@ function resultCopy(item){
     eyebrow:'Determinazione validata',title:item.scientificName,message:'Questa determinazione proviene da dati validati presenti nell’osservazione.',badge:'VERIFIED'
   };
   if(item.status==='PROPOSED'&&item.scientificName)return{
-    eyebrow:'Specie proposta',title:item.scientificName,message:'La proposta richiede conferma. Non viene trattata come VERIFIED.',badge:'PROPOSTA'
+    eyebrow:'Specie proposta',title:item.scientificName,message:'Il modello botanico locale propone questa specie, ma la proposta non è una verifica scientifica e richiede conferma.',badge:'PROPOSTA'
   };
   return{eyebrow:'Identificazione',title:'Identificazione non disponibile',message:'La foto è salvata, ma HERBARIUM non dispone ancora di un motore specie validato. L’osservazione resta da verificare.',badge:'UNKNOWN'};
 }
@@ -302,7 +304,7 @@ async function setupObserve(){
     if(!count){setResult('Aggiungi una foto per iniziare.');return;}
     const bad=await validate();
     if(bad){analyse.disabled=true;setResult('File non valido o non supportato. Nessun dato verrà salvato.','ERROR');return;}
-    setResult(gate.status==='REJECT'?'Segnale negativo impostato: nessuna specie verrà associata.':`Foto pronta: ${count} evidenza/e. Identificazione specie non disponibile: il risultato resterà UNKNOWN.`,gate.status);
+    setResult(gate.status==='REJECT'?'Segnale negativo impostato: nessuna specie verrà associata.':`Foto pronta: ${count} evidenza/e. L’analisi locale userà quality gate, anti-falso-positivo e riconoscimento botanico prudente.`,gate.status);
   }
   inputs.forEach(input=>input.addEventListener('change',refresh));
   negativeSignal?.addEventListener('change',refresh);
@@ -316,20 +318,36 @@ async function setupObserve(){
         evidence.push({role:input.id,...prepared});
       }
       await ensureStorageCapacity(evidence.reduce((n,x)=>n+(x.bytes||0),0));
+      setResult('Controllo qualità locale in corso…');
+      const quality=await assessEvidenceQuality(evidence);
       const gate=classifyNegativeEvidence(negativeSignal?.value||null);
-      let detector={status:'UNKNOWN',negativeCategory:null,reason:'manual-negative-signal'};
-      if(gate.status!=='REJECT'){
-        setResult('Controllo automatico locale in corso…');
+      let detector={status:'UNKNOWN',negativeCategory:null,reason:quality.usable?'not-run':'quality-unusable'};
+      if(gate.status!=='REJECT'&&quality.usable){
+        setResult('Controllo automatico non-vegetale in corso…');
         automaticGateAdapter??=createAutomaticNonPlantAdapter();
         detector=await classifyPixelsLocally({evidence},automaticGateAdapter);
       }
-      const status=gate.status==='REJECT'?'REJECT':detector.status;
+      let species={status:'UNAVAILABLE',reason:quality.usable?'not-run':'quality-unusable',scientificName:null,rawScore:null,margin:null,calibrated:false};
+      if(gate.status!=='REJECT'&&detector.status!=='REJECT'&&quality.usable){
+        setResult('Riconoscimento botanico locale in corso…');
+        speciesRecognitionAdapter??=createSpeciesRecognitionAdapter();
+        species=await speciesRecognitionAdapter.infer(evidence);
+      }
+      const status=gate.status==='REJECT'?'REJECT':detector.status==='REJECT'?'REJECT':species.status==='PROPOSED'?'PROPOSED':'UNKNOWN';
+      const scientificName=status==='PROPOSED'?species.scientificName:null;
       const id=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`;
       const observation={
         id,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
-        status,negativeCategory:gate.status==='REJECT'?gate.negativeCategory:detector.negativeCategory,
-        identification:{status:'UNAVAILABLE',species:null,confidence:null},
+        status,scientificName,negativeCategory:gate.status==='REJECT'?gate.negativeCategory:detector.negativeCategory,
+        identification:{
+          status:status==='PROPOSED'?'PROPOSED':'UNAVAILABLE',
+          species:scientificName,
+          confidence:null,
+          rawModelScore:species.rawScore??null,
+          calibrated:false
+        },
         analysis:{
+          quality:{version:QUALITY_VERSION,status:quality.status,usable:quality.usable,reason:quality.reason,views:quality.views},
           localDetector:detector.reason||'runtime-unavailable',
           automaticGate:gate.status==='REJECT'?{version:P0A_GATE_VERSION,status:'SKIPPED_MANUAL'}:{
             version:P0A_GATE_VERSION,
@@ -338,14 +356,21 @@ async function setupObserve(){
             category:automaticGateAdapter?.last?.category||null,
             label:automaticGateAdapter?.last?.label||null
           },
-          speciesEngine:'unavailable'
+          speciesEngine:{
+            version:SPECIES_ENGINE_VERSION,
+            status:species.status,
+            reason:species.reason||'unknown',
+            calibrated:false,
+            rawScore:species.rawScore??null,
+            margin:species.margin??null
+          }
         },
         roles:evidence.map(x=>x.role),evidence,location:null,region:null,
         privacy:{localOnly:true,exifStripped:true}
       };
       await saveObservation(observation);
       if(navigator.storage?.persist)navigator.storage.persist().catch(()=>false);
-      setResult(status==='REJECT'?'Salvata come REJECT. Nessuna specie associata.':'Salvata come UNKNOWN. Identificazione non disponibile.',status);
+      setResult(status==='REJECT'?'Salvata come REJECT. Nessuna specie associata.':status==='PROPOSED'?`Salvata come PROPOSTA: ${scientificName}. Richiede conferma.`:quality.usable?'Salvata come UNKNOWN. Il sistema non forza una specie.':'Salvata come UNKNOWN: la foto non è abbastanza utilizzabile per una proposta prudente.',status);
       location.assign(`./result.html?id=${encodeURIComponent(id)}`);
     }catch(error){
       console.error(error);setResult(`${error?.message||'Salvataggio non riuscito.'} Nessuna osservazione incompleta è stata registrata.`,'ERROR');
