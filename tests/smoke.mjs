@@ -87,7 +87,7 @@ const consensusFail=decideModelConsensus(
   {status:'PROPOSED',scientificName:'Alpha beta L.',rawScore:.97,margin:.80,calibrated:false},
   {status:'PROPOSED',scientificName:'Gamma delta L.',rawScore:.95,margin:.70,calibrated:false}
 );
-assert.equal(consensusFail.status,'UNKNOWN');assert.equal(consensusFail.reason,'model-disagreement');
+assert.equal(consensusFail.status,'UNKNOWN');assert.equal(consensusFail.reason,'cross-dataset-model-disagreement');
 assert.match(speciesOnnx,/plantnet300k-mobilenetv3-small/);assert.match(speciesOnnx,/bioclip-2\.5-mobile-fastvit/);assert.match(speciesOnnx,/cross-dataset-dual-model-consensus/);assert.match(speciesOnnx,/calibrated:false/);assert.doesNotMatch(speciesOnnx,/status:\s*['"]VERIFIED['"]/);
 assert.match(qualityGate,/blur-or-flat/);
 assert.match(sw,/species-onnx\.mjs/);assert.match(sw,/image-quality\.mjs/);
