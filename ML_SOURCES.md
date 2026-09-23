@@ -11,11 +11,13 @@
 
 ## P0-B species proposal
 - Runtime: ONNX Runtime Web 1.30.0 — MIT.
-- Model source: `cpoisson/plantnet300k-mobilenetv3-small`.
+- Primary model: `cpoisson/plantnet300k-mobilenetv3-small` — OpenRAIL.
+- Independent verifier: `cpoisson/plantnet300k-resnet18` — Apache-2.0.
 - Dataset family: PlantNet-300K, 1,081 species.
-- Declared model license: OpenRAIL.
-- Role in HERBARIUM: local/offline-first candidate proposal only.
-- HERBARIUM stores the raw softmax score only as a model diagnostic. It is explicitly **not calibrated confidence**.
+- HERBARIUM first runs the lightweight MobileNetV3 model. The heavier ResNet18 verifier is loaded only when MobileNetV3 would otherwise produce a strong proposal.
+- A species can become PROPOSED only when both models independently choose the same scientific name and both pass their own score/margin gates.
+- Model disagreement, weak verifier evidence or verifier unavailability fails safe to UNKNOWN.
+- HERBARIUM stores raw softmax scores only as diagnostics. They are explicitly **not calibrated confidence**.
 - Automatic output can be PROPOSED or UNKNOWN; it cannot become VERIFIED.
 
 ## Product rule
