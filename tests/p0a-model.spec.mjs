@@ -55,7 +55,7 @@ test.describe('P0-A real model gate',()=>{
   });
 
   test('additional real negatives never become a species',async({page})=>{
-    for(const file of ['bird.png','hot_dog.jpg']){
+    for(const file of ['bird.png','hot_dog.jpg','tablecloth.jpg','floral_print.jpg','laptop_screen.png']){
       await clearDb(page);
       const result=await analyse(page,assets(file));
       expect(['REJECT','UNKNOWN']).toContain(result.badge);
