@@ -1,8 +1,8 @@
-const CACHE='herbarium-v1-shell-2';
+const CACHE='herbarium-v1-shell-3';
 const ML_CACHE='herbarium-ml-v1';
 const CORE=[
   './','./index.html','./observe.html','./result.html','./collection.html','./book.html','./atlas.html','./academy.html',
-  './styles.css','./app.js','./negative-gate.mjs','./local-detector.mjs','./nonplant-onnx.mjs','./image-security.mjs','./book-plates.js',
+  './styles.css','./app.js','./negative-gate.mjs','./local-detector.mjs','./nonplant-onnx.mjs','./species-onnx.mjs','./image-quality.mjs','./image-security.mjs','./book-plates.js',
   './assets/botanical-sprig.svg',
   './species-bellis-demo.html','./immersive-demo.css','./plant3d-demo.js'
 ];
