@@ -6,6 +6,7 @@ const plantDir=path.resolve('tests/benchmark-assets/plants');
 const negDir=path.resolve('tests/benchmark-assets/negatives');
 const plantClasses=['daisy','dandelion','roses','sunflowers','tulips'];
 const negativeFiles=['cat.png','bird.png','grace_hopper.png','hot_dog.jpg','tablecloth.jpg','floral_print.jpg','laptop_screen.png'];
+const PLANTS_PER_CLASS=4;
 
 async function clearDb(page){
   await page.goto('/observe.html');
@@ -39,22 +40,24 @@ async function analyse(page,file){
 function pickPlants(){
   const out=[];
   for(const cls of plantClasses){
-    const files=fs.readdirSync(path.join(plantDir,cls)).filter(x=>/\.jpe?g$/i.test(x)).sort().slice(0,2);
+    const files=fs.readdirSync(path.join(plantDir,cls)).filter(x=>/\.jpe?g$/i.test(x)).sort().slice(0,PLANTS_PER_CLASS);
     for(const file of files)out.push({kind:'plant',className:cls,file:path.join(plantDir,cls,file)});
   }
   return out;
 }
 
+function rate(n,d){return d?Number((n/d).toFixed(4)):null;}
+
 test.describe('HERBARIUM confidence/reject benchmark',()=>{
-  test.setTimeout(900000);
+  test.setTimeout(1200000);
 
   test('separated benchmark reports false-species and reject behavior',async({page})=>{
     const samples=[
       ...pickPlants(),
       ...negativeFiles.map(file=>({kind:'negative',className:'negative',file:path.join(negDir,file)}))
     ];
-    expect(samples.filter(x=>x.kind==='plant')).toHaveLength(10);
-    expect(samples.filter(x=>x.kind==='negative')).toHaveLength(7);
+    expect(samples.filter(x=>x.kind==='plant')).toHaveLength(plantClasses.length*PLANTS_PER_CLASS);
+    expect(samples.filter(x=>x.kind==='negative')).toHaveLength(negativeFiles.length);
 
     const rows=[];
     for(const sample of samples){
@@ -70,6 +73,8 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
         quality:item?.analysis?.quality?.status||null,
         nonPlant:item?.analysis?.automaticGate?.status||null,
         speciesEngine:item?.analysis?.speciesEngine?.status||null,
+        speciesReason:item?.analysis?.speciesEngine?.reason||null,
+        consensus:item?.analysis?.speciesEngine?.consensus??null,
         rawScore:item?.analysis?.speciesEngine?.rawScore??null,
         margin:item?.analysis?.speciesEngine?.margin??null,
         elapsedMs:result.elapsedMs
@@ -78,16 +83,28 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
 
     const plants=rows.filter(x=>x.kind==='plant');
     const negatives=rows.filter(x=>x.kind==='negative');
+    const plantRejectCount=plants.filter(x=>x.status==='REJECT').length;
+    const plantProposalCount=plants.filter(x=>x.status==='PROPOSED').length;
+    const negativeRejectCount=negatives.filter(x=>x.status==='REJECT').length;
+    const negativeUnknownCount=negatives.filter(x=>x.status==='UNKNOWN').length;
+    const negativeFalseSpeciesCount=negatives.filter(x=>x.status==='PROPOSED'||x.status==='VERIFIED'||x.scientificName).length;
     const report={
       generatedAt:new Date().toISOString(),
       sampleCount:rows.length,
       plantCount:plants.length,
       negativeCount:negatives.length,
-      plantRejectCount:plants.filter(x=>x.status==='REJECT').length,
-      plantProposalCount:plants.filter(x=>x.status==='PROPOSED').length,
-      negativeRejectCount:negatives.filter(x=>x.status==='REJECT').length,
-      negativeFalseSpeciesCount:negatives.filter(x=>x.status==='PROPOSED').length,
+      plantRejectCount,
+      plantRejectRate:rate(plantRejectCount,plants.length),
+      plantProposalCount,
+      plantProposalRate:rate(plantProposalCount,plants.length),
+      negativeRejectCount,
+      negativeRejectRate:rate(negativeRejectCount,negatives.length),
+      negativeUnknownCount,
+      negativeUnknownRate:rate(negativeUnknownCount,negatives.length),
+      negativeFalseSpeciesCount,
+      negativeFalseSpeciesRate:rate(negativeFalseSpeciesCount,negatives.length),
       automaticVerifiedCount:rows.filter(x=>x.status==='VERIFIED').length,
+      consensusProposalCount:rows.filter(x=>x.status==='PROPOSED'&&x.consensus===true).length,
       medianElapsedMs:[...rows].sort((a,b)=>a.elapsedMs-b.elapsedMs)[Math.floor(rows.length/2)]?.elapsedMs??null,
       rows
     };
@@ -98,5 +115,10 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
     expect(report.automaticVerifiedCount).toBe(0);
     expect(report.plantRejectCount).toBe(0);
     expect(report.negativeFalseSpeciesCount).toBe(0);
+    expect(report.negativeRejectCount+report.negativeUnknownCount).toBe(report.negativeCount);
+    for(const row of rows.filter(x=>x.status==='PROPOSED')){
+      expect(row.scientificName).toBeTruthy();
+      expect(row.consensus).toBe(true);
+    }
   });
 });
