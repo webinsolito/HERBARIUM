@@ -4,7 +4,7 @@ import { classifyNegativeEvidence, NEGATIVE_CATEGORIES } from '../src/negative-g
 import { classifyPixelsLocally, aggregateLabelEvidence, DEFAULT_NON_PLANT_THRESHOLD, DEFAULT_MIN_MARGIN } from '../src/local-detector.mjs';
 import { sniffImageBytes, declaredMimeCompatible, MAX_INPUT_BYTES, MAX_IMAGE_EDGE } from '../src/image-security.mjs';
 import { decideQualityFromStats, QUALITY_LIMITS } from '../src/image-quality.mjs';
-import { decideSpeciesProposal, SPECIES_ENGINE_VERSION, SPECIES_MODEL_LICENSE } from '../src/species-onnx.mjs';
+import { decideSpeciesProposal, decideModelConsensus, SPECIES_ENGINE_VERSION, SPECIES_MODEL_LICENSE } from '../src/species-onnx.mjs';
 
 const read=p=>fs.readFileSync(p,'utf8');
 const pages=['index','observe','result','collection','book','atlas','academy'].map(n=>read(`src/${n}.html`));
@@ -72,13 +72,23 @@ assert.match(sw,/nonplant-onnx\.mjs/);
 assert.equal(QUALITY_LIMITS.minSide,128);
 assert.equal(decideQualityFromStats({width:800,height:600,meanLuma:120,contrastStd:28,edgeEnergy:16}).status,'PASS');
 assert.equal(decideQualityFromStats({width:800,height:600,meanLuma:120,contrastStd:28,edgeEnergy:1}).status,'UNUSABLE');
-assert.equal(SPECIES_ENGINE_VERSION,'plantnet300k-mobilenetv3-onnx-v1');
-assert.equal(SPECIES_MODEL_LICENSE,'OpenRAIL');
+assert.equal(SPECIES_ENGINE_VERSION,'plantnet300k-dual-consensus-v2');
+assert.equal(SPECIES_MODEL_LICENSE,'OpenRAIL + Apache-2.0');
 const strongProposal=decideSpeciesProposal([{executed:true,top:[{index:10,label:'Species test A',score:.97},{index:11,label:'Species test B',score:.01}]}]);
 assert.equal(strongProposal.status,'PROPOSED');assert.equal(strongProposal.calibrated,false);
 const weakProposal=decideSpeciesProposal([{executed:true,top:[{index:10,label:'Species test A',score:.60},{index:11,label:'Species test B',score:.30}]}]);
 assert.equal(weakProposal.status,'UNKNOWN');
-assert.match(speciesOnnx,/plantnet300k-mobilenetv3-small/);assert.match(speciesOnnx,/calibrated:false/);assert.doesNotMatch(speciesOnnx,/status:\s*['"]VERIFIED['"]/);
+const consensusOk=decideModelConsensus(
+  {status:'PROPOSED',scientificName:'Species test A',rawScore:.97,margin:.80,calibrated:false},
+  {status:'PROPOSED',scientificName:'Species test A',rawScore:.90,margin:.60,calibrated:false}
+);
+assert.equal(consensusOk.status,'PROPOSED');assert.equal(consensusOk.consensus,true);
+const consensusFail=decideModelConsensus(
+  {status:'PROPOSED',scientificName:'Species test A',rawScore:.97,margin:.80,calibrated:false},
+  {status:'PROPOSED',scientificName:'Species test B',rawScore:.95,margin:.70,calibrated:false}
+);
+assert.equal(consensusFail.status,'UNKNOWN');assert.equal(consensusFail.reason,'model-disagreement');
+assert.match(speciesOnnx,/plantnet300k-mobilenetv3-small/);assert.match(speciesOnnx,/plantnet300k-resnet18/);assert.match(speciesOnnx,/dual-model-consensus/);assert.match(speciesOnnx,/calibrated:false/);assert.doesNotMatch(speciesOnnx,/status:\s*['"]VERIFIED['"]/);
 assert.match(qualityGate,/blur-or-flat/);
 assert.match(sw,/species-onnx\.mjs/);assert.match(sw,/image-quality\.mjs/);
 
