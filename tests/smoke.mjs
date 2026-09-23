@@ -72,8 +72,8 @@ assert.match(sw,/nonplant-onnx\.mjs/);
 assert.equal(QUALITY_LIMITS.minSide,128);
 assert.equal(decideQualityFromStats({width:800,height:600,meanLuma:120,contrastStd:28,edgeEnergy:16}).status,'PASS');
 assert.equal(decideQualityFromStats({width:800,height:600,meanLuma:120,contrastStd:28,edgeEnergy:1}).status,'UNUSABLE');
-assert.equal(SPECIES_ENGINE_VERSION,'plantnet300k-dual-consensus-v2');
-assert.equal(SPECIES_MODEL_LICENSE,'OpenRAIL + Apache-2.0');
+assert.equal(SPECIES_ENGINE_VERSION,'plantnet-bioclip-consensus-v3');
+assert.equal(SPECIES_MODEL_LICENSE,'OpenRAIL + MIT');
 const strongProposal=decideSpeciesProposal([{executed:true,top:[{index:10,label:'Species test A',score:.97},{index:11,label:'Species test B',score:.01}]}]);
 assert.equal(strongProposal.status,'PROPOSED');assert.equal(strongProposal.calibrated,false);
 const weakProposal=decideSpeciesProposal([{executed:true,top:[{index:10,label:'Species test A',score:.60},{index:11,label:'Species test B',score:.30}]}]);
@@ -88,7 +88,7 @@ const consensusFail=decideModelConsensus(
   {status:'PROPOSED',scientificName:'Species test B',rawScore:.95,margin:.70,calibrated:false}
 );
 assert.equal(consensusFail.status,'UNKNOWN');assert.equal(consensusFail.reason,'model-disagreement');
-assert.match(speciesOnnx,/plantnet300k-mobilenetv3-small/);assert.match(speciesOnnx,/plantnet300k-resnet18/);assert.match(speciesOnnx,/dual-model-consensus/);assert.match(speciesOnnx,/calibrated:false/);assert.doesNotMatch(speciesOnnx,/status:\s*['"]VERIFIED['"]/);
+assert.match(speciesOnnx,/plantnet300k-mobilenetv3-small/);assert.match(speciesOnnx,/bioclip-2\.5-mobile-fastvit/);assert.match(speciesOnnx,/cross-dataset-dual-model-consensus/);assert.match(speciesOnnx,/calibrated:false/);assert.doesNotMatch(speciesOnnx,/status:\s*['"]VERIFIED['"]/);
 assert.match(qualityGate,/blur-or-flat/);
 assert.match(sw,/species-onnx\.mjs/);assert.match(sw,/image-quality\.mjs/);
 
