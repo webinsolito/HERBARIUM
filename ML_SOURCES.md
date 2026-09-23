@@ -12,11 +12,13 @@
 ## P0-B species proposal
 - Runtime: ONNX Runtime Web 1.30.0 — MIT.
 - Primary model: `cpoisson/plantnet300k-mobilenetv3-small` — OpenRAIL.
-- Independent verifier: `cpoisson/plantnet300k-resnet18` — Apache-2.0.
-- Dataset family: PlantNet-300K, 1,081 species.
-- HERBARIUM first runs the lightweight MobileNetV3 model. The heavier ResNet18 verifier is loaded only when MobileNetV3 would otherwise produce a strong proposal.
-- A species can become PROPOSED only when both models independently choose the same scientific name and both pass their own score/margin gates.
-- Model disagreement, weak verifier evidence or verifier unavailability fails safe to UNKNOWN.
+- Independent verifier: `crazedcodernate/bioclip-2.5-mobile-fastvit` — MIT.
+- Primary dataset family: PlantNet-300K, 1,081 species.
+- Verifier coverage: 4,271 plant species from iNaturalist 2021 via BioCLIP 2.5 distilled embeddings.
+- HERBARIUM first runs the lightweight PlantNet MobileNetV3 model. BioCLIP Mobile is loaded only when PlantNet would otherwise produce a strong proposal.
+- A species can become PROPOSED only when PlantNet and the independently trained BioCLIP verifier choose the same genus+species taxon.
+- Cross-dataset disagreement or verifier unavailability fails safe to UNKNOWN.
+- This cross-dataset verifier replaced the earlier ResNet18 verifier because ResNet18 shared the same PlantNet-300K closed-set coverage and could agree on the same wrong nearest class for species absent from PlantNet.
 - HERBARIUM stores raw softmax scores only as diagnostics. They are explicitly **not calibrated confidence**.
 - Automatic output can be PROPOSED or UNKNOWN; it cannot become VERIFIED.
 
