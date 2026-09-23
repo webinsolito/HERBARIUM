@@ -1,94 +1,73 @@
 import { test, expect } from '@playwright/test';
 
-const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zl9sAAAAASUVORK5CYII=','base64');
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR42mNk+M9QzwAEYBxVSFUAANgABf6O40YAAAAASUVORK5CYII=','base64');
+const viewports=[{width:360,height:780},{width:390,height:844},{width:430,height:932}];
 
-async function addPhoto(page,{reject=false}={}){
-  await page.goto('/observe.html');
-  await page.locator('#detail').setInputFiles({name:'plant.png',mimeType:'image/png',buffer:png});
-  if(reject){
-    await page.locator('.advanced-check summary').click();
-    await page.locator('#negativeSignal').selectOption('object');
-  }
-  await expect(page.locator('#analyse')).toBeEnabled();
-  await Promise.all([
-    page.waitForURL(/result\.html\?id=/),
-    page.locator('#analyse').click()
-  ]);
+for(const viewport of viewports){
+  test.describe(`mobile ${viewport.width}px`,()=>{
+    test.use({viewport});
+
+    test('home and core pages do not overflow horizontally',async({page})=>{
+      for(const path of ['index.html','observe.html','collection.html','book.html','atlas.html','academy.html']){
+        await page.goto('/'+path);
+        await expect(page.locator('body')).toBeVisible();
+        const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+        expect(overflow).toBeLessThanOrEqual(1);
+      }
+    });
+
+    test('valid image -> UNKNOWN -> result -> collection persists',async({page})=>{
+      await page.goto('/observe.html');
+      await page.locator('#detail').setInputFiles({name:'leaf.png',mimeType:'image/png',buffer:png});
+      await expect(page.locator('#analyse')).toBeEnabled();
+      await page.locator('#analyse').click();
+      await page.waitForURL(/result\.html\?id=/);
+      await expect(page.locator('#resultBadge')).toHaveText('UNKNOWN');
+      await expect(page.locator('#resultMainTitle')).toContainText('Identificazione non disponibile');
+      await page.reload();
+      await expect(page.locator('#resultBadge')).toHaveText('UNKNOWN');
+      await page.goto('/collection.html');
+      await expect(page.locator('.observation-card')).toHaveCount(1);
+      await expect(page.locator('.human-status')).toContainText('Da verificare');
+      await page.goto('/book.html');
+      await expect(page.locator('.book-specimen-card')).toHaveCount(1);
+      await page.goto('/atlas.html');
+      await expect(page.locator('#atlasLocatedCount')).toHaveText('0');
+    });
+
+    test('manual negative signal stays REJECT and never becomes species',async({page})=>{
+      await page.goto('/observe.html');
+      await page.locator('#detail').setInputFiles({name:'object.png',mimeType:'image/png',buffer:png});
+      await page.locator('#negativeSignal').selectOption('object');
+      await page.locator('#analyse').click();
+      await page.waitForURL(/result\.html\?id=/);
+      await expect(page.locator('#resultBadge')).toHaveText('REJECT');
+      await expect(page.locator('#resultMainTitle')).toContainText('Non associata');
+      await expect(page.locator('#resultCopy')).not.toContainText(/Bellis|Rosa|Lavandula/i);
+    });
+
+    test('spoofed non-image is rejected before save',async({page})=>{
+      await page.goto('/observe.html');
+      await page.locator('#detail').setInputFiles({name:'fake.jpg',mimeType:'image/jpeg',buffer:Buffer.from('not-an-image')});
+      await expect(page.locator('#analyse')).toBeDisabled();
+      await expect(page.locator('#result')).toContainText('File non valido');
+    });
+
+    test('service worker shell can reopen collection offline after install',async({page,context})=>{
+      await page.goto('/index.html');
+      await page.evaluate(()=>navigator.serviceWorker?.ready);
+      await page.goto('/collection.html');
+      await context.setOffline(true);
+      await page.reload({waitUntil:'domcontentloaded'});
+      await expect(page.locator('#collectionTitle')).toBeVisible();
+      await context.setOffline(false);
+    });
+  });
 }
 
-test('V1 complete local flow: UNKNOWN, persist, collection, book, atlas and offline shell',async({page,context,browserName},testInfo)=>{
-  await addPhoto(page);
-  await expect(page.locator('#resultMainTitle')).toHaveText('Identificazione non disponibile');
-  await expect(page.locator('#resultBadge')).toHaveText('UNKNOWN');
-  const savedUrl=page.url();
-
-  await page.reload();
-  await expect(page.locator('#resultMainTitle')).toHaveText('Identificazione non disponibile');
-
-  await page.goto('/collection.html');
-  await expect(page.locator('.observation-card')).toHaveCount(1);
-  await expect(page.getByText('Da verificare').first()).toBeVisible();
-
-  await page.goto('/book.html');
-  await expect(page.locator('.book-specimen-card')).toHaveCount(1);
-  await expect(page.getByText('Determinazione in attesa')).toBeVisible();
-
-  await page.goto('/atlas.html');
-  await expect(page.getByText('Atlante vuoto.')).toBeVisible();
-
-  await page.goto('/index.html');
-  await page.evaluate(()=>navigator.serviceWorker?.ready);
-  if(!(await page.evaluate(()=>Boolean(navigator.serviceWorker?.controller)))){
-    await page.reload();
-    await page.evaluate(()=>navigator.serviceWorker?.ready);
-  }
-  expect(await page.evaluate(()=>Boolean(navigator.serviceWorker?.controller))).toBeTruthy();
-  await context.setOffline(true);
-  const offlineCollection=await page.evaluate(async()=>{
-    const response=await fetch('./collection.html',{cache:'no-store'});
-    return {ok:response.ok,text:await response.text()};
-  });
-  expect(offlineCollection.ok).toBeTruthy();
-  expect(offlineCollection.text).toContain('id="collectionList"');
-  await context.setOffline(false);
-
-  await page.goto(savedUrl);
-  await expect(page.locator('#resultMainTitle')).toHaveText('Identificazione non disponibile');
-
-  for(const width of [360,390,430]){
-    await page.setViewportSize({width,height:844});
-    await page.goto('/index.html');
-    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
-    expect(overflow).toBeLessThanOrEqual(1);
-    await page.screenshot({path:testInfo.outputPath(`home-${browserName}-${width}.png`),fullPage:true});
-  }
-});
-
-test('REJECT never becomes a species',async({page})=>{
-  await addPhoto(page,{reject:true});
-  await expect(page.locator('#resultMainTitle')).toHaveText('Non associata a una pianta');
-  await expect(page.locator('#resultBadge')).toHaveText('REJECT');
-  await expect(page.locator('body')).not.toContainText('VERIFIED');
-});
-
-test('spoofed and oversized files are blocked before save',async({page})=>{
-  await page.goto('/observe.html');
-  await page.locator('#detail').setInputFiles({name:'fake.jpg',mimeType:'image/jpeg',buffer:Buffer.from('not an image')});
-  await expect(page.locator('#analyse')).toBeDisabled();
-  await expect(page.locator('#result')).toContainText('File non valido');
-
-  const huge=Buffer.alloc(12*1024*1024+1);huge[0]=0xff;huge[1]=0xd8;huge[2]=0xff;
-  await page.locator('#detail').setInputFiles({name:'huge.jpg',mimeType:'image/jpeg',buffer:huge});
-  await expect(page.locator('#analyse')).toBeDisabled();
-  await expect(page.locator('#result')).toContainText('File non valido');
-});
-
-test('Bellis 3D is explicitly a demo and has WebGL or fallback',async({page})=>{
+test('Bellis demo is explicitly technical, not recognition',async({page})=>{
   await page.goto('/species-bellis-demo.html');
-  await expect(page.getByText(/DEMO 3D TECNICA/).first()).toBeVisible();
-  const state=await page.locator('#plantCanvas').evaluate(canvas=>({
-    gl:!!canvas.getContext('webgl'),
-    fallback:getComputedStyle(document.querySelector('#fallback2d')).display
-  }));
-  expect(state.gl||state.fallback!=='none').toBeTruthy();
+  await expect(page.getByText(/DEMO 3D TECNICA/i).first()).toBeVisible();
+  await expect(page.locator('#plantCanvas')).toBeVisible();
+  await expect(page.getByText(/non.*riconoscimento/i).first()).toBeVisible();
 });

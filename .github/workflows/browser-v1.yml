@@ -1,0 +1,47 @@
+name: HERBARIUM Browser QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'candidate/herbarium-v1-functional'
+    paths:
+      - 'src/**'
+      - 'tests/browser-v1.spec.mjs'
+      - '.github/workflows/browser-v1.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: herbarium-browser-v1-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install Playwright 1.63
+        run: |
+          npm install --no-save @playwright/test@1.63.0
+          npx playwright install --with-deps chromium webkit
+      - name: Serve HERBARIUM
+        run: |
+          python3 -m http.server 8080 -d src > /tmp/herbarium-http.log 2>&1 &
+          echo $! > /tmp/herbarium-http.pid
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8080/index.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/herbarium-http.log
+          exit 1
+      - name: Browser QA Chromium + WebKit
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8080
+        run: |
+          npx playwright test tests/browser-v1.spec.mjs --reporter=line --project=chromium --project=webkit
