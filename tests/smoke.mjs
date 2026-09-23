@@ -56,7 +56,7 @@ assert.match(sw,/herbarium-v1-shell-3/);assert.match(sw,/caches\.open/);assert.m
 assert.match(demo,/DEMO 3D/);assert.match(demo,/MODELLO PROCEDURALE V2/);assert.match(demoJs,/getContext\('webgl'/);assert.match(demoJs,/toggleExplode/);assert.match(demoJs,/pointerdown/);assert.match(demoJs,/wheel/);assert.match(demoJs,/stripGeometry\('petal'/);assert.match(demoJs,/stripGeometry\('leaf'/);assert.match(demoJs,/for\(let ring=0;ring<2;ring\+\+\)/);assert.match(demoJs,/for\(let k=0;k<78;k\+\+\)/);assert.match(lab,/ASSET NOT APPROVED/);assert.match(labJs,/GLTFLoader/);assert.match(labJs,/Raycaster/);assert.match(labJs,/intersectObject\(model,true\)/);
 assert.match(css,/\.result-detail-card/);assert.match(css,/\.observation-delete/);assert.match(guard,/'candidate\/\*\*'/);assert.doesNotMatch(guard,/pull_request:/);
 assert.match(nonPlantOnnx,/onnxruntime-web@1\.30\.0/);
-assert.match(nonPlantOnnx,/EfficientDet-Lite0-COCO2017-int8-uint8-onnx/);
+assert.match(nonPlantOnnx,/ssd_mobilenet_v1_12-int8/);
 assert.match(nonPlantOnnx,/executionProviders:\['wasm'\]/);
 assert.match(nonPlantOnnx,/potted plant/);
 assert.match(nonPlantOnnx,/multi-evidence-disagreement/);
