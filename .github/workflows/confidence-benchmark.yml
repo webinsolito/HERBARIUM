@@ -1,0 +1,76 @@
+name: HERBARIUM Confidence Benchmark
+
+on:
+  push:
+    branches:
+      - candidate/herbarium-v1-calibration
+    paths:
+      - 'src/**'
+      - 'tests/confidence-benchmark.spec.mjs'
+      - 'playwright.confidence.config.mjs'
+      - '.github/workflows/confidence-benchmark.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: herbarium-confidence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  confidence-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Prepare licensed plant and negative fixtures
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          mkdir -p tests/benchmark-assets/plants tests/benchmark-assets/negatives
+
+          curl -fsSL https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz -o /tmp/flower_photos.tgz
+          tar -xzf /tmp/flower_photos.tgz -C /tmp
+          for cls in daisy dandelion roses sunflowers tulips; do
+            mkdir -p "tests/benchmark-assets/plants/$cls"
+            find "/tmp/flower_photos/$cls" -type f -iname '*.jpg' | sort | head -n 2 | while read f; do cp "$f" "tests/benchmark-assets/plants/$cls/"; done
+          done
+
+          base=https://raw.githubusercontent.com/google-coral/test_data/master
+          curl -fsSL "$base/cat.bmp" -o /tmp/cat.bmp
+          curl -fsSL "$base/bird.bmp" -o /tmp/bird.bmp
+          curl -fsSL "$base/grace_hopper.bmp" -o /tmp/grace_hopper.bmp
+          curl -fsSL "$base/hot_dog.jpg" -o tests/benchmark-assets/negatives/hot_dog.jpg
+          convert /tmp/cat.bmp tests/benchmark-assets/negatives/cat.png
+          convert /tmp/bird.bmp tests/benchmark-assets/negatives/bird.png
+          convert /tmp/grace_hopper.bmp tests/benchmark-assets/negatives/grace_hopper.png
+
+          curl -fsSL "https://commons.wikimedia.org/wiki/Special:Redirect/file/Serweta-na.drutach2.jpg" -o tests/benchmark-assets/negatives/tablecloth.jpg
+          curl -fsSL "https://commons.wikimedia.org/wiki/Special:Redirect/file/Floral_print_MET_66232.jpg" -o tests/benchmark-assets/negatives/floral_print.jpg
+          curl -fsSL "https://commons.wikimedia.org/wiki/Special:Redirect/file/LaptopScreen.png" -o tests/benchmark-assets/negatives/laptop_screen.png
+      - name: Serve candidate
+        run: |
+          python3 -m http.server 8080 -d src >/tmp/herbarium-confidence.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8080/observe.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/herbarium-confidence.log
+          exit 1
+      - name: Run confidence and reject benchmark
+        run: npx playwright test --config=playwright.confidence.config.mjs
+      - name: Upload benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: herbarium-confidence-benchmark
+          path: test-results/confidence-benchmark.json
+          if-no-files-found: warn
