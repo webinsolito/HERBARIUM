@@ -36,6 +36,16 @@ jobs:
         run: |
           npm install --no-save @playwright/test@1.63.0
           npx playwright install --with-deps chromium webkit
+      - name: Prepare real regression fixtures
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          mkdir -p tests/release-assets
+          base=https://raw.githubusercontent.com/google-coral/test_data/master
+          curl -fsSL "$base/cat.bmp" -o /tmp/cat.bmp
+          curl -fsSL "$base/sunflower.bmp" -o /tmp/sunflower.bmp
+          convert /tmp/cat.bmp tests/release-assets/cat.png
+          convert /tmp/sunflower.bmp -blur 0x35 tests/release-assets/sunflower-blurred.png
       - name: Serve candidate
         run: |
           python3 -m http.server 8080 -d src >/tmp/herbarium-release.log 2>&1 &
