@@ -55,6 +55,29 @@ for(const viewport of viewports){
       await expect(page.locator('#result')).toContainText('File non valido');
     });
 
+    test('oversized image is rejected before save',async({page})=>{
+      await page.goto('/observe.html');
+      const oversized=Buffer.alloc(12*1024*1024+1);
+      oversized[0]=0xff;oversized[1]=0xd8;oversized[2]=0xff;
+      await page.locator('#detail').setInputFiles({name:'huge.jpg',mimeType:'image/jpeg',buffer:oversized});
+      await expect(page.locator('#analyse')).toBeDisabled();
+      await expect(page.locator('#result')).toContainText('File non valido');
+    });
+
+    test('collection deletion removes observation persistently',async({page})=>{
+      await page.goto('/observe.html');
+      await page.locator('#detail').setInputFiles({name:'delete.png',mimeType:'image/png',buffer:png});
+      await page.locator('#analyse').click();
+      await page.waitForURL(/result\.html\?id=/);
+      await page.goto('/collection.html');
+      await expect(page.locator('.observation-card')).toHaveCount(1);
+      page.once('dialog',dialog=>dialog.accept());
+      await page.locator('.observation-delete').click();
+      await expect(page.locator('.observation-card')).toHaveCount(0);
+      await page.reload();
+      await expect(page.locator('.observation-card')).toHaveCount(0);
+    });
+
     test('service worker shell is cached; Chromium also reopens it offline',async({page,context,browserName})=>{
       await page.goto('/index.html');
       await page.evaluate(()=>navigator.serviceWorker?.ready);
@@ -80,4 +103,20 @@ test('Bellis demo is explicitly technical, not recognition',async({page})=>{
   await expect(page.getByText(/DEMO 3D TECNICA/i).first()).toBeVisible();
   await expect(page.locator('#plantCanvas')).toBeVisible();
   await expect(page.getByText(/non.*riconoscimento/i).first()).toBeVisible();
+});
+
+
+test('Bellis demo exposes a visible fallback when WebGL is unavailable',async({browser})=>{
+  const context=await browser.newContext({viewport:{width:390,height:844}});
+  const page=await context.newPage();
+  await page.addInitScript(()=>{
+    const original=HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext=function(type,...args){
+      if(type==='webgl'||type==='webgl2')return null;
+      return original.call(this,type,...args);
+    };
+  });
+  await page.goto('/species-bellis-demo.html');
+  await expect(page.locator('#fallback2d')).toBeVisible();
+  await context.close();
 });
