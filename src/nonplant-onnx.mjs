@@ -1,8 +1,8 @@
-export const P0A_GATE_VERSION='efficientdet-lite0-coco-int8-v1';
+export const P0A_GATE_VERSION='ssd-mobilenet-v1-coco-int8-v2';
 export const ORT_VERSION='1.30.0';
 export const ORT_SCRIPT_URL='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/ort.min.js';
 export const ORT_WASM_BASE='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/';
-export const MODEL_URL='https://huggingface.co/ketiswp/mediapipe-EfficientDet-Lite0-COCO2017-int8-uint8-onnx/resolve/main/model.onnx';
+export const MODEL_URL='https://huggingface.co/onnxmodelzoo/ssd_mobilenet_v1_12-int8/resolve/main/ssd_mobilenet_v1_12-int8.onnx';
 const INPUT_SIZE=320;
 const MIN_SIDE=96;
 const COCO=[
@@ -88,7 +88,7 @@ function parseOutputs(outputs){
   const out=[];
   for(let i=0;i<n;i++){
     const idx=Math.round(Number(classes.data[i]));
-    out.push({label:COCO[idx]||'unknown',score:Number(scores.data[i])||0,box:boxesEntry.data.slice(i*4,i*4+4),area:boxArea(boxesEntry.data.slice(i*4,i*4+4))});
+    out.push({label:(idx>0?COCO[idx-1]:null)||'unknown',score:Number(scores.data[i])||0,box:boxesEntry.data.slice(i*4,i*4+4),area:boxArea(boxesEntry.data.slice(i*4,i*4+4))});
   }
   return out;
 }
