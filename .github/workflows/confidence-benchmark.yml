@@ -41,7 +41,7 @@ jobs:
           tar -xzf /tmp/flower_photos.tgz -C /tmp
           for cls in daisy dandelion roses sunflowers tulips; do
             mkdir -p "tests/benchmark-assets/plants/$cls"
-            find "/tmp/flower_photos/$cls" -type f -iname '*.jpg' | sort | head -n 2 | while read f; do cp "$f" "tests/benchmark-assets/plants/$cls/"; done
+            find "/tmp/flower_photos/$cls" -type f -iname '*.jpg' | sort | head -n 4 | while read f; do cp "$f" "tests/benchmark-assets/plants/$cls/"; done
           done
 
           base=https://raw.githubusercontent.com/google-coral/test_data/master
