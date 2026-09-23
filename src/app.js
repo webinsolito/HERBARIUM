@@ -354,7 +354,12 @@ async function setupObserve(){
             status:automaticGateAdapter?.last?.status||'UNKNOWN',
             reason:automaticGateAdapter?.last?.reason||detector.reason||'unknown',
             category:automaticGateAdapter?.last?.category||null,
-            label:automaticGateAdapter?.last?.label||null
+            label:automaticGateAdapter?.last?.label||null,
+            diagnostics:(automaticGateAdapter?.last?.results||[]).flatMap(x=>(x?.detections||[]).slice(0,5)).slice(0,8).map(x=>({
+              label:x.label||null,
+              score:Number.isFinite(x.score)?Number(x.score.toFixed(4)):null,
+              area:Number.isFinite(x.area)?Number(x.area.toFixed(4)):null
+            }))
           },
           speciesEngine:{
             version:SPECIES_ENGINE_VERSION,
