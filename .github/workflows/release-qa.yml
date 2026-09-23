@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - candidate/herbarium-v1-functional
+      - candidate/herbarium-v1-calibration
     paths:
       - 'src/**'
       - 'tests/**'
