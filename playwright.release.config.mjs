@@ -1,7 +1,7 @@
 import {defineConfig} from '@playwright/test';
 export default defineConfig({
   testDir:'./tests',
-  testMatch:/^(release-qa|pipeline-qa)\.spec\.mjs$/,
+  testMatch:/(release-qa|pipeline-qa)\.spec\.mjs$/,
   timeout:90000,
   expect:{timeout:10000},
   fullyParallel:false,
