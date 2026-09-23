@@ -32,6 +32,7 @@ jobs:
         run: |
           npm ci --ignore-scripts
           npm test
+          npm audit --omit=dev --audit-level=high
       - name: Install Playwright
         run: |
           npm install --no-save @playwright/test@1.63.0
