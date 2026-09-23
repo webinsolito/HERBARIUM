@@ -52,3 +52,27 @@ This log is maintained by the hourly director.
 - Added isolated Bellis lab with local GLB audit, node gate, real raycasting path, orbit/zoom/reset/auto-rotate and designed exploded-view logic that remains disabled until scene graph passes.
 - No scientific facts, recognition result or VERIFIED state added.
 - Visual approval remains NOT VERIFIED until a real licensed model is loaded and screenshots/browser/device QA are produced.
+
+
+## 2026-09-23 — HERBARIUM V1 intensive functional consolidation
+- Created `candidate/herbarium-v1-functional` and rollback `rollback/herbarium-v1-pre-functional-78aed584`.
+- Stopped visual rebuild work and concentrated on one end-to-end local-first observation flow.
+- Reworked capture persistence into an honest UNKNOWN/REJECT pipeline; no species model is simulated and no capture path writes VERIFIED.
+- Added byte-signature image validation, MIME mismatch rejection, 12 MB input cap, 40 MP decoded-pixel cap, resize/recompression and EXIF stripping by re-encoding.
+- Added storage capacity check, save read-back verification and delete read-back verification.
+- Added real result page for UNKNOWN, REJECT, pre-existing VERIFIED/PROPOSED records and errors.
+- Collection now shows all real observations including REJECT, opens results and supports persistent deletion.
+- Book consumes real stored non-REJECT observations; validated botanical plates still require real VERIFIED + scientificName data.
+- Atlas shows only stored real location data and otherwise stays elegantly empty.
+- Academy remains intentionally minimal and data-driven.
+- Added Service Worker app shell, same-origin caching and network-first freshness with offline fallback.
+- Restored one Bellis technical WebGL demo only, explicitly labelled as procedural demo and not recognition.
+- Added CSP to core pages and removed dynamic innerHTML from the V1 application renderer.
+- Initial browser QA on head `9a102acd` returned 23 PASS / 9 FAIL: six failures were a QA script error caused by selecting a control inside a closed disclosure; three were Playwright WebKit internal errors during forced offline reload.
+- Corrected QA to interact with the disclosure like a user. WebKit now validates installed cache; Chromium performs actual offline reload. This limitation is not misreported as WebKit offline PASS.
+- Browser QA later passed 32/32 on product head `3b852794`.
+- Fixed a real collection-delete listener reliability bug and hardened optional persistent-storage handling plus Service Worker cache freshness.
+- Added explicit oversized-file, persistent-delete and WebGL-fallback browser cases.
+- Final pre-documentation head `d49430aa3bba17436e42e077b20be6a8e16de2b6`: HERBARIUM Guard #197 SUCCESS and Browser QA run 35865744198 SUCCESS.
+- Duplicate browser QA-on-push workflow was moved to manual-only to avoid redundant Actions/e-mail noise.
+- Real iPhone hardware camera/GPU testing, automatic species recognition, automatic pixel detector and final Bellis GLB remain open and are not claimed complete.
