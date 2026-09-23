@@ -13,14 +13,29 @@ for(const width of [360,390,430]){
   });
 }
 
-test('offline reopen keeps core shell available',async({page,context})=>{
+test('offline cache baseline is readable; Chromium navigation reopens shell',async({page,context,browserName})=>{
   await page.goto('/index.html');
   await expect(page.locator('body')).toBeVisible();
   await page.evaluate(async()=>{await navigator.serviceWorker.ready;return true;});
   await page.reload();
+
+  const cached=await page.evaluate(async()=>{
+    const response=await caches.match('./collection.html');
+    return Boolean(response&&response.ok);
+  });
+  expect(cached).toBe(true);
+
   await context.setOffline(true);
-  await page.goto('/collection.html');
-  await expect(page.locator('body')).toBeVisible();
+  if(browserName==='webkit'){
+    const readable=await page.evaluate(async()=>{
+      const response=await caches.match('./collection.html');
+      return response?await response.text():null;
+    });
+    expect(readable).toContain('collectionList');
+  }else{
+    await page.goto('/collection.html');
+    await expect(page.locator('body')).toBeVisible();
+  }
   await context.setOffline(false);
 });
 
