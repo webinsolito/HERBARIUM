@@ -36,15 +36,21 @@ jobs:
         run: |
           npm install --no-save @playwright/test@1.63.0
           npx playwright install --with-deps chromium webkit
-      - name: Download real Apache-2.0 fixtures
+      - name: Download and convert real Apache-2.0 fixtures
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
           mkdir -p tests/p0a-assets
           base=https://raw.githubusercontent.com/google-coral/test_data/master
-          curl -fsSL "$base/cat.bmp" -o tests/p0a-assets/cat.bmp
-          curl -fsSL "$base/bird.bmp" -o tests/p0a-assets/bird.bmp
-          curl -fsSL "$base/grace_hopper.bmp" -o tests/p0a-assets/grace_hopper.bmp
+          curl -fsSL "$base/cat.bmp" -o /tmp/cat.bmp
+          curl -fsSL "$base/bird.bmp" -o /tmp/bird.bmp
+          curl -fsSL "$base/grace_hopper.bmp" -o /tmp/grace_hopper.bmp
           curl -fsSL "$base/hot_dog.jpg" -o tests/p0a-assets/hot_dog.jpg
-          curl -fsSL "$base/sunflower.bmp" -o tests/p0a-assets/sunflower.bmp
+          curl -fsSL "$base/sunflower.bmp" -o /tmp/sunflower.bmp
+          convert /tmp/cat.bmp tests/p0a-assets/cat.png
+          convert /tmp/bird.bmp tests/p0a-assets/bird.png
+          convert /tmp/grace_hopper.bmp tests/p0a-assets/grace_hopper.png
+          convert /tmp/sunflower.bmp tests/p0a-assets/sunflower.png
       - name: Serve candidate
         run: |
           python3 -m http.server 8080 -d src >/tmp/herbarium-p0a.log 2>&1 &

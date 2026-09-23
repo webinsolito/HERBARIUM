@@ -25,20 +25,20 @@ test.describe('P0-A real model gate',()=>{
 
   test('cat and person are conservatively rejected; sunflower is not',async({page})=>{
     await clearDb(page);
-    const cat=await analyse(page,assets('cat.bmp'));
+    const cat=await analyse(page,assets('cat.png'));
     expect(cat).toBe('REJECT');
 
     await clearDb(page);
-    const person=await analyse(page,assets('grace_hopper.bmp'));
+    const person=await analyse(page,assets('grace_hopper.png'));
     expect(person).toBe('REJECT');
 
     await clearDb(page);
-    const sunflower=await analyse(page,assets('sunflower.bmp'));
+    const sunflower=await analyse(page,assets('sunflower.png'));
     expect(sunflower).toBe('UNKNOWN');
   });
 
   test('additional real negatives never become a species',async({page})=>{
-    for(const file of ['bird.bmp','hot_dog.jpg']){
+    for(const file of ['bird.png','hot_dog.jpg']){
       await clearDb(page);
       const result=await analyse(page,assets(file));
       expect(['REJECT','UNKNOWN']).toContain(result);
