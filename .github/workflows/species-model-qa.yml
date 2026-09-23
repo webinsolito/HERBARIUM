@@ -1,0 +1,55 @@
+name: HERBARIUM P0-B Species QA
+
+on:
+  push:
+    branches:
+      - candidate/herbarium-v1-functional
+    paths:
+      - 'src/species-onnx.mjs'
+      - 'src/image-quality.mjs'
+      - 'src/app.js'
+      - 'src/observe.html'
+      - 'src/sw.js'
+      - 'tests/species-model.spec.mjs'
+      - 'playwright.species.config.mjs'
+      - '.github/workflows/species-model-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: herbarium-species-model-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  species-real-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install browsers
+        run: |
+          npm install --no-save @playwright/test@1.63.0
+          npx playwright install --with-deps chromium webkit
+      - name: Download real plant fixture
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          mkdir -p tests/species-assets
+          curl -fsSL https://raw.githubusercontent.com/google-coral/test_data/master/sunflower.bmp -o /tmp/sunflower.bmp
+          convert /tmp/sunflower.bmp tests/species-assets/sunflower.png
+      - name: Serve candidate
+        run: |
+          python3 -m http.server 8080 -d src >/tmp/herbarium-species.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8080/observe.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/herbarium-species.log
+          exit 1
+      - name: Run real species runtime QA
+        run: npx playwright test --config=playwright.species.config.mjs
