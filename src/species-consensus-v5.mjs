@@ -1,7 +1,7 @@
 // V5 arbitration policy: exact dual-model agreement remains the normal path.
 // An exceptionally strong primary candidate may survive verifier disagreement;
 // the upstream non-plant gate still runs before species inference.
-export const ARBITRATION_POLICY=Object.freeze({strongPrimaryTop1:0.97,strongPrimaryMargin:0.60});
+export const ARBITRATION_POLICY=Object.freeze({strongPrimaryTop1:0.92,strongPrimaryMargin:0.80});
 function taxonKey(value){return String(value||'').trim().toLowerCase().replace(/×/g,'x').split(/\s+/).slice(0,2).join(' ');}
 export function decideSpeciesConsensusV5(primary,verifier,policy=ARBITRATION_POLICY){
  if(primary?.status!=='PROPOSED')return {...primary,consensus:false,arbitrated:false};
