@@ -69,6 +69,7 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
       await clearDb(page);
       const result=await analyse(page,sample.file);
       const item=result.item;
+      const species=item?.analysis?.speciesEngine||null;
       rows.push({
         kind:sample.kind,
         sourceClass:sample.className,
@@ -78,16 +79,25 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
         quality:item?.analysis?.quality?.status||null,
         nonPlant:item?.analysis?.automaticGate?.status||null,
         nonPlantReason:item?.analysis?.automaticGate?.reason||null,
-        speciesEngine:item?.analysis?.speciesEngine?.status||null,
-        speciesReason:item?.analysis?.speciesEngine?.reason||null,
-        rawScore:item?.analysis?.speciesEngine?.rawScore??null,
-        margin:item?.analysis?.speciesEngine?.margin??null,
+        speciesEngine:species?.status||null,
+        speciesReason:species?.reason||null,
+        rawScore:species?.rawScore??null,
+        margin:species?.margin??null,
+        primaryStatus:species?.primary?.status||null,
+        primaryReason:species?.primary?.reason||null,
+        primaryScientificName:species?.verificationPrimary?.scientificName||species?.primary?.scientificName||null,
+        verifierStatus:species?.verifier?.status||null,
+        verifierReason:species?.verifier?.reason||null,
+        verifierScientificName:species?.verifierScientificName||species?.verifier?.scientificName||null,
+        consensus:Boolean(species?.consensus),
+        recoveryCandidate:Boolean(species?.verificationPrimary?.recoveryCandidate||species?.recoveryCandidate),
         elapsedMs:result.elapsedMs
       });
     }
 
     const plants=rows.filter(x=>x.kind==='plant');
     const negatives=rows.filter(x=>x.kind==='negative');
+    const disagreements=rows.filter(x=>x.speciesReason==='cross-dataset-model-disagreement');
     const report={
       generatedAt:new Date().toISOString(),
       sampleCount:rows.length,
@@ -101,6 +111,7 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
       plantSpeciesReasonCounts:countBy(plants,'speciesReason'),
       negativeSpeciesReasonCounts:countBy(negatives,'speciesReason'),
       negativeGateReasonCounts:countBy(negatives,'nonPlantReason'),
+      disagreementPairs:disagreements.map(x=>({kind:x.kind,file:x.file,primary:x.primaryScientificName,verifier:x.verifierScientificName,recoveryCandidate:x.recoveryCandidate})),
       medianElapsedMs:[...rows].sort((a,b)=>a.elapsedMs-b.elapsedMs)[Math.floor(rows.length/2)]?.elapsedMs??null,
       rows
     };
@@ -112,5 +123,9 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
     expect(report.plantRejectCount).toBe(0);
     expect(report.negativeFalseSpeciesCount).toBe(0);
     expect(Object.values(report.plantSpeciesReasonCounts).reduce((a,b)=>a+b,0)).toBe(report.plantCount);
+    for(const pair of report.disagreementPairs){
+      expect(pair.primary,'disagreement must expose the primary taxon').toBeTruthy();
+      expect(pair.verifier,'disagreement must expose the verifier taxon').toBeTruthy();
+    }
   });
 });
