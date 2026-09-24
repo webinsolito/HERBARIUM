@@ -1,12 +1,10 @@
-import { createSpeciesRecognitionAdapter as createV4Adapter } from './species-onnx.mjs';
+import { createSpeciesRecognitionAdapter as createV4Adapter } from './species-onnx-v4.mjs';
 import { decideSpeciesConsensusV5 } from './species-consensus-v5.mjs';
 
 export const SPECIES_ENGINE_VERSION='plantnet-bioclip-consensus-v5';
 
-// Transitional V5 adapter. It preserves the already-tested V4 inference path
-// and only changes arbitration after both primary and verifier have executed.
-// This keeps model loading/preprocessing untouched while making the V5 policy
-// independently testable before replacing the legacy export in species-onnx.
+// V5 runtime adapter. It preserves the tested V4 inference path and changes
+// only arbitration after both primary and verifier have executed.
 export function createSpeciesRecognitionAdapter(){
   const legacy=createV4Adapter();
   return {
