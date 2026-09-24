@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - candidate/herbarium-v1-functional
+      - candidate/herbarium-v1-release
     paths:
       - 'src/nonplant-onnx.mjs'
       - 'src/local-detector.mjs'
