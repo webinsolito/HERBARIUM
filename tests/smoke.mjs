@@ -19,6 +19,7 @@ const lab=read('src/species-bellis-lab.html');
 const labJs=read('src/bellis-lab.js');
 const nonPlantOnnx=read('src/nonplant-onnx.mjs');
 const speciesOnnx=read('src/species-onnx.mjs');
+const speciesOnnxV4=read('src/species-onnx-v4.mjs');
 const qualityGate=read('src/image-quality.mjs');
 const p0aAudit=read('P0A_AUTOMATIC_GATE.md');
 const guard=read('.github/workflows/herbarium-guard.yml');
@@ -39,5 +40,5 @@ const strongProposal=decideSpeciesProposal([{executed:true,top:[{index:10,label:
 const weakProposal=decideSpeciesProposal([{executed:true,top:[{index:10,label:'Species test A',score:.60},{index:11,label:'Species test B',score:.30}]}]);assert.equal(weakProposal.status,'UNKNOWN');
 const consensusOk=decideModelConsensus({status:'PROPOSED',scientificName:'Species test A',rawScore:.97,margin:.80,calibrated:false},{status:'PROPOSED',scientificName:'Species test A',rawScore:.90,margin:.60,calibrated:false});assert.equal(consensusOk.status,'PROPOSED');assert.equal(consensusOk.consensus,true);
 const consensusFail=decideModelConsensus({status:'PROPOSED',scientificName:'Alpha beta L.',rawScore:.97,margin:.80,calibrated:false},{status:'PROPOSED',scientificName:'Gamma delta L.',rawScore:.95,margin:.70,calibrated:false});assert.equal(consensusFail.status,'UNKNOWN');assert.equal(consensusFail.reason,'cross-dataset-model-disagreement');
-assert.match(speciesOnnx,/plantnet300k-mobilenetv3-small/);assert.match(speciesOnnx,/bioclip-2\.5-mobile-fastvit/);assert.match(speciesOnnx,/cross-dataset-dual-model-consensus/);assert.match(speciesOnnx,/calibrated:false/);assert.doesNotMatch(speciesOnnx,/status:\s*['"]VERIFIED['"]/);assert.match(qualityGate,/blur-or-flat/);assert.match(sw,/species-onnx\.mjs/);assert.match(sw,/image-quality\.mjs/);
+assert.match(speciesOnnx,/species-v5-adapter\.mjs/);assert.match(speciesOnnx,/species-onnx-v4\.mjs/);assert.match(speciesOnnxV4,/plantnet300k-mobilenetv3-small/);assert.match(speciesOnnxV4,/bioclip-2\.5-mobile-fastvit/);assert.match(speciesOnnxV4,/cross-dataset-dual-model-consensus/);assert.match(speciesOnnxV4,/calibrated:false/);assert.doesNotMatch(speciesOnnxV4,/status:\s*['"]VERIFIED['"]/);assert.match(qualityGate,/blur-or-flat/);assert.match(sw,/species-onnx\.mjs/);assert.match(sw,/image-quality\.mjs/);
 console.log('HERBARIUM V1 smoke PASS');
