@@ -1,7 +1,7 @@
 import {defineConfig} from '@playwright/test';
 export default defineConfig({
   testDir:'./tests',
-  testMatch:'species-model.spec.mjs',
+  testMatch:/species-(?:model|consensus-v5|v5-adapter)\.spec\.mjs$/,
   timeout:300000,
   expect:{timeout:15000},
   fullyParallel:false,
