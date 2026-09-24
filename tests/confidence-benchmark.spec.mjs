@@ -7,6 +7,7 @@ const negDir=path.resolve('tests/benchmark-assets/negatives');
 const plantClasses=['daisy','dandelion','roses','sunflowers','tulips'];
 const negativeFiles=['cat.png','bird.png','grace_hopper.png','hot_dog.jpg','tablecloth.jpg','floral_print.jpg','laptop_screen.png'];
 const PLANTS_PER_CLASS=4;
+const PREVIOUS_PLANT_PROPOSAL_BASELINE=3;
 
 async function clearDb(page){
   await page.goto('/observe.html');
@@ -81,6 +82,6 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
     }
     // Arbitration is never allowed to rescue a negative sample.
     expect(negatives.filter(x=>x.arbitrated===true)).toHaveLength(0);
-    expect(report.plantProposalCount,'recognition yield collapsed to zero: all real plants were UNKNOWN').toBeGreaterThan(0);
+    expect(report.plantProposalCount,'recognition yield did not beat the verified 3/20 V5 baseline').toBeGreaterThan(PREVIOUS_PLANT_PROPOSAL_BASELINE);
   });
 });
