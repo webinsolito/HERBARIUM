@@ -1,4 +1,4 @@
-export const SPECIES_ENGINE_VERSION='plantnet-bioclip-consensus-v3';
+export const SPECIES_ENGINE_VERSION='plantnet-bioclip-consensus-v4';
 export const SPECIES_MODEL_LICENSE='OpenRAIL + MIT';
 export const SPECIES_MODEL_URL='https://huggingface.co/cpoisson/plantnet300k-mobilenetv3-small/resolve/main/plantnet_mobilenetv3.onnx';
 export const SPECIES_VERIFIER_MODEL_URL='https://huggingface.co/crazedcodernate/bioclip-2.5-mobile-fastvit/resolve/main/flora_student_fp16.onnx';
@@ -8,7 +8,7 @@ export const SPECIES_LABELS_URL='https://huggingface.co/cpoisson/plantnet300k-mo
 const ORT_SCRIPT_URL='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/ort.min.js';
 const ORT_WASM_BASE='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/';
 const INPUT=224;
-export const SPECIES_POLICY=Object.freeze({minTop1:.92,minMargin:.25,maxViews:2});
+export const SPECIES_POLICY=Object.freeze({minTop1:.92,minConsensusCandidateTop1:.70,minMargin:.25,maxViews:2});
 let runtimePromise=null,primarySessionPromise=null,verifierSessionPromise=null,labelsPromise=null,verifierAssetsPromise=null;
 
 function loadOrt(){
@@ -198,6 +198,15 @@ function decideVerifierViews(predictions){
   };
 }
 
+function consensusCandidate(primary,predictions,policy=SPECIES_POLICY){
+  if(primary?.status==='PROPOSED')return primary;
+  if(primary?.reason!=='weak-top1'||primary.rawScore<policy.minConsensusCandidateTop1||primary.margin<policy.minMargin)return null;
+  const views=(Array.isArray(predictions)?predictions:[]).filter(x=>x?.executed&&Array.isArray(x.top)&&x.top.length>=2);
+  const winners=views.map(x=>x.top[0]);
+  if(!winners.length||winners.some(x=>!x?.label)||winners.some(x=>x.index!==winners[0].index))return null;
+  return{status:'PROPOSED',reason:'consensus-recovery-candidate',scientificName:winners[0].label,rawScore:primary.rawScore,margin:primary.margin,calibrated:false,recoveryCandidate:true};
+}
+
 function compactPrimary(predictions){return predictions.map(x=>x.executed?{executed:true,top:x.top.slice(0,3)}:x);}
 function compactVerifier(predictions){return predictions.map(x=>x.executed?{executed:true,scientificName:x.scientificName,rawScore:x.rawScore,margin:x.margin}:x);}
 
@@ -208,9 +217,9 @@ export function decideModelConsensus(primary,verifier){
     return{status:'UNKNOWN',reason:'cross-dataset-model-disagreement',scientificName:null,rawScore:primary.rawScore??null,margin:primary.margin??null,calibrated:false,consensus:false,verifierScientificName:verifier.scientificName};
   }
   return{
-    status:'PROPOSED',reason:'cross-dataset-dual-model-consensus',scientificName:primary.scientificName,
+    status:'PROPOSED',reason:primary.recoveryCandidate?'cross-dataset-recovered-by-dual-model-consensus':'cross-dataset-dual-model-consensus',scientificName:primary.scientificName,
     rawScore:primary.rawScore,margin:primary.margin,calibrated:false,consensus:true,
-    verifierScientificName:verifier.scientificName,verifierScore:verifier.rawScore,verifierMargin:verifier.margin
+    verifierScientificName:verifier.scientificName,verifierScore:verifier.rawScore,verifierMargin:verifier.margin,recoveryCandidate:Boolean(primary.recoveryCandidate)
   };
 }
 
@@ -223,7 +232,8 @@ export function createSpeciesRecognitionAdapter(){
       try{
         const primaryPredictions=[];for(const view of views)primaryPredictions.push(await inferPrimaryOne(view));
         const primary=decideSpeciesProposal(primaryPredictions,SPECIES_POLICY);
-        if(primary.status!=='PROPOSED')return this.last={...primary,consensus:false,primary,verifier:null,views:compactPrimary(primaryPredictions)};
+        const verificationPrimary=consensusCandidate(primary,primaryPredictions,SPECIES_POLICY);
+        if(!verificationPrimary)return this.last={...primary,consensus:false,primary,verifier:null,views:compactPrimary(primaryPredictions)};
 
         let verifierPredictions=[];
         try{for(const view of views)verifierPredictions.push(await inferVerifierOne(view));}
@@ -233,8 +243,8 @@ export function createSpeciesRecognitionAdapter(){
             primary,verifier:{status:'UNAVAILABLE',reason:String(error?.message||error)},views:compactPrimary(primaryPredictions)
           };
         }
-        const verifier=decideVerifierViews(verifierPredictions),decision=decideModelConsensus(primary,verifier);
-        return this.last={...decision,primary,verifier,views:compactPrimary(primaryPredictions),verifierViews:compactVerifier(verifierPredictions)};
+        const verifier=decideVerifierViews(verifierPredictions),decision=decideModelConsensus(verificationPrimary,verifier);
+        return this.last={...decision,primary,verificationPrimary,verifier,views:compactPrimary(primaryPredictions),verifierViews:compactVerifier(verifierPredictions)};
       }catch(error){
         return this.last={status:'UNAVAILABLE',reason:String(error?.message||error),scientificName:null,rawScore:null,margin:null,calibrated:false,consensus:false};
       }
