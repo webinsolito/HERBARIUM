@@ -5,6 +5,7 @@ on:
     branches:
       - candidate/herbarium-v1-functional
       - candidate/herbarium-v1-calibration
+      - candidate/herbarium-v1-release
     paths:
       - 'src/species-onnx.mjs'
       - 'src/image-quality.mjs'
