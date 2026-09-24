@@ -45,10 +45,18 @@ function pickPlants(){
   return out;
 }
 
+function countBy(rows,key){
+  return rows.reduce((counts,row)=>{
+    const value=row[key]??'null';
+    counts[value]=(counts[value]||0)+1;
+    return counts;
+  },{});
+}
+
 test.describe('HERBARIUM confidence/reject benchmark',()=>{
   test.setTimeout(900000);
 
-  test('separated benchmark reports false-species and reject behavior',async({page})=>{
+  test('separated benchmark reports false-species, reject and UNKNOWN reasons',async({page})=>{
     const samples=[
       ...pickPlants(),
       ...negativeFiles.map(file=>({kind:'negative',className:'negative',file:path.join(negDir,file)}))
@@ -69,7 +77,9 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
         scientificName:item?.scientificName||null,
         quality:item?.analysis?.quality?.status||null,
         nonPlant:item?.analysis?.automaticGate?.status||null,
+        nonPlantReason:item?.analysis?.automaticGate?.reason||null,
         speciesEngine:item?.analysis?.speciesEngine?.status||null,
+        speciesReason:item?.analysis?.speciesEngine?.reason||null,
         rawScore:item?.analysis?.speciesEngine?.rawScore??null,
         margin:item?.analysis?.speciesEngine?.margin??null,
         elapsedMs:result.elapsedMs
@@ -88,6 +98,9 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
       negativeRejectCount:negatives.filter(x=>x.status==='REJECT').length,
       negativeFalseSpeciesCount:negatives.filter(x=>x.status==='PROPOSED').length,
       automaticVerifiedCount:rows.filter(x=>x.status==='VERIFIED').length,
+      plantSpeciesReasonCounts:countBy(plants,'speciesReason'),
+      negativeSpeciesReasonCounts:countBy(negatives,'speciesReason'),
+      negativeGateReasonCounts:countBy(negatives,'nonPlantReason'),
       medianElapsedMs:[...rows].sort((a,b)=>a.elapsedMs-b.elapsedMs)[Math.floor(rows.length/2)]?.elapsedMs??null,
       rows
     };
@@ -98,5 +111,6 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
     expect(report.automaticVerifiedCount).toBe(0);
     expect(report.plantRejectCount).toBe(0);
     expect(report.negativeFalseSpeciesCount).toBe(0);
+    expect(Object.values(report.plantSpeciesReasonCounts).reduce((a,b)=>a+b,0)).toBe(report.plantCount);
   });
 });
