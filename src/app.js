@@ -367,7 +367,9 @@ async function setupObserve(){
             reason:species.reason||'unknown',
             calibrated:false,
             rawScore:species.rawScore??null,
-            margin:species.margin??null
+            margin:species.margin??null,
+            consensus:species.consensus===true,
+            arbitrated:species.arbitrated===true
           }
         },
         roles:evidence.map(x=>x.role),evidence,location:null,region:null,
