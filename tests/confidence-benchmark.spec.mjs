@@ -45,55 +45,42 @@ function pickPlants(){
   }
   return out;
 }
-
 function rate(n,d){return d?Number((n/d).toFixed(4)):null;}
 
 test.describe('HERBARIUM confidence/reject benchmark',()=>{
   test.setTimeout(1200000);
-
   test('separated benchmark reports false-species, reject and recognition yield',async({page})=>{
-    const samples=[
-      ...pickPlants(),
-      ...negativeFiles.map(file=>({kind:'negative',className:'negative',file:path.join(negDir,file)}))
-    ];
+    const samples=[...pickPlants(),...negativeFiles.map(file=>({kind:'negative',className:'negative',file:path.join(negDir,file)}))];
     expect(samples.filter(x=>x.kind==='plant')).toHaveLength(plantClasses.length*PLANTS_PER_CLASS);
     expect(samples.filter(x=>x.kind==='negative')).toHaveLength(negativeFiles.length);
-
     const rows=[];
     for(const sample of samples){
       await clearDb(page);
-      const result=await analyse(page,sample.file);
-      const item=result.item;
-      rows.push({kind:sample.kind,sourceClass:sample.className,file:path.basename(sample.file),status:item?.status||null,scientificName:item?.scientificName||null,quality:item?.analysis?.quality?.status||null,nonPlant:item?.analysis?.automaticGate?.status||null,speciesEngine:item?.analysis?.speciesEngine?.status||null,speciesReason:item?.analysis?.speciesEngine?.reason||null,consensus:item?.analysis?.speciesEngine?.consensus??null,rawScore:item?.analysis?.speciesEngine?.rawScore??null,margin:item?.analysis?.speciesEngine?.margin??null,elapsedMs:result.elapsedMs});
+      const result=await analyse(page,sample.file),item=result.item,engine=item?.analysis?.speciesEngine;
+      rows.push({kind:sample.kind,sourceClass:sample.className,file:path.basename(sample.file),status:item?.status||null,scientificName:item?.scientificName||null,quality:item?.analysis?.quality?.status||null,nonPlant:item?.analysis?.automaticGate?.status||null,speciesEngine:engine?.status||null,speciesReason:engine?.reason||null,consensus:engine?.consensus??null,arbitrated:engine?.arbitrated??false,rawScore:engine?.rawScore??null,margin:engine?.margin??null,elapsedMs:result.elapsedMs});
     }
-
-    const plants=rows.filter(x=>x.kind==='plant');
-    const negatives=rows.filter(x=>x.kind==='negative');
-    const plantRejectCount=plants.filter(x=>x.status==='REJECT').length;
-    const plantProposalCount=plants.filter(x=>x.status==='PROPOSED').length;
-    const plantUnknownCount=plants.filter(x=>x.status==='UNKNOWN').length;
-    const negativeRejectCount=negatives.filter(x=>x.status==='REJECT').length;
-    const negativeUnknownCount=negatives.filter(x=>x.status==='UNKNOWN').length;
+    const plants=rows.filter(x=>x.kind==='plant'),negatives=rows.filter(x=>x.kind==='negative');
+    const plantRejectCount=plants.filter(x=>x.status==='REJECT').length,plantProposalCount=plants.filter(x=>x.status==='PROPOSED').length,plantUnknownCount=plants.filter(x=>x.status==='UNKNOWN').length;
+    const negativeRejectCount=negatives.filter(x=>x.status==='REJECT').length,negativeUnknownCount=negatives.filter(x=>x.status==='UNKNOWN').length;
     const negativeFalseSpeciesCount=negatives.filter(x=>x.status==='PROPOSED'||x.status==='VERIFIED'||x.scientificName).length;
-    const disagreementCount=plants.filter(x=>x.speciesReason==='cross-dataset-model-disagreement').length;
-    const weakTop1Count=plants.filter(x=>x.speciesReason==='weak-top1').length;
-    const report={generatedAt:new Date().toISOString(),sampleCount:rows.length,plantCount:plants.length,negativeCount:negatives.length,plantRejectCount,plantRejectRate:rate(plantRejectCount,plants.length),plantProposalCount,plantProposalRate:rate(plantProposalCount,plants.length),plantUnknownCount,plantUnknownRate:rate(plantUnknownCount,plants.length),disagreementCount,disagreementRate:rate(disagreementCount,plants.length),weakTop1Count,weakTop1Rate:rate(weakTop1Count,plants.length),negativeRejectCount,negativeRejectRate:rate(negativeRejectCount,negatives.length),negativeUnknownCount,negativeUnknownRate:rate(negativeUnknownCount,negatives.length),negativeFalseSpeciesCount,negativeFalseSpeciesRate:rate(negativeFalseSpeciesCount,negatives.length),automaticVerifiedCount:rows.filter(x=>x.status==='VERIFIED').length,consensusProposalCount:rows.filter(x=>x.status==='PROPOSED'&&x.consensus===true).length,medianElapsedMs:[...rows].sort((a,b)=>a.elapsedMs-b.elapsedMs)[Math.floor(rows.length/2)]?.elapsedMs??null,rows};
+    const disagreementCount=plants.filter(x=>x.speciesReason==='cross-dataset-model-disagreement').length,weakTop1Count=plants.filter(x=>x.speciesReason==='weak-top1').length;
+    const consensusProposalCount=plants.filter(x=>x.status==='PROPOSED'&&x.consensus===true).length;
+    const arbitratedProposalCount=plants.filter(x=>x.status==='PROPOSED'&&x.arbitrated===true).length;
+    const report={generatedAt:new Date().toISOString(),sampleCount:rows.length,plantCount:plants.length,negativeCount:negatives.length,plantRejectCount,plantRejectRate:rate(plantRejectCount,plants.length),plantProposalCount,plantProposalRate:rate(plantProposalCount,plants.length),plantUnknownCount,plantUnknownRate:rate(plantUnknownCount,plants.length),disagreementCount,disagreementRate:rate(disagreementCount,plants.length),weakTop1Count,weakTop1Rate:rate(weakTop1Count,plants.length),negativeRejectCount,negativeRejectRate:rate(negativeRejectCount,negatives.length),negativeUnknownCount,negativeUnknownRate:rate(negativeUnknownCount,negatives.length),negativeFalseSpeciesCount,negativeFalseSpeciesRate:rate(negativeFalseSpeciesCount,negatives.length),automaticVerifiedCount:rows.filter(x=>x.status==='VERIFIED').length,consensusProposalCount,arbitratedProposalCount,medianElapsedMs:[...rows].sort((a,b)=>a.elapsedMs-b.elapsedMs)[Math.floor(rows.length/2)]?.elapsedMs??null,rows};
     fs.mkdirSync('test-results',{recursive:true});
     fs.writeFileSync('test-results/confidence-benchmark.json',JSON.stringify(report,null,2));
     console.log('HERBARIUM_BENCHMARK',JSON.stringify(report));
-
     expect(report.automaticVerifiedCount).toBe(0);
     expect(report.plantRejectCount).toBe(0);
     expect(report.negativeFalseSpeciesCount).toBe(0);
     expect(report.negativeRejectCount+report.negativeUnknownCount).toBe(report.negativeCount);
     for(const row of rows.filter(x=>x.status==='PROPOSED')){
       expect(row.scientificName).toBeTruthy();
-      expect(row.consensus).toBe(true);
+      expect(row.consensus===true||row.arbitrated===true).toBe(true);
+      expect(row.consensus===true&&row.arbitrated===true).toBe(false);
     }
-
-    // A benchmark that safely returns UNKNOWN for every real plant is not a
-    // successful recognition benchmark. Keep false-positive safety above,
-    // but fail loudly when useful recognition yield collapses to zero.
+    // Arbitration is never allowed to rescue a negative sample.
+    expect(negatives.filter(x=>x.arbitrated===true)).toHaveLength(0);
     expect(report.plantProposalCount,'recognition yield collapsed to zero: all real plants were UNKNOWN').toBeGreaterThan(0);
   });
 });
