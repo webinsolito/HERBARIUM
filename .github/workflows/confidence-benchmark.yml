@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - candidate/herbarium-v1-calibration
+      - candidate/herbarium-v1-release
     paths:
       - 'src/**'
       - 'tests/confidence-benchmark.spec.mjs'
