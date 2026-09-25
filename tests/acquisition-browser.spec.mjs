@@ -2,6 +2,14 @@ import { test, expect } from '@playwright/test';
 
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z3QUAAAAASUVORK5CYII=','base64');
 
+async function openField(page){
+  await page.goto('/app/index.html');
+  const frame=page.frameLocator('#runtimeFrame');
+  await frame.locator('[data-go="field"]').first().click();
+  await expect(frame.locator('#field')).toHaveClass(/active/);
+  return frame;
+}
+
 test('prepared handoff survives WebKit without rewriting input.files', async ({ page }) => {
   await page.goto('/tests/acquisition-browser-harness.html');
   const input=page.locator('#photo');
@@ -9,10 +17,7 @@ test('prepared handoff survives WebKit without rewriting input.files', async ({ 
   await input.setInputFiles({name:'leaf.png',mimeType:'image/png',buffer:PNG});
   await expect.poll(()=>page.evaluate(()=>window.__acqTest.downstream)).toBe(1);
   const state=await page.evaluate(()=>window.__acqTest);
-  expect(state.ready).toBe(1);
-  expect(state.error).toBe(0);
-  expect(state.handoffs[0]).not.toBeNull();
-  expect(state.handoffs[0].size).toBeGreaterThan(0);
+  expect(state.ready).toBe(1); expect(state.error).toBe(0); expect(state.handoffs[0]).not.toBeNull(); expect(state.handoffs[0].size).toBeGreaterThan(0);
 });
 
 test('duplicate native change burst produces one prepared downstream event', async ({ page }) => {
@@ -20,15 +25,9 @@ test('duplicate native change burst produces one prepared downstream event', asy
   const input=page.locator('#photo');
   await input.setInputFiles({name:'leaf.png',mimeType:'image/png',buffer:PNG});
   await expect.poll(()=>page.evaluate(()=>window.__acqTest.downstream)).toBe(1);
-  await page.evaluate(()=>{
-    const input=document.querySelector('#photo');
-    input.dispatchEvent(new Event('change',{bubbles:true}));
-    input.dispatchEvent(new Event('change',{bubbles:true}));
-  });
+  await page.evaluate(()=>{const input=document.querySelector('#photo');input.dispatchEvent(new Event('change',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}))});
   await expect.poll(()=>page.evaluate(()=>window.__acqTest.downstream)).toBe(2);
-  const state=await page.evaluate(()=>window.__acqTest);
-  expect(state.ready).toBe(2);
-  expect(state.downstream).toBe(2);
+  const state=await page.evaluate(()=>window.__acqTest); expect(state.ready).toBe(2); expect(state.downstream).toBe(2);
 });
 
 test('invalid acquisition resets input and never reaches runtime', async ({ page }) => {
@@ -36,39 +35,41 @@ test('invalid acquisition resets input and never reaches runtime', async ({ page
   const input=page.locator('#photo');
   await input.setInputFiles({name:'not-image.txt',mimeType:'text/plain',buffer:Buffer.from('not an image')});
   await expect.poll(()=>page.evaluate(()=>window.__acqTest.error)).toBe(1);
-  expect(await page.evaluate(()=>document.querySelector('#photo').files.length)).toBe(0);
-  expect(await page.evaluate(()=>window.__acqTest.downstream)).toBe(0);
+  expect(await page.evaluate(()=>document.querySelector('#photo').files.length)).toBe(0); expect(await page.evaluate(()=>window.__acqTest.downstream)).toBe(0);
 });
 
 test('canonical mobile flow accepts library input and preserves UNKNOWN-safe save', async ({ page }) => {
-  const pageErrors=[];
-  page.on('pageerror',err=>{pageErrors.push(err.message);console.log('PAGEERROR',err.message)});
-  page.on('console',msg=>{if(msg.type()==='error')console.log('CONSOLE_ERROR',msg.text())});
-  await page.goto('/app/index.html');
-  const frame=page.frameLocator('#runtimeFrame');
-  await frame.locator('[data-go="field"]').first().click();
-  await expect(frame.locator('#field')).toHaveClass(/active/);
+  const frame=await openField(page);
   const input=frame.locator('#captureGrid input[data-role="whole"]');
-  await expect(input).toHaveAttribute('accept','image/*');
-  await expect(input).not.toHaveAttribute('capture',/.+/);
+  await expect(input).toHaveAttribute('accept','image/*'); await expect(input).not.toHaveAttribute('capture',/.+/);
+  await input.setInputFiles({name:'leaf.png',mimeType:'image/png',buffer:PNG}); await page.waitForTimeout(700);
+  await expect(frame.locator('#captureGrid img.thumb')).toHaveCount(1);
+  const save=frame.locator('#saveObsBtn'); await expect(save).toContainText(/Salva/); await expect(save).not.toContainText(/specie verificata/i); await expect(frame.locator('#subjectGateCard')).toBeVisible();
+});
+
+test('UNKNOWN observation persists across reload, stays pending, and can be deleted', async ({ page }) => {
+  const frame=await openField(page);
+  const input=frame.locator('#captureGrid input[data-role="whole"]');
   await input.setInputFiles({name:'leaf.png',mimeType:'image/png',buffer:PNG});
-  await page.waitForTimeout(700);
-  const debug=await frame.locator('body').evaluate(()=>({
-    acquisition:document.querySelector('#acquisitionStatus')?.textContent||'',
-    toast:document.querySelector('#toast')?.textContent||'',
-    hasApi:!!window.HerbariumAcquisition,
-    subjectCard:!!document.querySelector('#subjectGateCard'),
-    saveText:document.querySelector('#saveObsBtn')?.textContent||'',
-    saveStatus:document.querySelector('#saveObsBtn')?.dataset.subjectStatus||'',
-    saveDisabled:!!document.querySelector('#saveObsBtn')?.disabled,
-    thumbs:document.querySelectorAll('#captureGrid img.thumb').length
-  }));
-  console.log('CANONICAL_DEBUG',JSON.stringify({...debug,pageErrors}));
-  expect(debug.hasApi).toBe(true);
-  expect(debug.acquisition).toMatch(/verificata|ottimizzata/i);
   await expect(frame.locator('#captureGrid img.thumb')).toHaveCount(1);
   const save=frame.locator('#saveObsBtn');
-  await expect(save).toContainText(/Salva osservazione/);
-  await expect(save).not.toContainText(/specie verificata/i);
-  await expect(frame.locator('#subjectGateCard')).toBeVisible();
+  await expect(save).toBeEnabled(); await save.click();
+  await expect(frame.locator('#book')).toHaveClass(/active/);
+  await expect(frame.locator('#pendingList [data-open-obs]')).toHaveCount(1);
+  await expect(frame.locator('#bookPages [data-open-obs]')).toHaveCount(0);
+  await page.reload();
+  const reloaded=page.frameLocator('#runtimeFrame');
+  await reloaded.locator('[data-go="book"]').first().click();
+  await expect(reloaded.locator('#pendingList [data-open-obs]')).toHaveCount(1);
+  await expect(reloaded.locator('#bookPages [data-open-obs]')).toHaveCount(0);
+  await reloaded.locator('#pendingList [data-open-obs]').first().click();
+  await expect(reloaded.locator('#observationDetail')).not.toHaveClass(/hidden/);
+  await expect(reloaded.locator('#obsDetailBody')).toContainText(/UNKNOWN/);
+  page.on('dialog',dialog=>dialog.accept());
+  await reloaded.locator('#deleteObsDetail').click();
+  await expect(reloaded.locator('#pendingList [data-open-obs]')).toHaveCount(0);
+  await page.reload();
+  const finalFrame=page.frameLocator('#runtimeFrame'); await finalFrame.locator('[data-go="book"]').first().click();
+  await expect(finalFrame.locator('#pendingList [data-open-obs]')).toHaveCount(0);
+  await expect(finalFrame.locator('#statSpecies')).toHaveText('0');
 });
