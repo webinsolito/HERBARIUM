@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const acquisition=fs.readFileSync(new URL('../app/acquisition-guard.js',import.meta.url),'utf8');
+const evidence=fs.readFileSync(new URL('../app/local-subject-evidence.js',import.meta.url),'utf8');
+const guard=fs.readFileSync(new URL('../app/field-runtime-guard.js',import.meta.url),'utf8');
+assert.match(acquisition,/outputEdge:1600/,'retained photo edge must be capped');
+assert.match(acquisition,/prepareMs/,'acquisition timing must be measured locally');
+assert.match(acquisition,/canvas\.width=1;canvas\.height=1/,'large acquisition canvas must be released');
+assert.match(evidence,/const max=160/,'subject analysis edge must stay bounded');
+assert.match(evidence,/analysis:\{ms:/,'subject analysis must expose timing/dimensions');
+assert.match(evidence,/canvas\.width=1;canvas\.height=1/,'analysis canvas must be released');
+assert.match(guard,/lastSignature/,'unchanged previews must not be re-analysed');
+assert.match(guard,/setTimeout\(sync,120\)/,'mutation bursts must be debounced');
+assert.match(guard,/analysisPixels/,'aggregate runtime must report bounded work');
+console.log('performance-contract: 9/9 PASS');
