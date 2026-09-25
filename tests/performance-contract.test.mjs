@@ -38,5 +38,8 @@ assert.match(evidence,/canvas\.width=1;canvas\.height=1/,'subject analysis canva
 assert.match(guard,/lastSignature/,'unchanged previews must not be re-analysed');
 assert.match(guard,/setTimeout\(sync,120\)/,'mutation bursts must be debounced');
 assert.match(guard,/analysisPixels/,'aggregate runtime must report bounded subject work');
+assert.match(guard,/doc\.defaultView\?\.MutationObserver/,'subject observer must use the runtime iframe realm on WebKit');
+assert.match(guard,/herbarium:shot-updated/,'subject gate must receive explicit processed-shot updates');
+assert.match(runtime,/herbarium:shot-updated/,'runtime must emit processed-shot updates after preview render');
 
-console.log('performance-contract: 30/30 PASS');
+console.log('performance-contract: 33/33 PASS');
