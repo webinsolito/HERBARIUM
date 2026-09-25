@@ -55,6 +55,10 @@ test('canonical mobile flow accepts library input and preserves UNKNOWN-safe sav
     acquisition:document.querySelector('#acquisitionStatus')?.textContent||'',
     toast:document.querySelector('#toast')?.textContent||'',
     hasApi:!!window.HerbariumAcquisition,
+    subjectCard:!!document.querySelector('#subjectGateCard'),
+    saveText:document.querySelector('#saveObsBtn')?.textContent||'',
+    saveStatus:document.querySelector('#saveObsBtn')?.dataset.subjectStatus||'',
+    saveDisabled:!!document.querySelector('#saveObsBtn')?.disabled,
     thumbs:document.querySelectorAll('#captureGrid img.thumb').length
   }));
   console.log('CANONICAL_DEBUG',JSON.stringify({...debug,pageErrors}));
