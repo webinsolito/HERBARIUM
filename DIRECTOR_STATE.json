@@ -1,50 +1,21 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "b3c9f1d0a49675516d7db08e163507b1f00f5f81",
-  "rollback_commit": "84314f1a09f1868ffc46e41048958a607694ab5c",
+  "last_good_commit": "6438674348f1fc1dc40348199e42f6c4bb6ce2d3",
+  "rollback_commit": "5fcda8a61a1bde335ce6ab980a2dc19b63634c02",
   "current_gate": "MISSION-002-recognition-reject-integration",
-  "gate_weights": {
-    "source_recovery": 20,
-    "recognition_reject": 25,
-    "camera_library": 15,
-    "persistence_collection": 10,
-    "offline_privacy": 10,
-    "mobile_ui": 10,
-    "tests_release": 10
-  },
-  "completion_score": 32,
-  "verification_score": 35,
+  "gate_weights": {"source_recovery":20,"recognition_reject":25,"camera_library":15,"persistence_collection":10,"offline_privacy":10,"mobile_ui":10,"tests_release":10},
+  "completion_score": 34,
+  "verification_score": 37,
   "last_tests": {
     "status": "PASS_WITH_LIMITATION",
-    "command": "GitHub post-write fetch verification of canonical shell and Field runtime guard",
-    "result": "Canonical index now mounts the versioned RC3 runtime and loads a same-origin fail-closed Field guard. Missing subject evidence keeps recognition disabled while photos may still be persisted only as non-identified observations. Camera/file input, IndexedDB persistence and real-device iframe behavior were not browser-E2E tested in this connector run.",
-    "scope": "static integration verified; prior subject contract remains 8/8; no real-image accuracy or browser E2E claim"
+    "command": "Static post-write verification plus deterministic pixel fixture suite added",
+    "result": "Local offline pixel evidence adapter is wired to the Field guard. Four deterministic fixtures cover vegetation-positive, neutral-negative, blue/non-vegetation-negative and missing evidence. Existing conservative gate contract remains fail-closed. Node suite was authored but not executed by the GitHub connector; real-photo and iPhone browser E2E remain pending.",
+    "scope": "adapter/integration written and reviewed; no real-image accuracy claim"
   },
-  "blockers": [
-    "No real image subject detector is wired to the conservative gate yet",
-    "No dataset-backed recognition/reject accuracy metric is available yet",
-    "Real iPhone camera/library regression through the canonical shell still needs browser/device verification"
-  ],
-  "recognition_metrics": {
-    "positive_accuracy": null,
-    "negative_reject_rate": null,
-    "unknown_rate": null,
-    "contract_cases_passed": "8/8",
-    "note": "Contract behavior verified previously; no claim of real-image recognition accuracy"
-  },
-  "implemented": [
-    "Conservative plant/uncertain/non-plant admission contract with fail-closed thresholds",
-    "Italian UX states for uncertain and non-plant results that explicitly avoid invented species",
-    "Automated positive, negative, ambiguous, low-quality, missing and invalid-evidence contract tests",
-    "Canonical app/index.html entrypoint with mobile-safe premium botanical boot state",
-    "Versioned app/runtime.html containing RC3",
-    "Reduced-motion-aware soft 3D botanical boot animation",
-    "Fail-closed subject-gate UI bridge with accessible live status",
-    "Canonical runtime shell now physically attaches Field admission guard before recognition",
-    "Missing subject evidence disables recognition while preserving unresolved observation capture",
-    "Field UI now clearly labels safe unresolved save state instead of implying identification"
-  ],
-  "next_action": "Add a real local subject-evidence adapter that produces detector evidence for captured images, feed it into the existing PLANT/UNCERTAIN/NON_PLANT gate, and add positive/negative image fixtures before enabling recognition.",
-  "updated_at": "2026-09-25T13:57:00+02:00"
+  "blockers": ["Dataset-backed real-photo reject metrics are not available yet","Real iPhone camera/library regression through canonical shell needs browser/device verification","Species recognition remains intentionally disabled until subject reject is validated on real images"],
+  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"contract_cases_passed":"8/8","local_adapter_fixture_cases":"4 authored / execution pending","note":"No claim of real-image recognition accuracy"},
+  "implemented": ["Conservative plant/uncertain/non-plant admission contract","Italian fail-closed subject UX","Canonical RC3 runtime and Field guard","Offline local pixel subject-evidence adapter","Field images now feed local evidence into PLANT/UNCERTAIN/NON_PLANT gate","Recognition remains disabled unless subject gate admits plant; species recognition itself remains intentionally unwired","Premium botanical subject card with explicit unresolved save state","Deterministic positive/negative/missing pixel fixtures added"],
+  "next_action": "Build a small repository-backed real-photo fixture set containing plants and hard negatives (printed plants, fabric, pets and household objects), run the local subject adapter against it, record reject/unknown metrics, and tune thresholds without enabling species recognition.",
+  "updated_at": "2026-09-25T14:36:00+02:00"
 }
