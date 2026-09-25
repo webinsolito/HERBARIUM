@@ -105,6 +105,7 @@ function renderCaptures(){
       };
       renderCaptures();
       renderQuality();
+      window.dispatchEvent(new CustomEvent('herbarium:shot-updated',{detail:{role:inp.dataset.role}}));
     }catch(err){
       acq?.show('error','Foto non acquisita. Puoi riprovare senza perdere le altre viste.');
       toast('Foto non acquisita: '+err.message);
