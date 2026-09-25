@@ -11,14 +11,15 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08130e;col
 </head>
 <body>
 <main class="shell">
-  <div id="boot" class="boot" aria-live="polite"><div><div class="mark" aria-hidden="true">❧</div><h1>Herbarium</h1><p>Preparo il Field Mode e i controlli di sicurezza prima del riconoscimento.</p><small>Privacy-first · fail-closed</small></div></div>
+  <div id="boot" class="boot" aria-live="polite"><div><div class="mark" aria-hidden="true">❧</div><h1>Herbarium</h1><p>Preparo fotocamera, libreria e controlli di sicurezza sul dispositivo.</p><small>Privacy-first · fail-closed</small></div></div>
   <iframe id="runtimeFrame" class="runtime" src="./runtime.html" title="Herbarium" allow="camera; geolocation" referrerpolicy="same-origin"></iframe>
 </main>
 <script type="module">
 import { attachToRuntimeFrame } from './field-runtime-guard.js';
+import { installAcquisitionGuard } from './acquisition-guard.js';
 const frame=document.querySelector('#runtimeFrame'),boot=document.querySelector('#boot');
 attachToRuntimeFrame(frame);
-frame.addEventListener('load',()=>boot.classList.add('ready'),{once:true});
+frame.addEventListener('load',()=>{try{installAcquisitionGuard(frame.contentDocument)}catch{}boot.classList.add('ready')},{once:true});
 </script>
 </body>
 </html>
