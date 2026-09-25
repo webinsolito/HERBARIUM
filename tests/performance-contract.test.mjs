@@ -15,6 +15,8 @@ assert.match(acquisition,/passthroughEvents=new WeakSet/,'only explicit resumed 
 assert.match(acquisition,/inFlight=new WeakSet/,'duplicate native change bursts must be suppressed while preparing');
 assert.match(acquisition,/grid\.addEventListener\('change'/,'guard must use delegated capture-grid interception across rerenders');
 assert.match(acquisition,/transport:'memory-handoff'/,'runtime transport must not depend on input.files rewriting');
+assert.match(acquisition,/EventCtor=doc\.defaultView\?\.Event/,'resume events must be created in the runtime iframe realm for WebKit');
+assert.match(acquisition,/CustomEventCtor=doc\.defaultView\?\.CustomEvent/,'telemetry events must be created in the runtime iframe realm for WebKit');
 assert.doesNotMatch(acquisition,/new DataTransfer\(/,'Safari path must not depend on DataTransfer');
 assert.match(acquisition,/herbarium:acquisition-ready/,'prepared acquisition must expose readiness telemetry');
 assert.match(acquisition,/input\.value=''/,'failed preparation must clear unsafe input');
@@ -35,4 +37,4 @@ assert.match(guard,/lastSignature/,'unchanged previews must not be re-analysed')
 assert.match(guard,/setTimeout\(sync,120\)/,'mutation bursts must be debounced');
 assert.match(guard,/analysisPixels/,'aggregate runtime must report bounded subject work');
 
-console.log('performance-contract: 26/26 PASS');
+console.log('performance-contract: 28/28 PASS');
