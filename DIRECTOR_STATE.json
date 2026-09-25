@@ -17,12 +17,12 @@
   "verification_score": 32,
   "last_tests": {
     "status": "PASS_WITH_LIMITATION",
-    "command": "GitHub post-write fetch verification of app/index.html and app/runtime.html plus prior node subject-gate contract tests",
-    "result": "canonical entrypoint now targets app/runtime.html; runtime boundary deterministically hands off to immutable RC3; both written files re-fetched successfully; prior subject-gate contract remains 8/8",
-    "scope": "source-of-truth routing/static verification only; no browser E2E or real-image model accuracy executed this run"
+    "command": "GitHub post-write fetch verification plus deterministic promotion workflow guards",
+    "result": "Added promote-rc3-runtime workflow with test -s, byte-for-byte cmp, captureGrid and saveObsBtn assertions before commit. app/runtime.html re-fetch still shows the prior handoff, so promotion is not claimed complete.",
+    "scope": "migration mechanism verified statically; runtime promotion not yet observed; no browser E2E or real-image accuracy executed"
   },
   "blockers": [
-    "RC3 implementation is still physically under recovery; app/runtime.html is now the versioned boundary but still hands off to recovery runtime",
+    "RC3 implementation is still physically under recovery until the promotion workflow commit is observed",
     "No real image subject detector is wired to the conservative gate yet",
     "No dataset-backed recognition/reject accuracy metric is available yet"
   ],
@@ -39,8 +39,9 @@
     "Automated positive, negative, ambiguous, low-quality, missing and invalid-evidence contract tests",
     "Canonical app/index.html entrypoint with mobile-safe premium botanical boot state",
     "Versioned app/runtime.html boundary so the canonical entrypoint no longer references recovery directly",
-    "Reduced-motion-aware soft 3D botanical boot animation"
+    "Reduced-motion-aware soft 3D botanical boot animation",
+    "Deterministic RC3 promotion workflow that copies recovery runtime into app/runtime.html only after byte-parity and critical UI-control assertions"
   ],
-  "next_action": "Replace the app/runtime.html handoff with the full RC3 runtime implementation copied byte-for-byte from recovery/HERBARIUM_TEST_PC.html, verify behavior parity, then repoint any internal recovery-relative assumptions without changing functionality.",
-  "updated_at": "2026-09-25T11:36:00+02:00"
+  "next_action": "Verify the promote-rc3-runtime workflow result and app/runtime.html byte-parity with recovery/HERBARIUM_TEST_PC.html; if promoted, close MISSION-001-source-of-truth and wire the conservative subject gate before save/recognition; if failed, inspect the workflow job and fix it in the same run.",
+  "updated_at": "2026-09-25T12:38:00+02:00"
 }
