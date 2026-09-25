@@ -6,10 +6,15 @@ const guard=fs.readFileSync(new URL('../app/field-runtime-guard.js',import.meta.
 assert.match(acquisition,/outputEdge:1600/,'retained photo edge must be capped');
 assert.match(acquisition,/prepareMs/,'acquisition timing must be measured locally');
 assert.match(acquisition,/canvas\.width=1;canvas\.height=1/,'large acquisition canvas must be released');
+assert.match(acquisition,/event\.stopImmediatePropagation\(\)/,'raw input must not reach downstream runtime before preparation');
+assert.match(acquisition,/new DataTransfer\(\)/,'prepared file must replace raw input authoritatively');
+assert.match(acquisition,/input\.dispatchEvent\(new Event\('change',\{bubbles:true\}\)\)/,'runtime must resume only after prepared file handoff');
+assert.match(acquisition,/herbarium:acquisition-ready/,'prepared acquisition must expose a local readiness event');
+assert.match(acquisition,/input\.value='';show\('error'/,'failed preparation must fail closed and clear unsafe input');
 assert.match(evidence,/const max=160/,'subject analysis edge must stay bounded');
 assert.match(evidence,/analysis:\{ms:/,'subject analysis must expose timing/dimensions');
 assert.match(evidence,/canvas\.width=1;canvas\.height=1/,'analysis canvas must be released');
 assert.match(guard,/lastSignature/,'unchanged previews must not be re-analysed');
 assert.match(guard,/setTimeout\(sync,120\)/,'mutation bursts must be debounced');
 assert.match(guard,/analysisPixels/,'aggregate runtime must report bounded work');
-console.log('performance-contract: 9/9 PASS');
+console.log('performance-contract: 14/14 PASS');
