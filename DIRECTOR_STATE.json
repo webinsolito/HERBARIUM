@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "02491c40a292d416ad67a7a1aa355ba7f2014cdc",
-  "rollback_commit": "02491c40a292d416ad67a7a1aa355ba7f2014cdc",
-  "current_candidate": "52abec6e7a7422c93594506678cff432775562b3",
-  "current_gate": "MISSION-002-performance-verification",
-  "completion_score": 50,
-  "verification_score": 55,
+  "last_good_commit": "1ecfe041d1b99a107eaad737bd8197bcf1cb0e17",
+  "rollback_commit": "52abec6e7a7422c93594506678cff432775562b3",
+  "current_candidate": "1ecfe041d1b99a107eaad737bd8197bcf1cb0e17",
+  "current_gate": "MISSION-003-real-device-acquisition-regression",
+  "completion_score": 53,
+  "verification_score": 60,
   "last_tests": {
-    "status": "PENDING_CI",
-    "command": "HERBARIUM Guard run 36155709094",
-    "result": "Performance contract added with 9 assertions; CI was queued at state update, therefore no PASS claimed.",
-    "scope": "Acquisition cap/timing, canvas release, bounded subject-analysis dimensions, duplicate-analysis suppression and debounce."
+    "status": "PASS_CI",
+    "command": "HERBARIUM Guard run 36162088193",
+    "result": "SUCCESS on authoritative acquisition handoff; performance contract expanded to 14 assertions.",
+    "scope": "Raw input interception, local preparation, authoritative DataTransfer replacement, fail-closed errors, readiness telemetry, bounded analysis/performance regression."
   },
   "blockers": [
     "Dataset-backed real-photo reject metrics are unavailable until real labeled photos are supplied",
@@ -25,10 +25,12 @@
     "Camera/library acquisition validation and local preprocessing",
     "Real IndexedDB observation collection/detail/delete flows",
     "Local-only offline PWA shell and diagnostics",
-    "Performance package candidate: retained acquisition edge reduced to 1600px, local prepare timing/byte/pixel metrics exposed, transient canvases explicitly released",
-    "Subject evidence analysis bounded to 160px edge with timing/pixel metrics, unchanged-preview analysis suppression and mutation debounce",
-    "Nine performance/memory contract assertions added without inventing device benchmarks"
+    "Retained acquisition edge capped at 1600px with local prepare timing/byte/pixel metrics and transient canvas release",
+    "Raw camera/library file is intercepted before runtime consumption; prepared file replaces it authoritatively via DataTransfer before the runtime change flow resumes",
+    "Preparation failures clear the input and remain fail-closed; successful preparation emits local readiness telemetry and visible status",
+    "Subject evidence analysis bounded to 160px with timing/pixel metrics, unchanged-preview suppression and mutation debounce",
+    "Fourteen performance/acquisition contract assertions pass in CI"
   ],
-  "next_action": "Verify HERBARIUM Guard for candidate 52abec6e7a7422c93594506678cff432775562b3; if green, promote it as last_good and then close camera→prepare→subject gate integration so the optimized blob is actually authoritative end-to-end rather than only exposed through HerbariumAcquisition.",
-  "updated_at": "2026-09-25T17:41:00+02:00"
+  "next_action": "Add browser-level acquisition regression coverage for camera/library prepared-file handoff, error/reset and duplicate-event safety, then harden Safari/iPhone compatibility without weakening UNKNOWN fail-closed behavior.",
+  "updated_at": "2026-09-25T18:39:10+02:00"
 }
