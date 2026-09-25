@@ -30,14 +30,14 @@ export function attachFieldRuntimeGuard(doc=document){
  const original=save.textContent;let syncVersion=0;
  async function sync(){
    const version=++syncVersion,thumbs=[...grid.querySelectorAll('.thumb')];
-   if(!thumbs.length){result=null;renderSubjectGate(card,result);recognize.textContent='Riconoscimento in attesa della foto';evidenceCopy.textContent='Aggiungi una foto: il controllo avviene sul dispositivo.';applySubjectAdmission({recognitionButton:recognize},result);save.disabled=true;save.textContent=original;return;}
+   if(!thumbs.length){result=null;renderSubjectGate(card,result);recognize.textContent='Riconoscimento in attesa della foto';evidenceCopy.textContent='Aggiungi una foto: il controllo avviene sul dispositivo.';applySubjectAdmission({recognitionButton:recognize},result);save.dataset.subjectStatus='unknown';save.disabled=true;save.textContent=original;return;}
    evidenceCopy.textContent='Controllo locale del soggetto in corso…';
    const evidences=[];for(const img of thumbs){try{evidences.push(await evidenceFromImageElement(img,1))}catch{}}
    if(version!==syncVersion)return;
    const evidence=aggregateEvidence(evidences);result=evidence?classifyPlantSubject(evidence):null;renderSubjectGate(card,result);applySubjectAdmission({recognitionButton:recognize},result);
-   const status=result?.status;
+   const status=result?.status;save.dataset.subjectStatus=status||'unknown';
    recognize.textContent=status==='plant'?'Soggetto ammesso · recognition non ancora collegata':'Riconoscimento bloccato';
-   evidenceCopy.textContent=!evidence?'Controllo non disponibile: resta UNKNOWN.':status==='plant'?`Controllo locale superato su ${evidence.views} vista${evidence.views===1?'':'e'}. Nessuna specie viene ancora assegnata.`:status==='non_plant'?'Il soggetto non supera il controllo botanico. Puoi conservarlo solo come osservazione non identificata.':`Evidenza incerta su ${evidence.views} vista${evidence.views===1?'':'e'}: aggiungi una foto chiara di foglia o fiore.`;
+   evidenceCopy.textContent=!evidence?'Controllo non disponibile: resta UNKNOWN.':status==='plant'?`Controllo locale superato su ${evidence.views} vista${evidence.views===1?'':'e'}. Nessuna specie viene ancora assegnata.`:status==='non-plant'?'Il soggetto non supera il controllo botanico. Puoi conservarlo solo come osservazione non identificata.':`Evidenza incerta su ${evidence.views} vista${evidence.views===1?'':'e'}: aggiungi una foto chiara di foglia o fiore.`;
    save.disabled=false;save.textContent=status==='plant'?'Salva osservazione botanica non identificata':'Salva osservazione non identificata';save.setAttribute('aria-describedby','subjectGateCard');
  }
  let timer;const observer=new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(sync,60)});observer.observe(grid,{childList:true,subtree:true});sync();
