@@ -15,8 +15,9 @@ async function clearDb(page){
   }));
 }
 
-async function analyse(page,file){
-  await page.goto('/observe.html');
+async function analyse(page,file,diagnosticState){
+  diagnosticState.current=null;
+  await page.goto('/observe.html?benchmark=1');
   await page.locator('#detail').setInputFiles(file);
   await expect(page.locator('#analyse')).toBeEnabled();
   const started=Date.now();
@@ -34,28 +35,7 @@ async function analyse(page,file){
     r.onerror=()=>reject(r.error);
   }),id);
 
-  // IndexedDB persists evidence as ArrayBuffer values. Playwright page.evaluate
-  // serialisation is not a reliable transport for those binary buffers, so passing
-  // stored.evidence as an argument can silently destroy the image payload and turn
-  // the diagnostic re-run into no-species-inference. Re-read the observation inside
-  // the page realm instead. Nothing from this diagnostic pass is persisted.
-  const liveSpecies=await page.evaluate(async observationId=>{
-    try{
-      const evidence=await new Promise((resolve,reject)=>{
-        const r=indexedDB.open('herbarium.local.v1');
-        r.onsuccess=()=>{
-          const db=r.result,q=db.transaction('observations','readonly').objectStore('observations').get(observationId);
-          q.onsuccess=()=>{resolve(q.result?.evidence||[]);db.close();};
-          q.onerror=()=>reject(q.error);
-        };
-        r.onerror=()=>reject(r.error);
-      });
-      const {createSpeciesRecognitionAdapter}=await import('./species-onnx.mjs');
-      return await createSpeciesRecognitionAdapter().infer(evidence);
-    }catch(error){
-      return{status:'UNAVAILABLE',reason:`benchmark-diagnostics:${String(error?.message||error)}`};
-    }
-  },id);
+  const liveSpecies=diagnosticState.current;
   return {elapsedMs,item:stored,liveSpecies};
 }
 
@@ -87,10 +67,12 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
     expect(samples.filter(x=>x.kind==='plant')).toHaveLength(10);
     expect(samples.filter(x=>x.kind==='negative')).toHaveLength(7);
 
+    const diagnosticState={current:null};
+    await page.exposeFunction('__herbariumBenchmarkCapture',payload=>{diagnosticState.current=payload;});
     const rows=[];
     for(const sample of samples){
       await clearDb(page);
-      const result=await analyse(page,sample.file);
+      const result=await analyse(page,sample.file,diagnosticState);
       const item=result.item;
       const species=item?.analysis?.speciesEngine||null;
       const live=result.liveSpecies||null;
