@@ -26,7 +26,9 @@ import { attachToRuntimeFrame } from './field-runtime-guard.js';
 import { installAcquisitionGuard } from './acquisition-guard.js';
 const frame=document.querySelector('#runtimeFrame'),boot=document.querySelector('#boot'),note=document.querySelector('#pwaNote'),copy=document.querySelector('#pwaCopy'),action=document.querySelector('#pwaAction');
 attachToRuntimeFrame(frame);
-frame.addEventListener('load',()=>{try{installAcquisitionGuard(frame.contentDocument)}catch{}boot.classList.add('ready')},{once:true});
+const bindRuntimeSafety=()=>{try{installAcquisitionGuard(frame.contentDocument)}catch{}boot.classList.add('ready')};
+frame.addEventListener('load',bindRuntimeSafety);
+try{if(frame.contentDocument?.readyState==='interactive'||frame.contentDocument?.readyState==='complete')queueMicrotask(bindRuntimeSafety)}catch{}
 
 let hideTimer;
 function pwaMessage(message,{actionable=false,hold=false}={}){
