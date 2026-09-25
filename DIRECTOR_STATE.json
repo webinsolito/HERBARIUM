@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "ccea26c455a93e46c4a4c661a7be1065ca78836f",
-  "rollback_commit": "9340a8e30822d5d5520abf26e3cf06685ec7b331",
+  "last_good_commit": "4bc886624fdea39945c2f809515b405530a7becd",
+  "rollback_commit": "ccea26c455a93e46c4a4c661a7be1065ca78836f",
   "current_gate": "MISSION-002-recognition-reject-integration",
   "gate_weights": {"source_recovery":20,"recognition_reject":25,"camera_library":15,"persistence_collection":10,"offline_privacy":10,"mobile_ui":10,"tests_release":10},
-  "completion_score": 37,
-  "verification_score": 40,
-  "last_tests": {"status":"PASS_WITH_LIMITATION","command":"Post-write fetch verification of dataset evaluator and mobile lab","result":"Evaluator imports labeled PLANT/NON_PLANT image files, decodes locally, runs existing evidence+gate pipeline, preserves INVALID separately, and reports pass/reject/uncertain counts. Dataset Lab requires both classes and explicitly refuses to present absent corpus as metrics.","scope":"runtime harness structural verification; no real-photo accuracy claim"},
-  "blockers": ["Dataset-backed real-photo reject metrics are not available until real labeled photos are supplied","Real iPhone camera/library regression through canonical shell needs browser/device verification","Species recognition remains intentionally disabled until subject reject is validated on real images"],
-  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"contract_cases_passed":"8/8 prior","local_adapter_fixture_cases":"4 authored / execution pending","real_dataset":"harness ready / corpus absent","note":"No claim of real-image recognition accuracy"},
-  "implemented": ["Conservative plant/uncertain/non-plant admission contract","Italian fail-closed subject UX","Canonical RC3 runtime and Field guard","Offline local pixel subject-evidence adapter","Conservative multi-view evidence aggregation with disagreement penalty","Stale async subject analyses cannot overwrite newer capture state","Explicit UNKNOWN/REJECT mobile guidance","Repository-backed labeled dataset evaluator using the production evidence/gate pipeline","Mobile offline Dataset Lab requiring PLANT and NON_PLANT classes and reporting pass/reject/uncertain without fabricated accuracy","Recognition remains disabled until subject gate admits plant; species recognition itself remains intentionally unwired"],
-  "next_action": "Harden the canonical camera/library acquisition flow end-to-end: validate image MIME/decode failures, cap oversized inputs before processing, expose recoverable Italian error/UNKNOWN states, and verify existing capture/save behavior is preserved.",
-  "updated_at": "2026-09-25T16:40:46+02:00"
+  "completion_score": 40,
+  "verification_score": 43,
+  "last_tests": {"status":"PASS_WITH_LIMITATION","command":"Two-pass post-write source verification","result":"PASS1 added acquisition validation/decode/oversize downscale/local feedback and canonical integration. PASS2 fixed empty iPhone MIME handling, canvas failure recovery, accept=image/* and accessible status. Existing RC3 capture/save implementation was not replaced.","scope":"static/runtime integration verification; real iPhone device execution pending"},
+  "blockers": ["Dataset-backed real-photo reject metrics are not available until real labeled photos are supplied","Real iPhone camera/library regression through canonical shell still needs browser/device verification","Species recognition remains intentionally disabled until subject reject is validated on real images"],
+  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"contract_cases_passed":"8/8 prior","real_dataset":"harness ready / corpus absent","note":"No claim of real-image recognition accuracy"},
+  "implemented": ["Conservative plant/uncertain/non-plant admission contract","Canonical RC3 runtime and Field guard","Offline local pixel subject-evidence adapter","Conservative multi-view evidence aggregation","UNKNOWN/REJECT mobile guidance","Labeled offline dataset evaluator","Camera/library acquisition guard validates type/empty/size/decode","Oversized decoded images are locally downscaled before downstream analysis","Recoverable Italian acquisition errors preserve UNKNOWN","iPhone files with empty MIME are decoded rather than falsely rejected","Canonical shell installs acquisition guard without replacing RC3 persistence"],
+  "next_action": "Close the collection/persistence flow: verify and harden observation save/load/delete around IndexedDB, add explicit empty/error/recovery states in the Herbarium book, and preserve unverified/UNKNOWN semantics end-to-end.",
+  "updated_at": "2026-09-25T16:41:00+02:00"
 }
