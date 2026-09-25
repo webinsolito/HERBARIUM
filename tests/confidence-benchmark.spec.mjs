@@ -33,17 +33,29 @@ async function analyse(page,file){
     };
     r.onerror=()=>reject(r.error);
   }),id);
-  // Re-run only for benchmark diagnostics. This result is never persisted and never
-  // changes the user-facing observation; it exposes PlantNet/BioCLIP consensus details
-  // that production intentionally omits from IndexedDB.
-  const liveSpecies=await page.evaluate(async evidence=>{
+
+  // IndexedDB persists evidence as ArrayBuffer values. Playwright page.evaluate
+  // serialisation is not a reliable transport for those binary buffers, so passing
+  // stored.evidence as an argument can silently destroy the image payload and turn
+  // the diagnostic re-run into no-species-inference. Re-read the observation inside
+  // the page realm instead. Nothing from this diagnostic pass is persisted.
+  const liveSpecies=await page.evaluate(async observationId=>{
     try{
+      const evidence=await new Promise((resolve,reject)=>{
+        const r=indexedDB.open('herbarium.local.v1');
+        r.onsuccess=()=>{
+          const db=r.result,q=db.transaction('observations','readonly').objectStore('observations').get(observationId);
+          q.onsuccess=()=>{resolve(q.result?.evidence||[]);db.close();};
+          q.onerror=()=>reject(q.error);
+        };
+        r.onerror=()=>reject(r.error);
+      });
       const {createSpeciesRecognitionAdapter}=await import('./species-onnx.mjs');
       return await createSpeciesRecognitionAdapter().infer(evidence);
     }catch(error){
       return{status:'UNAVAILABLE',reason:`benchmark-diagnostics:${String(error?.message||error)}`};
     }
-  },stored?.evidence||[]);
+  },id);
   return {elapsedMs,item:stored,liveSpecies};
 }
 
