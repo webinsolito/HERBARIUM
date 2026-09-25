@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "f9b81e0aafc17eacc91ef2d59379023b323e2a1b",
-  "rollback_commit": "36984ed64ef6a2576e2b451a359732159b01b336",
+  "last_good_commit": "0c20b1e094bb00ecc5cd5d3a9cde6ae2af7ce951",
+  "rollback_commit": "f9b81e0aafc17eacc91ef2d59379023b323e2a1b",
   "current_gate": "MISSION-001-source-of-truth",
   "gate_weights": {
     "source_recovery": 20,
@@ -16,13 +16,13 @@
   "completion_score": 30,
   "verification_score": 30,
   "last_tests": {
-    "status": "PASS",
-    "command": "node tests/plant-subject-gate.test.mjs",
-    "result": "8/8 contract cases passed",
-    "scope": "plant/non-plant/uncertain decision contract and user-facing result copy; not image-model accuracy"
+    "status": "PASS_WITH_LIMITATION",
+    "command": "static inspection of canonical app/index.html plus prior node tests/plant-subject-gate.test.mjs",
+    "result": "canonical entrypoint now deterministically routes to last-good RC3; prior subject-gate contract remains 8/8",
+    "scope": "entrypoint/source-of-truth wiring only; no browser E2E or real-image model accuracy executed this run"
   },
   "blockers": [
-    "RC3 runtime still lives under recovery and must be promoted into the versioned app baseline",
+    "RC3 implementation is still physically under recovery; app/index.html is now canonical but redirects to the last-good runtime",
     "No real image subject detector is wired to the conservative gate yet",
     "No dataset-backed recognition/reject accuracy metric is available yet"
   ],
@@ -31,13 +31,14 @@
     "negative_reject_rate": null,
     "unknown_rate": null,
     "contract_cases_passed": "8/8",
-    "note": "Contract behavior verified; no claim of real-image recognition accuracy"
+    "note": "Contract behavior verified previously; no claim of real-image recognition accuracy"
   },
   "implemented": [
     "Conservative plant/uncertain/non-plant admission contract with fail-closed thresholds",
     "Italian UX states for uncertain and non-plant results that explicitly avoid invented species",
-    "Automated positive, negative, ambiguous, low-quality, missing and invalid-evidence contract tests"
+    "Automated positive, negative, ambiguous, low-quality, missing and invalid-evidence contract tests",
+    "Canonical app/index.html entrypoint with mobile-safe premium botanical boot state and deterministic redirect to last-good RC3 runtime"
   ],
-  "next_action": "Promote RC3 runtime from recovery/HERBARIUM_TEST_PC.html into the versioned app baseline and wire plant-subject-gate.js before save/recognition so NON_PLANT and UNCERTAIN cannot enter species recognition.",
-  "updated_at": "2026-09-25T09:39:00+02:00"
+  "next_action": "Extract RC3 runtime from recovery/HERBARIUM_TEST_PC.html into app/runtime.html without behavior changes, then make app/index.html load that versioned runtime directly before wiring subject-gate admission.",
+  "updated_at": "2026-09-25T10:40:00+02:00"
 }
