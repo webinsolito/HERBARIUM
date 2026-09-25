@@ -5,53 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#08130e">
 <meta name="description" content="Herbarium: atlante botanico locale-first, mobile-first e prudente su UNKNOWN.">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Herbarium">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./icon.svg" type="image/svg+xml">
-<title>Herbarium</title>
-<style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08130e;color:#f5f1e6;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif}.shell{position:fixed;inset:0;background:#08130e}.runtime{width:100%;height:100%;border:0;display:block;background:#08130e}.boot{position:absolute;inset:0;z-index:2;display:grid;place-items:center;padding:24px;text-align:center;background:radial-gradient(circle at 50% 28%,#214a36 0,transparent 36%),#08130e;transition:opacity .28s ease}.boot.ready{opacity:0;pointer-events:none}.mark{width:88px;height:88px;margin:auto;border-radius:30px;background:linear-gradient(145deg,#c7ddb7,#5f8d6b);box-shadow:0 24px 58px #0008,inset 0 2px 10px #fff6;display:grid;place-items:center;font-size:44px;transform:rotate(-4deg);animation:breathe 1.8s ease-in-out infinite alternate}h1{font:600 2rem Georgia,serif;margin:18px 0 7px}.boot p{color:#aab8af;max-width:330px;line-height:1.5;margin:0 auto}.boot small{display:block;color:#d2bd78;margin-top:18px;letter-spacing:.12em;text-transform:uppercase}@keyframes breathe{to{transform:rotate(2deg) translateY(-3px);box-shadow:0 29px 64px #0009,inset 0 2px 12px #fff7}}@media(prefers-reduced-motion:reduce){.mark{animation:none}.boot{transition:none}}.pwa-note{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;z-index:5;display:flex;align-items:center;gap:10px;max-width:calc(100% - 24px);padding:10px 12px;border:1px solid #3a5c4b;border-radius:999px;background:rgba(13,29,23,.96);box-shadow:0 16px 44px #0008;color:#e9f0e8;font-size:.76rem;transition:.22s}.pwa-note.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}.pwa-note button{border:0;border-radius:999px;background:#d2bd78;color:#172019;padding:7px 10px;font-weight:800}
-</style>
-</head>
-<body>
-<main class="shell">
-  <div id="boot" class="boot" aria-live="polite"><div><div class="mark" aria-hidden="true">❧</div><h1>Herbarium</h1><p>Preparo fotocamera, libreria e controlli di sicurezza sul dispositivo.</p><small>Privacy-first · fail-closed</small></div></div>
-  <iframe id="runtimeFrame" class="runtime" src="./runtime.html" title="Herbarium" allow="camera; geolocation" referrerpolicy="same-origin"></iframe>
-</main>
-<div id="pwaNote" class="pwa-note" role="status" aria-live="polite"><span id="pwaCopy">Preparazione offline…</span><button id="pwaAction" hidden>Aggiorna</button></div>
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Herbarium">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><title>Herbarium</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08130e;color:#f5f1e6;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif}.shell{position:fixed;inset:0;background:#08130e}.runtime{width:100%;height:100%;border:0;display:block;background:#08130e}.boot{position:absolute;inset:0;z-index:2;display:grid;place-items:center;padding:24px;text-align:center;background:radial-gradient(circle at 50% 28%,#214a36 0,transparent 36%),#08130e;transition:opacity .28s ease}.boot.ready{opacity:0;pointer-events:none}.mark{width:88px;height:88px;margin:auto;border-radius:30px;background:linear-gradient(145deg,#c7ddb7,#5f8d6b);box-shadow:0 24px 58px #0008,inset 0 2px 10px #fff6;display:grid;place-items:center;font-size:44px;transform:rotate(-4deg);animation:breathe 1.8s ease-in-out infinite alternate}h1{font:600 2rem Georgia,serif;margin:18px 0 7px}.boot p{color:#aab8af;max-width:330px;line-height:1.5;margin:0 auto}.boot small{display:block;color:#d2bd78;margin-top:18px;letter-spacing:.12em;text-transform:uppercase}@keyframes breathe{to{transform:rotate(2deg) translateY(-3px);box-shadow:0 29px 64px #0009,inset 0 2px 12px #fff7}}@media(prefers-reduced-motion:reduce){.mark{animation:none}.boot{transition:none}}.pwa-note{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;z-index:5;display:flex;align-items:center;gap:10px;max-width:calc(100% - 24px);padding:10px 12px;border:1px solid #3a5c4b;border-radius:999px;background:rgba(13,29,23,.96);box-shadow:0 16px 44px #0008;color:#e9f0e8;font-size:.76rem;transition:.22s}.pwa-note.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}.pwa-note button{border:0;border-radius:999px;background:#d2bd78;color:#172019;padding:7px 10px;font-weight:800}</style>
+</head><body><main class="shell"><div id="boot" class="boot" aria-live="polite"><div><div class="mark" aria-hidden="true">❧</div><h1>Herbarium</h1><p>Preparo fotocamera, libreria e controlli di sicurezza sul dispositivo.</p><small>Privacy-first · fail-closed</small></div></div><iframe id="runtimeFrame" class="runtime" src="./runtime.html" title="Herbarium" allow="camera; geolocation" referrerpolicy="same-origin"></iframe></main><div id="pwaNote" class="pwa-note" role="status" aria-live="polite"><span id="pwaCopy">Preparazione offline…</span><button id="pwaAction" hidden>Aggiorna</button></div>
 <script type="module">
-import { attachToRuntimeFrame } from './field-runtime-guard.js';
-import { installAcquisitionGuard } from './acquisition-guard.js';
-const frame=document.querySelector('#runtimeFrame'),boot=document.querySelector('#boot'),note=document.querySelector('#pwaNote'),copy=document.querySelector('#pwaCopy'),action=document.querySelector('#pwaAction');
-attachToRuntimeFrame(frame);
-const bindRuntimeSafety=()=>{try{installAcquisitionGuard(frame.contentDocument)}catch{}boot.classList.add('ready')};
-frame.addEventListener('load',bindRuntimeSafety);
-try{if(frame.contentDocument?.readyState==='interactive'||frame.contentDocument?.readyState==='complete')queueMicrotask(bindRuntimeSafety)}catch{}
-
-let hideTimer;
-function pwaMessage(message,{actionable=false,hold=false}={}){
-  clearTimeout(hideTimer);copy.textContent=message;action.hidden=!actionable;note.classList.add('show');
-  if(!hold&&!actionable)hideTimer=setTimeout(()=>note.classList.remove('show'),2600);
-}
-async function registerOffline(){
-  if(!('serviceWorker' in navigator)){pwaMessage('Offline cache non supportata su questo browser.');return}
-  try{
-    const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
-    const offerUpdate=worker=>{if(!worker)return;action.hidden=false;action.onclick=()=>{worker.postMessage({type:'SKIP_WAITING'});action.disabled=true;copy.textContent='Aggiornamento in applicazione…'};pwaMessage('Aggiornamento Herbarium pronto.',{actionable:true,hold:true})};
-    if(reg.waiting)offerUpdate(reg.waiting);
-    reg.addEventListener('updatefound',()=>{
-      const worker=reg.installing;if(!worker)return;
-      worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)offerUpdate(worker)});
-    });
-    navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});
-    await navigator.serviceWorker.ready;
-    if(!reg.waiting)pwaMessage('Offline pronto · runtime e controlli salvati sul dispositivo.');
-    navigator.storage?.persist?.().catch(()=>false);
-  }catch(err){pwaMessage('Cache offline non pronta: l’app continua in modalità locale online.')}
-}
-registerOffline();
-</script>
-</body>
-</html>
+import { attachToRuntimeFrame } from './field-runtime-guard.js';import { installAcquisitionGuard } from './acquisition-guard.js';
+const frame=document.querySelector('#runtimeFrame'),boot=document.querySelector('#boot'),note=document.querySelector('#pwaNote'),copy=document.querySelector('#pwaCopy'),action=document.querySelector('#pwaAction');attachToRuntimeFrame(frame);
+const bindRuntimeSafety=()=>{try{const doc=frame.contentDocument;if(doc&&!doc.querySelector('link[data-herbarium-premium]')){const style=doc.createElement('link');style.rel='stylesheet';style.href='./premium.css';style.dataset.herbariumPremium='true';doc.head.append(style)}installAcquisitionGuard(doc)}catch{}boot.classList.add('ready')};frame.addEventListener('load',bindRuntimeSafety);try{if(frame.contentDocument?.readyState==='interactive'||frame.contentDocument?.readyState==='complete')queueMicrotask(bindRuntimeSafety)}catch{}
+let hideTimer;function pwaMessage(message,{actionable=false,hold=false}={}){clearTimeout(hideTimer);copy.textContent=message;action.hidden=!actionable;note.classList.add('show');if(!hold&&!actionable)hideTimer=setTimeout(()=>note.classList.remove('show'),2600)}
+async function registerOffline(){if(!('serviceWorker' in navigator)){pwaMessage('Offline cache non supportata su questo browser.');return}try{const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./'});const offerUpdate=worker=>{if(!worker)return;action.hidden=false;action.onclick=()=>{worker.postMessage({type:'SKIP_WAITING'});action.disabled=true;copy.textContent='Aggiornamento in applicazione…'};pwaMessage('Aggiornamento Herbarium pronto.',{actionable:true,hold:true})};if(reg.waiting)offerUpdate(reg.waiting);reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)offerUpdate(worker)})});navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});await navigator.serviceWorker.ready;if(!reg.waiting)pwaMessage('Offline pronto · runtime e controlli salvati sul dispositivo.');navigator.storage?.persist?.().catch(()=>false)}catch(err){pwaMessage('Cache offline non pronta: l’app continua in modalità locale online.')}}registerOffline();
+</script></body></html>
