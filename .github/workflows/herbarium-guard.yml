@@ -81,6 +81,19 @@ jobs:
             node --check "$f"
           done
 
+      - name: Run HERBARIUM node contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          for f in tests/*.test.mjs; do
+            [ -e "$f" ] || continue
+            found=1
+            echo "Running $f"
+            node "$f"
+          done
+          [ "$found" -eq 1 ] || { echo "No contract tests found"; exit 1; }
+
       - name: WebKit mobile acquisition regression
         shell: bash
         run: |
