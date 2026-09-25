@@ -1,21 +1,21 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "6438674348f1fc1dc40348199e42f6c4bb6ce2d3",
-  "rollback_commit": "5fcda8a61a1bde335ce6ab980a2dc19b63634c02",
+  "last_good_commit": "9340a8e30822d5d5520abf26e3cf06685ec7b331",
+  "rollback_commit": "6438674348f1fc1dc40348199e42f6c4bb6ce2d3",
   "current_gate": "MISSION-002-recognition-reject-integration",
   "gate_weights": {"source_recovery":20,"recognition_reject":25,"camera_library":15,"persistence_collection":10,"offline_privacy":10,"mobile_ui":10,"tests_release":10},
-  "completion_score": 34,
-  "verification_score": 37,
+  "completion_score": 35,
+  "verification_score": 38,
   "last_tests": {
     "status": "PASS_WITH_LIMITATION",
-    "command": "Static post-write verification plus deterministic pixel fixture suite added",
-    "result": "Local offline pixel evidence adapter is wired to the Field guard. Four deterministic fixtures cover vegetation-positive, neutral-negative, blue/non-vegetation-negative and missing evidence. Existing conservative gate contract remains fail-closed. Node suite was authored but not executed by the GitHub connector; real-photo and iPhone browser E2E remain pending.",
-    "scope": "adapter/integration written and reviewed; no real-image accuracy claim"
+    "command": "Post-write fetch verification of runtime guard",
+    "result": "Runtime guard now aggregates all captured views conservatively, preserves strongest non-plant evidence, penalizes contradictory plant evidence, ignores stale async analyses, and exposes UNKNOWN/REJECT guidance. Repository write and reread passed; real-photo metrics remain unavailable.",
+    "scope": "static/runtime integration verification; no real-image accuracy claim"
   },
   "blockers": ["Dataset-backed real-photo reject metrics are not available yet","Real iPhone camera/library regression through canonical shell needs browser/device verification","Species recognition remains intentionally disabled until subject reject is validated on real images"],
-  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"contract_cases_passed":"8/8","local_adapter_fixture_cases":"4 authored / execution pending","note":"No claim of real-image recognition accuracy"},
-  "implemented": ["Conservative plant/uncertain/non-plant admission contract","Italian fail-closed subject UX","Canonical RC3 runtime and Field guard","Offline local pixel subject-evidence adapter","Field images now feed local evidence into PLANT/UNCERTAIN/NON_PLANT gate","Recognition remains disabled unless subject gate admits plant; species recognition itself remains intentionally unwired","Premium botanical subject card with explicit unresolved save state","Deterministic positive/negative/missing pixel fixtures added"],
-  "next_action": "Build a small repository-backed real-photo fixture set containing plants and hard negatives (printed plants, fabric, pets and household objects), run the local subject adapter against it, record reject/unknown metrics, and tune thresholds without enabling species recognition.",
-  "updated_at": "2026-09-25T14:36:00+02:00"
+  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"contract_cases_passed":"8/8 prior","local_adapter_fixture_cases":"4 authored / execution pending","note":"No claim of real-image recognition accuracy"},
+  "implemented": ["Conservative plant/uncertain/non-plant admission contract","Italian fail-closed subject UX","Canonical RC3 runtime and Field guard","Offline local pixel subject-evidence adapter","Conservative multi-view evidence aggregation with disagreement penalty","Stale async subject analyses cannot overwrite newer capture state","Explicit UNKNOWN/REJECT mobile guidance","Recognition remains disabled until subject gate admits plant; species recognition itself remains intentionally unwired"],
+  "next_action": "Add a repository-backed real-photo dataset import/evaluation harness that accepts labeled PLANT/NON_PLANT images, reports plant-pass/reject/uncertain counts without claiming accuracy when the corpus is absent, and can be run unchanged once real fixtures are added.",
+  "updated_at": "2026-09-25T15:38:50+02:00"
 }
