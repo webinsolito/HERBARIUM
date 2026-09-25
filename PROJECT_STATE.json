@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "project": "webinsolito/HERBARIUM",
+  "branch": "candidate/herbarium-v1-release",
+  "updated_at": "2026-09-25T08:00:00+02:00",
+  "last_good_commit": "69b8975584af8105a2cb84c82c1d4d4aa379610f",
+  "rollback_commit": "96607fcc75f56cb9423569a1853297f3e2f7ab5e",
+  "rollback_ref": "rollback/pre-first-pass-benchmark-diagnostics-96607fcc",
+  "current_gate": "N Test / E Recognition diagnostics",
+  "completion_score": 72,
+  "verification_score": 31.5,
+  "score_policy": {
+    "completion": "Persistent baseline; change only after implemented AND verified work closes or materially advances a fixed weighted gate. Decrease only for documented regression.",
+    "verification": "Sum of fixed gate weights multiplied by status factors.",
+    "verification_status_factors": {
+      "PASS": 1,
+      "PARTIAL": 0.5,
+      "FAIL": 0,
+      "NON_VERIFIED": 0
+    },
+    "gate_weights": {
+      "startup": 5,
+      "camera": 7,
+      "photo_library": 6,
+      "non_plant_filter": 12,
+      "recognition": 18,
+      "confidence_reject": 10,
+      "plant_detail": 5,
+      "collection": 5,
+      "privacy_offline": 6,
+      "mobile_ui": 6,
+      "graphics_3d": 5,
+      "performance": 5,
+      "safety": 4,
+      "test_regression": 4,
+      "packaging_release": 2
+    }
+  },
+  "verification_gates": {
+    "startup": "PASS",
+    "camera": "NON_VERIFIED",
+    "photo_library": "PARTIAL",
+    "non_plant_filter": "PARTIAL",
+    "recognition": "FAIL",
+    "confidence_reject": "FAIL",
+    "plant_detail": "PARTIAL",
+    "collection": "PARTIAL",
+    "privacy_offline": "PARTIAL",
+    "mobile_ui": "PARTIAL",
+    "graphics_3d": "PARTIAL",
+    "performance": "FAIL",
+    "safety": "PASS",
+    "test_regression": "FAIL",
+    "packaging_release": "NON_VERIFIED"
+  },
+  "last_tests": {
+    "guard": {
+      "status": "PASS",
+      "run_id": 36101093178,
+      "commit": "6d9ccf77951b2c3946d9e9687a2b2ba3ec78e8e9"
+    },
+    "confidence_benchmark": {
+      "status": "IN_PROGRESS",
+      "run_id": 36101093164,
+      "commit": "6d9ccf77951b2c3946d9e9687a2b2ba3ec78e8e9"
+    },
+    "p0b_species_qa_previous": {
+      "status": "FAIL",
+      "run_id": 36101083754,
+      "commit": "b1c0cfdd5ca928f02481527b49e4e5927fc9d382",
+      "reason": "test expected consensus-v3 while runtime is consensus-v4"
+    },
+    "p0b_species_qa": {
+      "status": "IN_PROGRESS",
+      "run_id": 36101314641,
+      "commit": "e20a020e5e69198b1564f99a97df46b9b3a04712"
+    },
+    "p0a_model_qa": {
+      "status": "IN_PROGRESS",
+      "run_id": 36101083690,
+      "commit": "b1c0cfdd5ca928f02481527b49e4e5927fc9d382"
+    }
+  },
+  "metrics": {
+    "last_verified_confidence_commit": "69b8975584af8105a2cb84c82c1d4d4aa379610f",
+    "negative_samples": 7,
+    "negative_false_species": 0,
+    "negative_reject": 4,
+    "plant_samples": 10,
+    "plant_proposed": 0,
+    "plant_reject": 0,
+    "median_elapsed_ms": 11372,
+    "note": "Recognition metrics are from last verified benchmark; current diagnostic fix is still under verification."
+  },
+  "blockers": [
+    "Current first-pass diagnostic capture not yet verified by Confidence Benchmark.",
+    "Species recognition remains 0/10 proposed on last verified release benchmark.",
+    "Physical iPhone camera/offline behavior and release packaging remain unverified."
+  ],
+  "next_action": "Finish verification of first-pass benchmark diagnostics on run 36101093164 and P0-B run 36101314641; do not tune consensus until both are resolved."
+}
