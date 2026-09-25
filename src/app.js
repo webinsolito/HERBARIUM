@@ -11,6 +11,31 @@ const MAX_PIXELS=40_000_000;
 const activeUrls=new Set();
 let automaticGateAdapter=null,speciesRecognitionAdapter=null;
 const byId=id=>document.getElementById(id);
+const benchmarkMode=new URLSearchParams(location.search).get('benchmark')==='1';
+
+async function publishBenchmarkSpeciesDiagnostic(species){
+  if(!benchmarkMode||typeof globalThis.__herbariumBenchmarkCapture!=='function')return;
+  const compact=result=>result?{
+    status:result.status??null,
+    reason:result.reason??null,
+    scientificName:result.scientificName??null,
+    rawScore:Number.isFinite(result.rawScore)?result.rawScore:null,
+    margin:Number.isFinite(result.margin)?result.margin:null
+  }:null;
+  try{
+    await globalThis.__herbariumBenchmarkCapture({
+      status:species?.status??null,
+      reason:species?.reason??null,
+      consensus:Boolean(species?.consensus),
+      recoveryCandidate:Boolean(species?.verificationPrimary?.recoveryCandidate||species?.recoveryCandidate),
+      primary:compact(species?.verificationPrimary||species?.primary),
+      verifier:species?.verifier?{
+        ...compact(species.verifier),
+        scientificName:species?.verifierScientificName||species?.verifier?.scientificName||null
+      }:null
+    });
+  }catch{}
+}
 
 function openDb(){
   return new Promise((resolve,reject)=>{
@@ -332,6 +357,7 @@ async function setupObserve(){
         setResult('Riconoscimento botanico locale in corso…');
         speciesRecognitionAdapter??=createSpeciesRecognitionAdapter();
         species=await speciesRecognitionAdapter.infer(evidence);
+        await publishBenchmarkSpeciesDiagnostic(species);
       }
       const status=gate.status==='REJECT'?'REJECT':detector.status==='REJECT'?'REJECT':species.status==='PROPOSED'?'PROPOSED':'UNKNOWN';
       const scientificName=status==='PROPOSED'?species.scientificName:null;
