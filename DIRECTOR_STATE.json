@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "0c20b1e094bb00ecc5cd5d3a9cde6ae2af7ce951",
-  "rollback_commit": "f9b81e0aafc17eacc91ef2d59379023b323e2a1b",
+  "last_good_commit": "5129f589afd9ef74db401f42b4d4d071f242f348",
+  "rollback_commit": "0c20b1e094bb00ecc5cd5d3a9cde6ae2af7ce951",
   "current_gate": "MISSION-001-source-of-truth",
   "gate_weights": {
     "source_recovery": 20,
@@ -14,15 +14,15 @@
     "tests_release": 10
   },
   "completion_score": 30,
-  "verification_score": 30,
+  "verification_score": 32,
   "last_tests": {
     "status": "PASS_WITH_LIMITATION",
-    "command": "static inspection of canonical app/index.html plus prior node tests/plant-subject-gate.test.mjs",
-    "result": "canonical entrypoint now deterministically routes to last-good RC3; prior subject-gate contract remains 8/8",
-    "scope": "entrypoint/source-of-truth wiring only; no browser E2E or real-image model accuracy executed this run"
+    "command": "GitHub post-write fetch verification of app/index.html and app/runtime.html plus prior node subject-gate contract tests",
+    "result": "canonical entrypoint now targets app/runtime.html; runtime boundary deterministically hands off to immutable RC3; both written files re-fetched successfully; prior subject-gate contract remains 8/8",
+    "scope": "source-of-truth routing/static verification only; no browser E2E or real-image model accuracy executed this run"
   },
   "blockers": [
-    "RC3 implementation is still physically under recovery; app/index.html is now canonical but redirects to the last-good runtime",
+    "RC3 implementation is still physically under recovery; app/runtime.html is now the versioned boundary but still hands off to recovery runtime",
     "No real image subject detector is wired to the conservative gate yet",
     "No dataset-backed recognition/reject accuracy metric is available yet"
   ],
@@ -37,8 +37,10 @@
     "Conservative plant/uncertain/non-plant admission contract with fail-closed thresholds",
     "Italian UX states for uncertain and non-plant results that explicitly avoid invented species",
     "Automated positive, negative, ambiguous, low-quality, missing and invalid-evidence contract tests",
-    "Canonical app/index.html entrypoint with mobile-safe premium botanical boot state and deterministic redirect to last-good RC3 runtime"
+    "Canonical app/index.html entrypoint with mobile-safe premium botanical boot state",
+    "Versioned app/runtime.html boundary so the canonical entrypoint no longer references recovery directly",
+    "Reduced-motion-aware soft 3D botanical boot animation"
   ],
-  "next_action": "Extract RC3 runtime from recovery/HERBARIUM_TEST_PC.html into app/runtime.html without behavior changes, then make app/index.html load that versioned runtime directly before wiring subject-gate admission.",
-  "updated_at": "2026-09-25T10:40:00+02:00"
+  "next_action": "Replace the app/runtime.html handoff with the full RC3 runtime implementation copied byte-for-byte from recovery/HERBARIUM_TEST_PC.html, verify behavior parity, then repoint any internal recovery-relative assumptions without changing functionality.",
+  "updated_at": "2026-09-25T11:36:00+02:00"
 }
