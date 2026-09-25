@@ -46,6 +46,8 @@ test('canonical mobile flow accepts library input and preserves UNKNOWN-safe sav
   page.on('console',msg=>{if(msg.type()==='error')console.log('CONSOLE_ERROR',msg.text())});
   await page.goto('/app/index.html');
   const frame=page.frameLocator('#runtimeFrame');
+  await frame.locator('[data-go="field"]').first().click();
+  await expect(frame.locator('#field')).toHaveClass(/active/);
   const input=frame.locator('#captureGrid input[data-role="whole"]');
   await expect(input).toHaveAttribute('accept','image/*');
   await expect(input).not.toHaveAttribute('capture',/.+/);
