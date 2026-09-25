@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "84314f1a09f1868ffc46e41048958a607694ab5c",
-  "rollback_commit": "5129f589afd9ef74db401f42b4d4d071f242f348",
-  "current_gate": "MISSION-001-source-of-truth",
+  "last_good_commit": "b3c9f1d0a49675516d7db08e163507b1f00f5f81",
+  "rollback_commit": "84314f1a09f1868ffc46e41048958a607694ab5c",
+  "current_gate": "MISSION-002-recognition-reject-integration",
   "gate_weights": {
     "source_recovery": 20,
     "recognition_reject": 25,
@@ -13,18 +13,18 @@
     "mobile_ui": 10,
     "tests_release": 10
   },
-  "completion_score": 30,
-  "verification_score": 33,
+  "completion_score": 32,
+  "verification_score": 35,
   "last_tests": {
     "status": "PASS_WITH_LIMITATION",
-    "command": "GitHub post-write fetch verification and canonical runtime inspection",
-    "result": "app/runtime.html now contains the RC3 implementation rather than the previous redirect handoff. Added and re-fetched fail-closed subject-gate UI bridge. Browser E2E was not available in this connector run.",
-    "scope": "source promotion observed; subject bridge verified statically; no browser E2E or real-image accuracy executed"
+    "command": "GitHub post-write fetch verification of canonical shell and Field runtime guard",
+    "result": "Canonical index now mounts the versioned RC3 runtime and loads a same-origin fail-closed Field guard. Missing subject evidence keeps recognition disabled while photos may still be persisted only as non-identified observations. Camera/file input, IndexedDB persistence and real-device iframe behavior were not browser-E2E tested in this connector run.",
+    "scope": "static integration verified; prior subject contract remains 8/8; no real-image accuracy or browser E2E claim"
   },
   "blockers": [
-    "RC3 runtime promotion is observed but byte-for-byte parity could not be independently computed in this connector run",
     "No real image subject detector is wired to the conservative gate yet",
-    "No dataset-backed recognition/reject accuracy metric is available yet"
+    "No dataset-backed recognition/reject accuracy metric is available yet",
+    "Real iPhone camera/library regression through the canonical shell still needs browser/device verification"
   ],
   "recognition_metrics": {
     "positive_accuracy": null,
@@ -38,11 +38,13 @@
     "Italian UX states for uncertain and non-plant results that explicitly avoid invented species",
     "Automated positive, negative, ambiguous, low-quality, missing and invalid-evidence contract tests",
     "Canonical app/index.html entrypoint with mobile-safe premium botanical boot state",
-    "Versioned app/runtime.html boundary",
+    "Versioned app/runtime.html containing RC3",
     "Reduced-motion-aware soft 3D botanical boot animation",
-    "RC3 implementation observed in app/runtime.html",
-    "Fail-closed subject-gate UI bridge with accessible live status and recognition/save interlocks"
+    "Fail-closed subject-gate UI bridge with accessible live status",
+    "Canonical runtime shell now physically attaches Field admission guard before recognition",
+    "Missing subject evidence disables recognition while preserving unresolved observation capture",
+    "Field UI now clearly labels safe unresolved save state instead of implying identification"
   ],
-  "next_action": "Wire app/subject-gate-ui.js into the Field flow in app/runtime.html so missing/uncertain/non-plant evidence physically blocks recognition before save, then verify camera/library/save regression without claiming real-image accuracy.",
-  "updated_at": "2026-09-25T13:39:00+02:00"
+  "next_action": "Add a real local subject-evidence adapter that produces detector evidence for captured images, feed it into the existing PLANT/UNCERTAIN/NON_PLANT gate, and add positive/negative image fixtures before enabling recognition.",
+  "updated_at": "2026-09-25T13:57:00+02:00"
 }
