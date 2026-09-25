@@ -33,7 +33,18 @@ async function analyse(page,file){
     };
     r.onerror=()=>reject(r.error);
   }),id);
-  return {elapsedMs,item:stored};
+  // Re-run only for benchmark diagnostics. This result is never persisted and never
+  // changes the user-facing observation; it exposes PlantNet/BioCLIP consensus details
+  // that production intentionally omits from IndexedDB.
+  const liveSpecies=await page.evaluate(async evidence=>{
+    try{
+      const {createSpeciesRecognitionAdapter}=await import('./species-onnx.mjs');
+      return await createSpeciesRecognitionAdapter().infer(evidence);
+    }catch(error){
+      return{status:'UNAVAILABLE',reason:`benchmark-diagnostics:${String(error?.message||error)}`};
+    }
+  },stored?.evidence||[]);
+  return {elapsedMs,item:stored,liveSpecies};
 }
 
 function pickPlants(){
@@ -70,6 +81,7 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
       const result=await analyse(page,sample.file);
       const item=result.item;
       const species=item?.analysis?.speciesEngine||null;
+      const live=result.liveSpecies||null;
       rows.push({
         kind:sample.kind,
         sourceClass:sample.className,
@@ -83,14 +95,16 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
         speciesReason:species?.reason||null,
         rawScore:species?.rawScore??null,
         margin:species?.margin??null,
-        primaryStatus:species?.primary?.status||null,
-        primaryReason:species?.primary?.reason||null,
-        primaryScientificName:species?.verificationPrimary?.scientificName||species?.primary?.scientificName||null,
-        verifierStatus:species?.verifier?.status||null,
-        verifierReason:species?.verifier?.reason||null,
-        verifierScientificName:species?.verifierScientificName||species?.verifier?.scientificName||null,
-        consensus:Boolean(species?.consensus),
-        recoveryCandidate:Boolean(species?.verificationPrimary?.recoveryCandidate||species?.recoveryCandidate),
+        primaryStatus:live?.primary?.status||null,
+        primaryReason:live?.primary?.reason||null,
+        primaryScientificName:live?.verificationPrimary?.scientificName||live?.primary?.scientificName||null,
+        verifierStatus:live?.verifier?.status||null,
+        verifierReason:live?.verifier?.reason||null,
+        verifierScientificName:live?.verifierScientificName||live?.verifier?.scientificName||null,
+        liveSpeciesStatus:live?.status||null,
+        liveSpeciesReason:live?.reason||null,
+        consensus:Boolean(live?.consensus),
+        recoveryCandidate:Boolean(live?.verificationPrimary?.recoveryCandidate||live?.recoveryCandidate),
         elapsedMs:result.elapsedMs
       });
     }
@@ -114,6 +128,7 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
       negativeGateReasonCounts:countBy(negatives,'nonPlantReason'),
       disagreementPairs,
       disagreementDiagnosticsMissing:disagreementPairs.filter(x=>!x.primary||!x.verifier).length,
+      liveDiagnosticMismatchCount:rows.filter(x=>x.liveSpeciesReason&&x.speciesReason&&x.liveSpeciesReason!==x.speciesReason).length,
       medianElapsedMs:[...rows].sort((a,b)=>a.elapsedMs-b.elapsedMs)[Math.floor(rows.length/2)]?.elapsedMs??null,
       rows
     };
@@ -125,5 +140,7 @@ test.describe('HERBARIUM confidence/reject benchmark',()=>{
     expect(report.plantRejectCount).toBe(0);
     expect(report.negativeFalseSpeciesCount).toBe(0);
     expect(Object.values(report.plantSpeciesReasonCounts).reduce((a,b)=>a+b,0)).toBe(report.plantCount);
+    expect(report.liveDiagnosticMismatchCount).toBe(0);
+    expect(report.disagreementDiagnosticsMissing).toBe(0);
   });
 });
