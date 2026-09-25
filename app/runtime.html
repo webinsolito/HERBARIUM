@@ -81,9 +81,72 @@ function renderBook(data,m){
 function renderExplore(data,m){$('#exRegions').textContent=m.regions;$('#exHabitats').textContent=data.admin?8:m.habitats;$('#exSpecies').textContent=m.species;$('#exMissions').textContent=m.missions;const atlas=$('#atlas');atlas.querySelectorAll('.dot').forEach(d=>d.remove());const pts=data.admin?data.observations:(data.observations||[]).filter(o=>o.gps);pts.slice(0,18).forEach((o,i)=>{if(!o.gps)return;const d=document.createElement('span');d.className='dot';d.style.left=(12+((o.gps.lon||9)%9)/9*76)+'%';d.style.top=(12+((48-(o.gps.lat||45))/13)*70)+'%';d.title=o.species||o.scientific||'Osservazione';atlas.appendChild(d)});const missions=data.admin?[['Occhio botanico','1/1'],['Prime cinque','5/5'],['Cartografo','3/3'],['Quattro ambienti','4/4'],['Studium in campo','2/2'],['Prima spedizione','1/1']]:[['Occhio botanico',(data.observations||[]).some(o=>(o.photos||[]).length>=3)?'1/1':'0/1'],['Prime cinque',Math.min(5,new Set((data.observations||[]).map(o=>o.scientific).filter(Boolean)).size)+'/5'],['Cartografo',Math.min(3,new Set((data.observations||[]).map(o=>o.region).filter(Boolean)).size)+'/3'],['Quattro ambienti',Math.min(4,new Set((data.observations||[]).map(o=>o.habitat).filter(Boolean)).size)+'/4'],['Studium in campo',(data.lessons>0?'1':'0')+'/1'],['Dieci osservazioni',Math.min(10,(data.observations||[]).length)+'/10']];$('#missionList').innerHTML=missions.map(x=>`<div class="row"><div><b>${x[0]}</b><small>${data.admin?'Completata':'Progressione reale'}</small></div><span class="badge">${x[1]}</span></div>`).join('');const collections=data.admin?[['Flora dei prati','20/20'],['Custodi del bosco','20/20'],['Acque e rive','15/15'],['Flora urbana','20/20']]:[['Flora dei prati','0/20'],['Custodi del bosco','0/20'],['Acque e rive','0/15'],['Flora urbana','0/20']];$('#collectionList').innerHTML=collections.map(x=>`<div class="row"><div><b>${x[0]}</b><small>${data.admin?'Collezione completata':'Si riempie con specie verificate'}</small></div><span class="badge">${x[1]}</span></div>`).join('');const seals=data.admin?['INITIUM','OCULUS','PRIMA SPECIES','DECEM','CENTURIA','STUDIUM','CARTOGRAPHUS','BIOMATA','EXPEDITIO']:m.seals?['INITIUM'].slice(0,m.seals):[];$('#sealList').innerHTML=seals.length?seals.map(s=>`<span class="badge">${s}</span>`):'<p class="mut">Nessun sigillo sbloccato.</p>'}
 function renderAcademy(data){const full=data.admin;$('#adminAcademyBanner').classList.toggle('hidden',!full);const vals=full?[5,5,5,5]:[Math.min(5,(data.lessons||0)+1),Math.min(5,data.lessons||0),Math.min(5,Math.floor((data.lessons||0)/2)),Math.min(5,Math.floor((data.lessons||0)/3))];vals.forEach((v,i)=>{$('#sk'+(i+1)).value=v;$('#sk'+(i+1)+'n').textContent=v+'/5'})}
 function renderAdminUI(){$('#adminLocked').classList.toggle('hidden',adminUnlocked);$('#adminUnlocked').classList.toggle('hidden',!adminUnlocked)}
-function renderCaptures(){$('#captureGrid').innerHTML=Object.entries(roles).map(([r,[name,ico]])=>`<label class="capture"><input data-role="${r}" type="file" accept="image/*"><span>${ico}</span><b>${name}</b><small class="mut">${shots[r]?'Sostituisci foto':'Scatta foto'}</small>${shots[r]?`<img class="thumb" src="${shots[r].dataUrl}" alt="${name}">`:''}</label>`).join('');$('#captureGrid input').forEach(inp=>inp.onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{let source=f;const acq=window.HerbariumAcquisition;if(acq){acq.show('wait','Controllo e preparo la foto sul dispositivo…');const prep=await acq.prepare(f);if(!prep.ok){acq.show('error',prep.message+' Il riconoscimento resta UNKNOWN.');e.target.value='';return}source=prep.blob;acq.show('ok',prep.resized?'Foto ottimizzata sul dispositivo prima dell’analisi.':'Foto pronta per l’analisi locale.')}const q=await analyze(source),url=await readCompressed(source);shots[inp.dataset.role]={role:inp.dataset.role,dataUrl:url,quality:q};renderCaptures();renderQuality()}catch(err){window.HerbariumAcquisition?.show('error','Foto non acquisita. Puoi riprovare senza perdere le altre viste.');toast('Foto non acquisita: '+err.message)}})}
-async function analyze(file){const bm=await createImageBitmap(file),ow=bm.width,oh=bm.height,max=180,sc=Math.min(1,max/Math.max(ow,oh)),w=Math.max(1,Math.round(ow*sc)),h=Math.max(1,Math.round(oh*sc)),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bm,0,0,w,h);const d=x.getImageData(0,0,w,h).data;let sum=0,sum2=0,n=0;for(let i=0;i<d.length;i+=4){const g=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];sum+=g;sum2+=g*g;n++}bm.close?.();const mean=sum/n,contrast=Math.sqrt(Math.max(0,sum2/n-mean*mean)),res=Math.min(100,Math.min(ow,oh)/8),light=Math.max(0,100-Math.abs(mean-130)*.75),con=Math.min(100,contrast*2.4),score=Math.round(res*.3+light*.35+con*.35);return{score,mean,contrast,res,pass:score>=58}}
-function readCompressed(file){return new Promise((resolve,reject)=>{const img=new Image,r=new FileReader;r.onload=()=>{img.onload=()=>{const max=1280,s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*s);c.height=Math.round(img.naturalHeight*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.82))};img.onerror=()=>reject(new Error('immagine illeggibile'));img.src=r.result};r.onerror=()=>reject(r.error);r.readAsDataURL(file)})}
+function renderCaptures(){
+  $('#captureGrid').innerHTML=Object.entries(roles).map(([r,[name,ico]])=>`<label class="capture"><input data-role="${r}" type="file" accept="image/*"><span>${ico}</span><b>${name}</b><small class="mut">${shots[r]?'Sostituisci foto':'Fotocamera o libreria'}</small>${shots[r]?`<img class="thumb" src="${shots[r].dataUrl}" alt="${name}">`:''}</label>`).join('');
+  $('#captureGrid input').forEach(inp=>inp.onchange=async e=>{
+    const raw=e.target.files?.[0];
+    if(!raw)return;
+    const acq=window.HerbariumAcquisition;
+    const handoff=acq?.consume?.(e.target)||null;
+    if(acq&&!handoff){
+      e.target.value='';
+      acq.show('error','Preparazione foto non confermata. Il riconoscimento resta UNKNOWN: riprova.');
+      return;
+    }
+    const source=handoff?.file||raw;
+    try{
+      const processed=await processPhoto(source);
+      shots[inp.dataset.role]={
+        role:inp.dataset.role,
+        dataUrl:processed.dataUrl,
+        quality:processed.quality,
+        acquisition:handoff?.metrics||null,
+        decodeMode:processed.decodeMode
+      };
+      renderCaptures();
+      renderQuality();
+    }catch(err){
+      acq?.show('error','Foto non acquisita. Puoi riprovare senza perdere le altre viste.');
+      toast('Foto non acquisita: '+err.message);
+    }
+  });
+}
+function loadDrawable(file){
+  const fallback=()=>new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>resolve({drawable:img,width:img.naturalWidth,height:img.naturalHeight,mode:'image',close:()=>URL.revokeObjectURL(url)});
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('immagine illeggibile'))};
+    img.src=url;
+  });
+  if(typeof createImageBitmap!=='function')return fallback();
+  return createImageBitmap(file).then(bitmap=>({drawable:bitmap,width:bitmap.width,height:bitmap.height,mode:'bitmap',close:()=>bitmap.close?.()})).catch(fallback);
+}
+async function processPhoto(file){
+  const decoded=await loadDrawable(file);
+  const {drawable, width:ow, height:oh}=decoded;
+  if(!ow||!oh){decoded.close();throw new Error('dimensioni immagine non valide')}
+  const qualityCanvas=document.createElement('canvas'),previewCanvas=document.createElement('canvas');
+  try{
+    const max=180,sc=Math.min(1,max/Math.max(ow,oh)),w=Math.max(1,Math.round(ow*sc)),h=Math.max(1,Math.round(oh*sc));
+    qualityCanvas.width=w;qualityCanvas.height=h;
+    const qx=qualityCanvas.getContext('2d',{willReadFrequently:true});
+    if(!qx)throw new Error('canvas qualità non disponibile');
+    qx.drawImage(drawable,0,0,w,h);
+    const d=qx.getImageData(0,0,w,h).data;
+    let sum=0,sum2=0,n=0;
+    for(let i=0;i<d.length;i+=4){const g=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];sum+=g;sum2+=g*g;n++}
+    const mean=sum/n,contrast=Math.sqrt(Math.max(0,sum2/n-mean*mean)),res=Math.min(100,Math.min(ow,oh)/8),light=Math.max(0,100-Math.abs(mean-130)*.75),con=Math.min(100,contrast*2.4),score=Math.round(res*.3+light*.35+con*.35);
+    const pmax=1280,psc=Math.min(1,pmax/Math.max(ow,oh)),pw=Math.max(1,Math.round(ow*psc)),ph=Math.max(1,Math.round(oh*psc));
+    previewCanvas.width=pw;previewCanvas.height=ph;
+    const px=previewCanvas.getContext('2d',{alpha:false});
+    if(!px)throw new Error('canvas anteprima non disponibile');
+    px.drawImage(drawable,0,0,pw,ph);
+    const dataUrl=previewCanvas.toDataURL('image/jpeg',.82);
+    return{quality:{score,mean,contrast,res,pass:score>=58},dataUrl,decodeMode:decoded.mode,preview:{width:pw,height:ph}};
+  }finally{
+    qualityCanvas.width=1;qualityCanvas.height=1;previewCanvas.width=1;previewCanvas.height=1;decoded.close();
+  }
+}
 function renderQuality(){const qs=Object.values(shots).map(s=>s.quality);$('#qualityCard').classList.toggle('hidden',!qs.length);if(!qs.length)return;const avg=Math.round(qs.reduce((a,q)=>a+q.score,0)/qs.length);$('#qualityTitle').textContent=`Qualità media ${avg}/100`;$('#qualityRows').innerHTML=Object.values(shots).map(s=>`<div class="qrow"><span>${roles[s.role][0]}</span><b class="${s.quality.pass?'ok':'warn'}">${s.quality.score}/100</b></div>`).join('')}
 $('#gpsBtn').onclick=()=>{if(!navigator.geolocation)return $('#gpsCopy').textContent='GPS non disponibile.';$('#gpsCopy').textContent='Acquisizione posizione…';navigator.geolocation.getCurrentPosition(p=>{gps={lat:+p.coords.latitude.toFixed(5),lon:+p.coords.longitude.toFixed(5),accuracy:Math.round(p.coords.accuracy),altitude:Number.isFinite(p.coords.altitude)?Math.round(p.coords.altitude):null};if(gps.altitude!==null&&!$('#altitude').value)$('#altitude').value=gps.altitude;$('#gpsCopy').textContent=`GPS aggiunto ✓ precisione ~${gps.accuracy} m`;},e=>$('#gpsCopy').textContent='GPS non acquisito: '+e.message,{enableHighAccuracy:true,timeout:10000})};
 $('#saveObsBtn').onclick=async()=>{if(!Object.keys(shots).length)return;const saveBtn=$('#saveObsBtn'),sci=$('#scientific').value.trim(),common=$('#common').value.trim(),usable=Object.values(shots).filter(s=>s.quality.pass).length;saveBtn.disabled=true;saveBtn.textContent='Salvataggio locale…';const o={id:crypto.randomUUID?.()||'obs-'+Date.now(),createdAt:new Date().toISOString(),photos:Object.values(shots),scientific:sci||null,common:common||null,verification:sci?'manual-unverified':'unresolved',subjectStatus:saveBtn.dataset.subjectStatus||'unknown',habitat:$('#habitat').value||null,region:$('#region').value||null,place:$('#place').value.trim()||null,altitude:Number($('#altitude').value)||gps?.altitude||null,gps,quality:Math.round(Object.values(shots).reduce((a,s)=>a+s.quality.score,0)/Object.values(shots).length),usefulViews:usable};try{await saveObs(o);shots={};gps=null;['scientific','common','place','altitude'].forEach(id=>$('#'+id).value='');$('#habitat').value='';$('#region').value='';$('#gpsCopy').textContent='La posizione resta sul tuo dispositivo.';$('#fieldCopy').textContent='Osservazione salvata localmente. Nessuna specie viene verificata senza evidenza sufficiente.';renderCaptures();renderQuality();saveBtn.disabled=true;toast('Osservazione salvata');go('book')}catch(err){saveBtn.disabled=false;saveBtn.textContent='Riprova salvataggio';$('#fieldCopy').textContent='Salvataggio non riuscito: le foto restano qui e puoi riprovare. '+(err?.message||'');toast('Salvataggio non riuscito')}};
