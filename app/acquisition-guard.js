@@ -64,8 +64,11 @@ function optimizedFile(blob,source){
 }
 
 export function installAcquisitionGuard(doc=document){
-  const inputs=[...doc.querySelectorAll('#captureGrid input[type=file]')];
-  if(!inputs.length)return{attached:false,reason:'no-capture-inputs'};
+  const grid=doc.querySelector('#captureGrid');
+  if(!grid)return{attached:false,reason:'capture-grid-missing'};
+  if(grid.dataset.herbariumAcquisitionGuard==='true'){
+    return{attached:true,reused:true,authoritative:true,transport:'memory-handoff',outputEdge:DEFAULTS.outputEdge};
+  }
 
   let box=doc.querySelector('#acquisitionStatus');
   if(!box){
@@ -74,14 +77,13 @@ export function installAcquisitionGuard(doc=document){
     box.className='card hidden';
     box.setAttribute('role','status');
     box.setAttribute('aria-live','polite');
-    doc.querySelector('#captureGrid')?.insertAdjacentElement('afterend',box);
+    grid.insertAdjacentElement('afterend',box);
   }
 
   const show=(kind,text)=>{
     box.classList.remove('hidden');
     box.innerHTML=`<span class="k">Foto</span><p class="notice ${kind==='error'?'bad':kind==='ok'?'ok':'warn'}">${text}</p>`;
   };
-
   const preparedByInput=new WeakMap();
   const passthroughEvents=new WeakSet();
   const inFlight=new WeakSet();
@@ -92,49 +94,50 @@ export function installAcquisitionGuard(doc=document){
     return payload;
   };
 
-  inputs.forEach(input=>{
+  grid.dataset.herbariumAcquisitionGuard='true';
+  grid.addEventListener('change',async event=>{
+    if(passthroughEvents.has(event))return;
+    const input=event.target?.closest?.('input[type=file]');
+    if(!input||!grid.contains(input))return;
+    event.stopImmediatePropagation();
+    if(!input.isConnected||inFlight.has(input))return;
+
+    const file=input.files?.[0];
+    if(!file)return;
+    inFlight.add(input);
+    input.dataset.herbariumBusy='true';
+    input.setAttribute('aria-busy','true');
     input.setAttribute('accept','image/*');
     input.removeAttribute('capture');
-    input.addEventListener('change',async event=>{
-      if(passthroughEvents.has(event))return;
-      event.stopImmediatePropagation();
-      if(!input.isConnected||inFlight.has(input))return;
+    show('wait','Preparo la foto sul dispositivo…');
 
-      const file=input.files?.[0];
-      if(!file)return;
-      inFlight.add(input);
-      input.dataset.herbariumBusy='true';
-      input.setAttribute('aria-busy','true');
-      show('wait','Preparo la foto sul dispositivo…');
-
-      try{
-        const result=await prepareImageFile(file);
-        if(!result.ok){
-          preparedByInput.delete(input);
-          input.value='';
-          show('error',result.message+' Il riconoscimento resta UNKNOWN.');
-          doc.defaultView.dispatchEvent(new CustomEvent('herbarium:acquisition-error',{detail:{code:result.code}}));
-          return;
-        }
-
-        const authoritative=optimizedFile(result.blob,file);
-        preparedByInput.set(input,{file:authoritative,result,metrics:result.metrics});
-        input.dataset.herbariumPrepared='true';
-        input.dataset.herbariumResized=String(result.resized);
-        show('ok',result.resized?`Foto ottimizzata sul dispositivo · ${result.width}×${result.height}px`:'Foto verificata · dimensioni già adatte.');
-        doc.defaultView.dispatchEvent(new CustomEvent('herbarium:acquisition-ready',{detail:{metrics:result.metrics,resized:result.resized,width:result.width,height:result.height}}));
-
-        if(!input.isConnected){preparedByInput.delete(input);return}
-        const resume=new Event('change',{bubbles:true});
-        passthroughEvents.add(resume);
-        input.dispatchEvent(resume);
-      }finally{
-        inFlight.delete(input);
-        input.dataset.herbariumBusy='false';
-        input.removeAttribute('aria-busy');
+    try{
+      const result=await prepareImageFile(file);
+      if(!result.ok){
+        preparedByInput.delete(input);
+        input.value='';
+        show('error',result.message+' Il riconoscimento resta UNKNOWN.');
+        doc.defaultView.dispatchEvent(new CustomEvent('herbarium:acquisition-error',{detail:{code:result.code}}));
+        return;
       }
-    },{capture:true});
-  });
+
+      const authoritative=optimizedFile(result.blob,file);
+      preparedByInput.set(input,{file:authoritative,result,metrics:result.metrics});
+      input.dataset.herbariumPrepared='true';
+      input.dataset.herbariumResized=String(result.resized);
+      show('ok',result.resized?`Foto ottimizzata sul dispositivo · ${result.width}×${result.height}px`:'Foto verificata · dimensioni già adatte.');
+      doc.defaultView.dispatchEvent(new CustomEvent('herbarium:acquisition-ready',{detail:{metrics:result.metrics,resized:result.resized,width:result.width,height:result.height}}));
+
+      if(!input.isConnected){preparedByInput.delete(input);return}
+      const resume=new Event('change',{bubbles:true});
+      passthroughEvents.add(resume);
+      input.dispatchEvent(resume);
+    }finally{
+      inFlight.delete(input);
+      input.dataset.herbariumBusy='false';
+      input.removeAttribute('aria-busy');
+    }
+  },{capture:true});
 
   const api=Object.freeze({
     prepare:prepareImageFile,
@@ -143,5 +146,5 @@ export function installAcquisitionGuard(doc=document){
     hasPrepared:input=>preparedByInput.has(input)
   });
   doc.defaultView.HerbariumAcquisition=api;
-  return{attached:true,inputs:inputs.length,authoritative:true,transport:'memory-handoff',outputEdge:DEFAULTS.outputEdge};
+  return{attached:true,inputs:grid.querySelectorAll('input[type=file]').length,authoritative:true,transport:'memory-handoff',delegated:true,outputEdge:DEFAULTS.outputEdge};
 }
