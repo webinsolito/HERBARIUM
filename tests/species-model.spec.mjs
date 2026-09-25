@@ -36,13 +36,14 @@ test.describe('P0-B real species runtime',()=>{
     expect(item).toBeTruthy();
     expect(item.status).not.toBe('VERIFIED');
     expect(item.analysis?.automaticGate?.status).not.toBe('REJECT');
-    expect(item.analysis?.speciesEngine?.version).toBe('plantnet-bioclip-consensus-v3');
+    expect(item.analysis?.speciesEngine?.version).toBe('plantnet-bioclip-consensus-v4');
     expect(item.analysis?.speciesEngine?.status).not.toBe('UNAVAILABLE');
     expect(item.analysis?.speciesEngine?.calibrated).toBe(false);
     expect(Number.isFinite(item.analysis?.speciesEngine?.rawScore)).toBe(true);
     if(item.status==='PROPOSED'){
       expect(typeof item.scientificName).toBe('string');
       expect(item.scientificName.length).toBeGreaterThan(3);
+      expect(['cross-dataset-dual-model-consensus','cross-dataset-recovered-by-dual-model-consensus']).toContain(item.analysis?.speciesEngine?.reason);
       expect(item.identification?.confidence).toBeNull();
       expect(item.identification?.calibrated).toBe(false);
     }
