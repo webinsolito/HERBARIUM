@@ -1,16 +1,51 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "4bc886624fdea39945c2f809515b405530a7becd",
-  "rollback_commit": "ccea26c455a93e46c4a4c661a7be1065ca78836f",
+  "last_good_commit": "bbeb1a539df87d28eb65cf12ff330f22f1864cc6",
+  "rollback_commit": "4bc886624fdea39945c2f809515b405530a7becd",
   "current_gate": "MISSION-002-recognition-reject-integration",
-  "gate_weights": {"source_recovery":20,"recognition_reject":25,"camera_library":15,"persistence_collection":10,"offline_privacy":10,"mobile_ui":10,"tests_release":10},
-  "completion_score": 40,
-  "verification_score": 43,
-  "last_tests": {"status":"PASS_WITH_LIMITATION","command":"Two-pass post-write source verification","result":"PASS1 added acquisition validation/decode/oversize downscale/local feedback and canonical integration. PASS2 fixed empty iPhone MIME handling, canvas failure recovery, accept=image/* and accessible status. Existing RC3 capture/save implementation was not replaced.","scope":"static/runtime integration verification; real iPhone device execution pending"},
-  "blockers": ["Dataset-backed real-photo reject metrics are not available until real labeled photos are supplied","Real iPhone camera/library regression through canonical shell still needs browser/device verification","Species recognition remains intentionally disabled until subject reject is validated on real images"],
-  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"contract_cases_passed":"8/8 prior","real_dataset":"harness ready / corpus absent","note":"No claim of real-image recognition accuracy"},
-  "implemented": ["Conservative plant/uncertain/non-plant admission contract","Canonical RC3 runtime and Field guard","Offline local pixel subject-evidence adapter","Conservative multi-view evidence aggregation","UNKNOWN/REJECT mobile guidance","Labeled offline dataset evaluator","Camera/library acquisition guard validates type/empty/size/decode","Oversized decoded images are locally downscaled before downstream analysis","Recoverable Italian acquisition errors preserve UNKNOWN","iPhone files with empty MIME are decoded rather than falsely rejected","Canonical shell installs acquisition guard without replacing RC3 persistence"],
-  "next_action": "Close the collection/persistence flow: verify and harden observation save/load/delete around IndexedDB, add explicit empty/error/recovery states in the Herbarium book, and preserve unverified/UNKNOWN semantics end-to-end.",
+  "gate_weights": {
+    "source_recovery": 20,
+    "recognition_reject": 25,
+    "camera_library": 15,
+    "persistence_collection": 10,
+    "offline_privacy": 10,
+    "mobile_ui": 10,
+    "tests_release": 10
+  },
+  "completion_score": 43,
+  "verification_score": 47,
+  "last_tests": {
+    "status": "PASS_WITH_LIMITATION",
+    "command": "Two operational passes + final V8 parse/contract verification",
+    "result": "17/17 structural and pure-contract checks passed: runtime/module parsing, persistence error/retry/delete states, UNKNOWN/UNCERTAIN/NON-PLANT labels, subject status persistence, authoritative image preprocessing, and camera/library chooser path.",
+    "scope": "Runtime/source verification and pure status contracts; physical iPhone + real IndexedDB browser regression still pending."
+  },
+  "blockers": [
+    "Dataset-backed real-photo reject metrics are not available until real labeled photos are supplied",
+    "Physical iPhone camera/library and IndexedDB regression through the canonical shell still needs device/browser verification",
+    "Species recognition remains intentionally disabled until subject reject is validated on real images"
+  ],
+  "recognition_metrics": {
+    "positive_accuracy": null,
+    "negative_reject_rate": null,
+    "unknown_rate": null,
+    "contract_cases_passed": "8/8 prior",
+    "real_dataset": "harness ready / corpus absent",
+    "note": "No claim of real-image recognition accuracy"
+  },
+  "implemented": [
+    "Conservative plant/uncertain/non-plant admission contract",
+    "Canonical RC3 runtime and fail-closed Field guard",
+    "Offline local pixel subject-evidence adapter and conservative multi-view aggregation",
+    "UNKNOWN/REJECT mobile guidance and labeled offline dataset evaluator",
+    "Authoritative camera/library preprocessing validates type/empty/size/decode and downsizes oversized images before RC3 analysis",
+    "iPhone Field input now allows camera or photo-library choice rather than forcing capture",
+    "IndexedDB open/transaction flow handles blocked, versionchange, abort and error states",
+    "Observation save validates required real photo data and preserves photos/form on persistence failure for retry",
+    "Observation subjectStatus is persisted as plant/uncertain/non-plant/unknown without promoting species",
+    "Book has real empty/error/retry states, verified-only species counting, newest-first pending observations and per-observation delete"
+  ],
+  "next_action": "Build a real observation detail sheet from persisted Book entries: open one saved observation, show its actual photos/habitat/location/quality and UNKNOWN or verified state, add safe fallback for missing fields, and keep taxonomy hidden unless verification==='verified'.",
   "updated_at": "2026-09-25T16:41:00+02:00"
 }
