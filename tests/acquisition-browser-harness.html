@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="it">
+<head><meta charset="utf-8"><title>HERBARIUM acquisition browser harness</title></head>
+<body>
+<div id="captureGrid"><input id="photo" data-role="whole" type="file" accept="image/*"></div>
+<script type="module">
+import { installAcquisitionGuard } from '../app/acquisition-guard.js';
+const input=document.querySelector('#photo');
+window.__acqTest={ready:0,error:0,downstream:0,handoffs:[]};
+addEventListener('herbarium:acquisition-ready',()=>window.__acqTest.ready++);
+addEventListener('herbarium:acquisition-error',()=>window.__acqTest.error++);
+window.__guardResult=installAcquisitionGuard(document);
+input.onchange=()=>{
+  const payload=window.HerbariumAcquisition.consume(input);
+  window.__acqTest.downstream++;
+  window.__acqTest.handoffs.push(payload?{
+    type:payload.file.type||'',
+    size:payload.file.size||0,
+    resized:payload.result.resized,
+    prepareMs:payload.metrics.prepareMs
+  }:null);
+};
+</script>
+</body>
+</html>
