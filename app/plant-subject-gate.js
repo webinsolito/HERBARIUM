@@ -11,9 +11,10 @@ export const SUBJECT = Object.freeze({
 const clamp = value => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
 
 export function classifyPlantSubject(evidence = {}) {
-  const plant = clamp(evidence.plant);
-  const nonPlant = clamp(evidence.nonPlant);
-  const quality = clamp(evidence.quality ?? 1);
+  const safeEvidence = evidence && typeof evidence === 'object' ? evidence : {};
+  const plant = clamp(safeEvidence.plant);
+  const nonPlant = clamp(safeEvidence.nonPlant);
+  const quality = clamp(safeEvidence.quality ?? (evidence == null ? 0 : 1));
   const margin = plant - nonPlant;
 
   // Fail closed: poor/absent evidence must never become a plant observation.
