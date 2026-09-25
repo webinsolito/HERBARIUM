@@ -83,7 +83,7 @@ function renderAcademy(data){const full=data.admin;$('#adminAcademyBanner').clas
 function renderAdminUI(){$('#adminLocked').classList.toggle('hidden',adminUnlocked);$('#adminUnlocked').classList.toggle('hidden',!adminUnlocked)}
 function renderCaptures(){
   $('#captureGrid').innerHTML=Object.entries(roles).map(([r,[name,ico]])=>`<label class="capture"><input data-role="${r}" type="file" accept="image/*"><span>${ico}</span><b>${name}</b><small class="mut">${shots[r]?'Sostituisci foto':'Fotocamera o libreria'}</small>${shots[r]?`<img class="thumb" src="${shots[r].dataUrl}" alt="${name}">`:''}</label>`).join('');
-  $('#captureGrid input').forEach(inp=>inp.onchange=async e=>{
+  $$('#captureGrid input').forEach(inp=>inp.onchange=async e=>{
     const raw=e.target.files?.[0];
     if(!raw)return;
     const acq=window.HerbariumAcquisition;
