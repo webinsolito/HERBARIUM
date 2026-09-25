@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "branch": "main",
+  "last_good_commit": "unknown-baseline-main",
+  "rollback_commit": "recovery/HERBARIUM_TEST_PC.html@9f8ca08070ae521006ae6c4bf4bcbae2ce68a188",
+  "current_gate": "MISSION-001-source-of-truth",
+  "gate_weights": {
+    "source_recovery": 20,
+    "recognition_reject": 25,
+    "camera_library": 15,
+    "persistence_collection": 10,
+    "offline_privacy": 10,
+    "mobile_ui": 10,
+    "tests_release": 10
+  },
+  "completion_score": 28,
+  "verification_score": 24,
+  "last_tests": {
+    "status": "NOT_RUN",
+    "note": "Repository currently contains recovery artifacts but no reproducible app/test baseline. Recovery RC3 inspected: camera/file capture, IndexedDB persistence and image quality gate exist; semantic non-plant reject/recognition is not implemented."
+  },
+  "blockers": [
+    "No versioned reproducible application source outside recovery artifacts",
+    "No automated smoke/regression suite yet",
+    "Current image gate measures technical image quality only and cannot reject non-plant subjects semantically"
+  ],
+  "recognition_metrics": {
+    "positive_accuracy": null,
+    "negative_reject_rate": null,
+    "unknown_rate": null,
+    "note": "No honest dataset-backed recognition/reject metrics available yet"
+  },
+  "next_action": "Recover RC3 into a versioned app baseline and add a conservative plant-subject preflight/reject contract with automated positive/negative regression fixtures before enabling any species recognition.",
+  "updated_at": "2026-09-25T08:37:00+02:00"
+}
