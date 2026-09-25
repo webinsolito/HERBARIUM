@@ -1,52 +1,33 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "9bb1a101cfd70819ebed1734bdd98a0b897f73c3",
-  "rollback_commit": "1ecfe041d1b99a107eaad737bd8197bcf1cb0e17",
-  "current_candidate": "9bb1a101cfd70819ebed1734bdd98a0b897f73c3",
-  "current_gate": "MISSION-003-real-device-acquisition-regression",
-  "gate_weights": {
-    "source_recovery": 20,
-    "recognition_reject": 25,
-    "camera_library": 15,
-    "persistence_collection": 10,
-    "offline_privacy": 10,
-    "mobile_ui": 10,
-    "tests_release": 10
-  },
-  "completion_score": 57,
-  "verification_score": 68,
+  "last_good_commit": "afc866d1a45ac55b4ae74ed3cd1dc2ceb96630cd",
+  "rollback_commit": "6e088482cb2342e0cd63909e56ad6c1c23b3893d",
+  "current_candidate": "82d47e0c4bd349dc8993adcaabb94f035d7c3e79",
+  "current_gate": "MISSION-004-premium-observation-detail-and-collection",
+  "gate_weights": {"source_recovery":20,"recognition_reject":25,"camera_library":15,"persistence_collection":10,"offline_privacy":10,"mobile_ui":10,"tests_release":10},
+  "completion_score": 61,
+  "verification_score": 72,
   "last_tests": {
     "status": "PASS_CI_WEBKIT",
-    "command": "HERBARIUM Guard run 36165119647",
-    "result": "SUCCESS: local-subject-evidence 4/4; performance/acquisition 33/33; plant-subject gate 10/10; WebKit mobile acquisition E2E 4/4.",
-    "scope": "Home→Field visible flow, library file handoff, duplicate-event suppression, invalid-file reset, preview render and UNKNOWN-safe save in WebKit mobile. This is browser-level WebKit verification, not a physical iPhone claim."
+    "command": "HERBARIUM Guard run 36190714374",
+    "result": "SUCCESS on afc866d1: premium botanical depth and iPhone touch hierarchy candidate passed HERBARIUM Guard.",
+    "scope": "Automated browser/runtime regression; not a physical iPhone claim."
   },
   "blockers": [
+    "Public GitHub Pages deployment still fails during repository Pages configuration/enablement",
     "Dataset-backed real-photo reject metrics are unavailable until real labeled photos are supplied",
     "Physical iPhone camera/library, IndexedDB and installed-PWA offline regression still needs device verification",
-    "Species recognition remains intentionally disabled until subject reject is validated on real images",
-    "Public site publication remains blocked: GitHub Pages repository enablement requires an admin-capable connection; alternate Vercel scope is not authorized"
+    "Species recognition remains intentionally disabled until subject reject is validated on real images"
   ],
-  "recognition_metrics": {
-    "positive_accuracy": null,
-    "negative_reject_rate": null,
-    "unknown_rate": null,
-    "real_dataset": "harness ready / corpus absent",
-    "note": "No claim of real-image recognition accuracy"
-  },
+  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"real_dataset":"harness ready / corpus absent","note":"No claim of real-image recognition accuracy"},
   "implemented": [
     "Conservative plant/uncertain/non-plant admission contract and UNKNOWN-safe save semantics",
     "Camera/library acquisition validation and local preprocessing with retained edge capped at 1600px",
-    "Authoritative prepared-photo memory handoff; runtime never depends on rewriting input.files or DataTransfer",
-    "Delegated capture-grid interception survives Field rerenders and suppresses duplicate native change bursts",
-    "WebKit iframe-realm Event/CustomEvent handling and cached-iframe safety reattachment",
-    "Single-decode runtime photo pipeline with createImageBitmap→Image fallback, bounded quality work and released canvases",
-    "All four Field capture inputs are bound correctly after rerender and preserve camera/library choice",
-    "Subject gate treats null/malformed evidence fail-closed instead of crashing and synchronizes through iframe-realm MutationObserver plus explicit shot-updated event",
-    "Real IndexedDB observation collection/detail/delete flows and local-only offline PWA shell remain preserved",
-    "HERBARIUM Guard now executes Node contracts instead of syntax-only checks and runs WebKit mobile E2E acquisition regression"
+    "WebKit mobile acquisition and UNKNOWN persistence regression coverage",
+    "Premium botanical visual layer with soft depth, natural ivory/green/gold materials and iPhone 390/430 tuning",
+    "Premium observation-detail and collection-card treatment added in candidate 82d47e0c with layered photo frames, taxonomy ornament, fact tiles and touch affordances"
   ],
-  "next_action": "Add WebKit end-to-end persistence regression: Home→Field→photo→save UNKNOWN observation→reload→Book pending entry→delete, verifying IndexedDB persistence/recovery and that no unverified observation enters the verified-species count.",
-  "updated_at": "2026-09-25T19:08:30+02:00"
+  "next_action": "Certify candidate 82d47e0c with HERBARIUM Guard; if green promote it to last_good, then restore public Pages preview as P1 and visually verify observation detail/collection at 390 and 430px.",
+  "updated_at": "2026-09-26T00:19:00+02:00"
 }
