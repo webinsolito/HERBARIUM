@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "5129f589afd9ef74db401f42b4d4d071f242f348",
-  "rollback_commit": "0c20b1e094bb00ecc5cd5d3a9cde6ae2af7ce951",
+  "last_good_commit": "84314f1a09f1868ffc46e41048958a607694ab5c",
+  "rollback_commit": "5129f589afd9ef74db401f42b4d4d071f242f348",
   "current_gate": "MISSION-001-source-of-truth",
   "gate_weights": {
     "source_recovery": 20,
@@ -14,15 +14,15 @@
     "tests_release": 10
   },
   "completion_score": 30,
-  "verification_score": 32,
+  "verification_score": 33,
   "last_tests": {
     "status": "PASS_WITH_LIMITATION",
-    "command": "GitHub post-write fetch verification plus deterministic promotion workflow guards",
-    "result": "Added promote-rc3-runtime workflow with test -s, byte-for-byte cmp, captureGrid and saveObsBtn assertions before commit. app/runtime.html re-fetch still shows the prior handoff, so promotion is not claimed complete.",
-    "scope": "migration mechanism verified statically; runtime promotion not yet observed; no browser E2E or real-image accuracy executed"
+    "command": "GitHub post-write fetch verification and canonical runtime inspection",
+    "result": "app/runtime.html now contains the RC3 implementation rather than the previous redirect handoff. Added and re-fetched fail-closed subject-gate UI bridge. Browser E2E was not available in this connector run.",
+    "scope": "source promotion observed; subject bridge verified statically; no browser E2E or real-image accuracy executed"
   },
   "blockers": [
-    "RC3 implementation is still physically under recovery until the promotion workflow commit is observed",
+    "RC3 runtime promotion is observed but byte-for-byte parity could not be independently computed in this connector run",
     "No real image subject detector is wired to the conservative gate yet",
     "No dataset-backed recognition/reject accuracy metric is available yet"
   ],
@@ -38,10 +38,11 @@
     "Italian UX states for uncertain and non-plant results that explicitly avoid invented species",
     "Automated positive, negative, ambiguous, low-quality, missing and invalid-evidence contract tests",
     "Canonical app/index.html entrypoint with mobile-safe premium botanical boot state",
-    "Versioned app/runtime.html boundary so the canonical entrypoint no longer references recovery directly",
+    "Versioned app/runtime.html boundary",
     "Reduced-motion-aware soft 3D botanical boot animation",
-    "Deterministic RC3 promotion workflow that copies recovery runtime into app/runtime.html only after byte-parity and critical UI-control assertions"
+    "RC3 implementation observed in app/runtime.html",
+    "Fail-closed subject-gate UI bridge with accessible live status and recognition/save interlocks"
   ],
-  "next_action": "Verify the promote-rc3-runtime workflow result and app/runtime.html byte-parity with recovery/HERBARIUM_TEST_PC.html; if promoted, close MISSION-001-source-of-truth and wire the conservative subject gate before save/recognition; if failed, inspect the workflow job and fix it in the same run.",
-  "updated_at": "2026-09-25T12:38:00+02:00"
+  "next_action": "Wire app/subject-gate-ui.js into the Field flow in app/runtime.html so missing/uncertain/non-plant evidence physically blocks recognition before save, then verify camera/library/save regression without claiming real-image accuracy.",
+  "updated_at": "2026-09-25T13:39:00+02:00"
 }
