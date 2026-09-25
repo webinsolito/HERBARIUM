@@ -6,16 +6,14 @@
 <meta name="theme-color" content="#08130e">
 <title>Herbarium</title>
 <style>
-html,body{margin:0;min-height:100%;background:#08130e;color:#f5f1e6;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif}.boot{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center;background:radial-gradient(circle at 50% 28%,#214a36 0,transparent 36%),#08130e}.mark{width:82px;height:82px;margin:auto;border-radius:28px;background:linear-gradient(145deg,#b9d3a8,#5f8d6b);box-shadow:0 22px 55px #0008,inset 0 2px 8px #fff5;display:grid;place-items:center;font-size:42px;transform:rotate(-4deg)}h1{font:600 2rem Georgia,serif;margin:18px 0 7px}.boot p{color:#aab8af;max-width:320px;line-height:1.5;margin:0 auto}.boot small{display:block;color:#d2bd78;margin-top:18px;letter-spacing:.12em;text-transform:uppercase}
+html,body{margin:0;min-height:100%;background:#08130e;color:#f5f1e6;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif}.boot{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center;background:radial-gradient(circle at 50% 28%,#214a36 0,transparent 36%),#08130e}.mark{width:88px;height:88px;margin:auto;border-radius:30px;background:linear-gradient(145deg,#c7ddb7,#5f8d6b);box-shadow:0 24px 58px #0008,inset 0 2px 10px #fff6;display:grid;place-items:center;font-size:44px;transform:rotate(-4deg);animation:breathe 1.8s ease-in-out infinite alternate}h1{font:600 2rem Georgia,serif;margin:18px 0 7px}.boot p{color:#aab8af;max-width:320px;line-height:1.5;margin:0 auto}.boot small{display:block;color:#d2bd78;margin-top:18px;letter-spacing:.12em;text-transform:uppercase}@keyframes breathe{to{transform:rotate(2deg) translateY(-3px);box-shadow:0 29px 64px #0009,inset 0 2px 12px #fff7}}@media(prefers-reduced-motion:reduce){.mark{animation:none}}
 </style>
 </head>
 <body>
 <main class="boot" aria-live="polite"><div><div class="mark" aria-hidden="true">❧</div><h1>Herbarium</h1><p>Sto aprendo il tuo atlante botanico locale.</p><small>Privacy-first · mobile-first</small></div></main>
 <script>
-// Canonical app entrypoint. RC3 remains the last-good runtime until its inline
-// implementation is split into versioned modules without changing behaviour.
-// replace() avoids leaving the bootstrap page in mobile Safari history.
-location.replace('../recovery/HERBARIUM_TEST_PC.html');
+// Canonical entrypoint targets the versioned runtime boundary, never recovery directly.
+location.replace('./runtime.html');
 </script>
 </body>
 </html>
