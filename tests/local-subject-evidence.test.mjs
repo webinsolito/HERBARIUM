@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import { evidenceFromPixels } from '../app/local-subject-evidence.js';
+import { classifyPlantSubject, SUBJECT } from '../app/plant-subject-gate.js';
+const pixels=(rgb,n=400)=>{const a=new Uint8ClampedArray(n*4);for(let i=0;i<n;i++){const [r,g,b]=rgb(i);a.set([r,g,b,255],i*4)}return a};
+const plant=evidenceFromPixels({data:pixels(i=>i%2?[35,145,45]:[60,185,70]),width:20,height:20,quality:.9});
+assert.equal(classifyPlantSubject(plant).status,SUBJECT.PLANT);
+const flat=evidenceFromPixels({data:pixels(()=>[125,120,118]),width:20,height:20,quality:.9});
+assert.notEqual(classifyPlantSubject(flat).status,SUBJECT.PLANT);
+const blue=evidenceFromPixels({data:pixels(i=>i%2?[45,70,190]:[220,215,205]),width:20,height:20,quality:.9});
+assert.notEqual(classifyPlantSubject(blue).status,SUBJECT.PLANT);
+const missing=evidenceFromPixels();assert.equal(classifyPlantSubject(missing).status,SUBJECT.UNCERTAIN);
+console.log('local-subject-evidence: 4/4 PASS', {plant,flat,blue});
