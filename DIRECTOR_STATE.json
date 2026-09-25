@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "unknown-baseline-main",
-  "rollback_commit": "recovery/HERBARIUM_TEST_PC.html@9f8ca08070ae521006ae6c4bf4bcbae2ce68a188",
+  "last_good_commit": "f9b81e0aafc17eacc91ef2d59379023b323e2a1b",
+  "rollback_commit": "36984ed64ef6a2576e2b451a359732159b01b336",
   "current_gate": "MISSION-001-source-of-truth",
   "gate_weights": {
     "source_recovery": 20,
@@ -13,23 +13,31 @@
     "mobile_ui": 10,
     "tests_release": 10
   },
-  "completion_score": 28,
-  "verification_score": 24,
+  "completion_score": 30,
+  "verification_score": 30,
   "last_tests": {
-    "status": "NOT_RUN",
-    "note": "Repository currently contains recovery artifacts but no reproducible app/test baseline. Recovery RC3 inspected: camera/file capture, IndexedDB persistence and image quality gate exist; semantic non-plant reject/recognition is not implemented."
+    "status": "PASS",
+    "command": "node tests/plant-subject-gate.test.mjs",
+    "result": "8/8 contract cases passed",
+    "scope": "plant/non-plant/uncertain decision contract and user-facing result copy; not image-model accuracy"
   },
   "blockers": [
-    "No versioned reproducible application source outside recovery artifacts",
-    "No automated smoke/regression suite yet",
-    "Current image gate measures technical image quality only and cannot reject non-plant subjects semantically"
+    "RC3 runtime still lives under recovery and must be promoted into the versioned app baseline",
+    "No real image subject detector is wired to the conservative gate yet",
+    "No dataset-backed recognition/reject accuracy metric is available yet"
   ],
   "recognition_metrics": {
     "positive_accuracy": null,
     "negative_reject_rate": null,
     "unknown_rate": null,
-    "note": "No honest dataset-backed recognition/reject metrics available yet"
+    "contract_cases_passed": "8/8",
+    "note": "Contract behavior verified; no claim of real-image recognition accuracy"
   },
-  "next_action": "Recover RC3 into a versioned app baseline and add a conservative plant-subject preflight/reject contract with automated positive/negative regression fixtures before enabling any species recognition.",
-  "updated_at": "2026-09-25T08:37:00+02:00"
+  "implemented": [
+    "Conservative plant/uncertain/non-plant admission contract with fail-closed thresholds",
+    "Italian UX states for uncertain and non-plant results that explicitly avoid invented species",
+    "Automated positive, negative, ambiguous, low-quality, missing and invalid-evidence contract tests"
+  ],
+  "next_action": "Promote RC3 runtime from recovery/HERBARIUM_TEST_PC.html into the versioned app baseline and wire plant-subject-gate.js before save/recognition so NON_PLANT and UNCERTAIN cannot enter species recognition.",
+  "updated_at": "2026-09-25T09:39:00+02:00"
 }
