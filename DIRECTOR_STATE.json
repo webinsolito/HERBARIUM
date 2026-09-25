@@ -1,60 +1,34 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "4913a1d81db467541f15eb0159eec5c5a4518462",
-  "rollback_commit": "75c9d03832d0f386a903c0bca7ad2a775a0e60cb",
-  "current_gate": "MISSION-002-recognition-reject-integration",
-  "gate_weights": {
-    "source_recovery": 20,
-    "recognition_reject": 25,
-    "camera_library": 15,
-    "persistence_collection": 10,
-    "offline_privacy": 10,
-    "mobile_ui": 10,
-    "tests_release": 10
-  },
+  "last_good_commit": "02491c40a292d416ad67a7a1aa355ba7f2014cdc",
+  "rollback_commit": "02491c40a292d416ad67a7a1aa355ba7f2014cdc",
+  "current_candidate": "52abec6e7a7422c93594506678cff432775562b3",
+  "current_gate": "MISSION-002-performance-verification",
   "completion_score": 50,
   "verification_score": 55,
   "last_tests": {
-    "status": "PASS_WITH_LIMITATION",
-    "command": "Two offline/privacy passes + production dependency/cache verification",
-    "result": "34/34 static/runtime contract checks passed: manifest, service-worker and runtime syntax, complete production precache, local-only module graph, offline fallback/update flow, truthful controller-backed offline status, and diagnostics without fake observations.",
-    "scope": "Production source/cache contract verified; physical install/offline launch on iPhone/GitHub Pages still requires device/browser execution."
+    "status": "PENDING_CI",
+    "command": "HERBARIUM Guard run 36155709094",
+    "result": "Performance contract added with 9 assertions; CI was queued at state update, therefore no PASS claimed.",
+    "scope": "Acquisition cap/timing, canvas release, bounded subject-analysis dimensions, duplicate-analysis suppression and debounce."
   },
   "blockers": [
-    "Dataset-backed real-photo reject metrics are not available until real labeled photos are supplied",
+    "Dataset-backed real-photo reject metrics are unavailable until real labeled photos are supplied",
     "Physical iPhone camera/library, IndexedDB and installed-PWA offline regression still needs device/browser verification",
-    "Species recognition remains intentionally disabled until subject reject is validated on real images"
+    "Species recognition remains intentionally disabled until subject reject is validated on real images",
+    "GitHub Pages publication remains blocked by repository Pages enablement permissions"
   ],
-  "recognition_metrics": {
-    "positive_accuracy": null,
-    "negative_reject_rate": null,
-    "unknown_rate": null,
-    "contract_cases_passed": "8/8 prior",
-    "real_dataset": "harness ready / corpus absent",
-    "note": "No claim of real-image recognition accuracy"
-  },
+  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"real_dataset":"harness ready / corpus absent","note":"No claim of real-image recognition accuracy"},
   "implemented": [
-    "Conservative plant/uncertain/non-plant admission contract",
-    "Canonical RC3 runtime and fail-closed Field guard",
-    "Offline local pixel subject-evidence adapter and conservative multi-view aggregation",
-    "UNKNOWN/REJECT mobile guidance and labeled offline dataset evaluator",
-    "Authoritative camera/library preprocessing validates type/empty/size/decode and downsizes oversized images before RC3 analysis",
-    "iPhone Field input now allows camera or photo-library choice rather than forcing capture",
-    "IndexedDB open/transaction flow handles blocked, versionchange, abort and error states",
-    "Observation save validates required real photo data and preserves photos/form on persistence failure for retry",
-    "Observation subjectStatus is persisted as plant/uncertain/non-plant/unknown without promoting species",
-    "Book has real empty/error/retry states, verified-only species counting, newest-first pending observations and per-observation delete",
-    "Persisted observation detail sheet opens real saved entries with their actual photos, habitat, region/place, GPS, altitude, quality and useful-view count",
-    "Taxonomy is rendered only when verification==='verified'; manual names and UNKNOWN/UNCERTAIN/NON-PLANT remain explicitly non-verified",
-    "Observation detail supports keyboard/backdrop/Escape close, focus return, corrupt-photo fallback and safe delete with recovery",
-    "Installable local PWA manifest with local Herbarium identity/icon and standalone scope",
-    "Versioned service worker precaches the canonical shell, runtime and all production subject/acquisition modules with offline navigation fallback",
-    "Service-worker update flow exposes a controlled in-app update action and removes old Herbarium caches",
-    "Runtime network badge says offline-ready only when a service worker actually controls the app",
-    "Production shell has no required external src/href, external fetch or external module import",
-    "Local diagnostics now verify meta-store persistence without creating synthetic observations"
+    "Conservative plant/uncertain/non-plant admission contract and UNKNOWN-safe save semantics",
+    "Camera/library acquisition validation and local preprocessing",
+    "Real IndexedDB observation collection/detail/delete flows",
+    "Local-only offline PWA shell and diagnostics",
+    "Performance package candidate: retained acquisition edge reduced to 1600px, local prepare timing/byte/pixel metrics exposed, transient canvases explicitly released",
+    "Subject evidence analysis bounded to 160px edge with timing/pixel metrics, unchanged-preview analysis suppression and mutation debounce",
+    "Nine performance/memory contract assertions added without inventing device benchmarks"
   ],
-  "next_action": "Close the performance package with measured before→after work: instrument image acquisition/analysis timing and memory-sensitive dimensions locally, eliminate duplicate image decoding/compression where safe, cap retained preview payloads, and verify camera→subject gate→save still preserves UNKNOWN semantics.",
-  "updated_at": "2026-09-25T16:41:00+02:00"
+  "next_action": "Verify HERBARIUM Guard for candidate 52abec6e7a7422c93594506678cff432775562b3; if green, promote it as last_good and then close camera→prepare→subject gate integration so the optimized blob is actually authoritative end-to-end rather than only exposed through HerbariumAcquisition.",
+  "updated_at": "2026-09-25T17:41:00+02:00"
 }
