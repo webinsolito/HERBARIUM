@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "75c9d03832d0f386a903c0bca7ad2a775a0e60cb",
-  "rollback_commit": "bbeb1a539df87d28eb65cf12ff330f22f1864cc6",
+  "last_good_commit": "4913a1d81db467541f15eb0159eec5c5a4518462",
+  "rollback_commit": "75c9d03832d0f386a903c0bca7ad2a775a0e60cb",
   "current_gate": "MISSION-002-recognition-reject-integration",
   "gate_weights": {
     "source_recovery": 20,
@@ -13,17 +13,17 @@
     "mobile_ui": 10,
     "tests_release": 10
   },
-  "completion_score": 46,
-  "verification_score": 51,
+  "completion_score": 50,
+  "verification_score": 55,
   "last_tests": {
     "status": "PASS_WITH_LIMITATION",
-    "command": "Two operational passes + final runtime parse and observation-detail contracts",
-    "result": "29/29 structural/pure-contract checks passed: persisted detail lookup, real photo gallery, location/quality fallbacks, verified-only taxonomy, explicit UNKNOWN/manual/non-plant states, keyboard/modal behavior, detail delete/recovery and persistence protections.",
-    "scope": "Runtime/source verification; physical iPhone and live IndexedDB interaction still require device/browser execution."
+    "command": "Two offline/privacy passes + production dependency/cache verification",
+    "result": "34/34 static/runtime contract checks passed: manifest, service-worker and runtime syntax, complete production precache, local-only module graph, offline fallback/update flow, truthful controller-backed offline status, and diagnostics without fake observations.",
+    "scope": "Production source/cache contract verified; physical install/offline launch on iPhone/GitHub Pages still requires device/browser execution."
   },
   "blockers": [
     "Dataset-backed real-photo reject metrics are not available until real labeled photos are supplied",
-    "Physical iPhone camera/library and IndexedDB regression through the canonical shell still needs device/browser verification",
+    "Physical iPhone camera/library, IndexedDB and installed-PWA offline regression still needs device/browser verification",
     "Species recognition remains intentionally disabled until subject reject is validated on real images"
   ],
   "recognition_metrics": {
@@ -47,8 +47,14 @@
     "Book has real empty/error/retry states, verified-only species counting, newest-first pending observations and per-observation delete",
     "Persisted observation detail sheet opens real saved entries with their actual photos, habitat, region/place, GPS, altitude, quality and useful-view count",
     "Taxonomy is rendered only when verification==='verified'; manual names and UNKNOWN/UNCERTAIN/NON-PLANT remain explicitly non-verified",
-    "Observation detail supports keyboard/backdrop/Escape close, focus return, corrupt-photo fallback and safe delete with recovery"
+    "Observation detail supports keyboard/backdrop/Escape close, focus return, corrupt-photo fallback and safe delete with recovery",
+    "Installable local PWA manifest with local Herbarium identity/icon and standalone scope",
+    "Versioned service worker precaches the canonical shell, runtime and all production subject/acquisition modules with offline navigation fallback",
+    "Service-worker update flow exposes a controlled in-app update action and removes old Herbarium caches",
+    "Runtime network badge says offline-ready only when a service worker actually controls the app",
+    "Production shell has no required external src/href, external fetch or external module import",
+    "Local diagnostics now verify meta-store persistence without creating synthetic observations"
   ],
-  "next_action": "Close the offline/privacy package: add a real installable manifest and versioned service worker for the canonical app/runtime/modules, provide an offline fallback/update path, and verify the production shell has no required external network dependency before claiming offline-ready.",
+  "next_action": "Close the performance package with measured before→after work: instrument image acquisition/analysis timing and memory-sensitive dimensions locally, eliminate duplicate image decoding/compression where safe, cap retained preview payloads, and verify camera→subject gate→save still preserves UNKNOWN semantics.",
   "updated_at": "2026-09-25T16:41:00+02:00"
 }
