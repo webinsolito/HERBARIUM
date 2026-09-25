@@ -28,7 +28,7 @@ assert.match(runtime,/\.catch\(fallback\)/,'bitmap decode failure must fall back
 assert.match(runtime,/qualityCanvas\.width=1;qualityCanvas\.height=1;previewCanvas\.width=1;previewCanvas\.height=1/,'runtime canvases must be released');
 assert.match(runtime,/Fotocamera o libreria/,'mobile UX must preserve camera/library choice');
 
-assert.match(evidence,/const max=160/,'subject analysis edge must stay bounded');
+assert.match(evidence,/\bmax=160\b/,'subject analysis edge must stay bounded');
 assert.match(evidence,/analysis:\{ms:/,'subject analysis must expose timing/dimensions');
 assert.match(evidence,/canvas\.width=1;canvas\.height=1/,'subject analysis canvas must be released');
 assert.match(guard,/lastSignature/,'unchanged previews must not be re-analysed');
