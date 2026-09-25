@@ -2,13 +2,13 @@
   "schema_version": 1,
   "project": "webinsolito/HERBARIUM",
   "branch": "candidate/herbarium-v1-release",
-  "updated_at": "2026-09-25T08:00:00+02:00",
-  "last_good_commit": "69b8975584af8105a2cb84c82c1d4d4aa379610f",
+  "updated_at": "2026-09-25T08:08:00+02:00",
+  "last_good_commit": "ee1c590f3fd36e6fa4cd149bedea363f1b961eda",
   "rollback_commit": "96607fcc75f56cb9423569a1853297f3e2f7ab5e",
   "rollback_ref": "rollback/pre-first-pass-benchmark-diagnostics-96607fcc",
-  "current_gate": "N Test / E Recognition diagnostics",
-  "completion_score": 72,
-  "verification_score": 31.5,
+  "current_gate": "E Recognition / ensemble top-k discrimination",
+  "completion_score": 73,
+  "verification_score": 40.5,
   "score_policy": {
     "completion": "Persistent baseline; change only after implemented AND verified work closes or materially advances a fixed weighted gate. Decrease only for documented regression.",
     "verification": "Sum of fixed gate weights multiplied by status factors.",
@@ -42,7 +42,7 @@
     "photo_library": "PARTIAL",
     "non_plant_filter": "PARTIAL",
     "recognition": "FAIL",
-    "confidence_reject": "FAIL",
+    "confidence_reject": "PARTIAL",
     "plant_detail": "PARTIAL",
     "collection": "PARTIAL",
     "privacy_offline": "PARTIAL",
@@ -50,52 +50,102 @@
     "graphics_3d": "PARTIAL",
     "performance": "FAIL",
     "safety": "PASS",
-    "test_regression": "FAIL",
+    "test_regression": "PASS",
     "packaging_release": "NON_VERIFIED"
   },
   "last_tests": {
     "guard": {
       "status": "PASS",
-      "run_id": 36101093178,
-      "commit": "6d9ccf77951b2c3946d9e9687a2b2ba3ec78e8e9"
+      "run_id": 36101448254,
+      "commit": "ee1c590f3fd36e6fa4cd149bedea363f1b961eda"
     },
     "confidence_benchmark": {
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "run_id": 36101093164,
       "commit": "6d9ccf77951b2c3946d9e9687a2b2ba3ec78e8e9"
     },
-    "p0b_species_qa_previous": {
-      "status": "FAIL",
-      "run_id": 36101083754,
-      "commit": "b1c0cfdd5ca928f02481527b49e4e5927fc9d382",
-      "reason": "test expected consensus-v3 while runtime is consensus-v4"
-    },
     "p0b_species_qa": {
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "run_id": 36101314641,
       "commit": "e20a020e5e69198b1564f99a97df46b9b3a04712"
     },
     "p0a_model_qa": {
-      "status": "IN_PROGRESS",
+      "status": "PASS",
       "run_id": 36101083690,
       "commit": "b1c0cfdd5ca928f02481527b49e4e5927fc9d382"
     }
   },
   "metrics": {
-    "last_verified_confidence_commit": "69b8975584af8105a2cb84c82c1d4d4aa379610f",
+    "last_verified_confidence_commit": "6d9ccf77951b2c3946d9e9687a2b2ba3ec78e8e9",
     "negative_samples": 7,
     "negative_false_species": 0,
     "negative_reject": 4,
     "plant_samples": 10,
     "plant_proposed": 0,
     "plant_reject": 0,
-    "median_elapsed_ms": 11372,
-    "note": "Recognition metrics are from last verified benchmark; current diagnostic fix is still under verification."
+    "plant_species_reason_counts": {
+      "weak-top1": 5,
+      "cross-dataset-model-disagreement": 5
+    },
+    "negative_species_reason_counts": {
+      "not-run": 4,
+      "cross-dataset-model-disagreement": 1,
+      "weak-top1": 2
+    },
+    "disagreement_diagnostics_missing": 0,
+    "live_diagnostic_mismatch_count": 0,
+    "median_elapsed_ms": 11639,
+    "disagreement_pairs": [
+      {
+        "kind": "plant",
+        "file": "10140303196_b88d3d6cec.jpg",
+        "primary": "Tagetes erecta L.",
+        "verifier": "Baileya multiradiata",
+        "recoveryCandidate": false
+      },
+      {
+        "kind": "plant",
+        "file": "10043234166_e6dd915111_n.jpg",
+        "primary": "Daucus carota L.",
+        "verifier": "Taraxacum erythrospermum",
+        "recoveryCandidate": true
+      },
+      {
+        "kind": "plant",
+        "file": "10090824183_d02c613f10_m.jpg",
+        "primary": "Alcea rosea L.",
+        "verifier": "Rosa spinosissima",
+        "recoveryCandidate": true
+      },
+      {
+        "kind": "plant",
+        "file": "1008566138_6927679c8a.jpg",
+        "primary": "Calendula officinalis L.",
+        "verifier": "Inula helenium",
+        "recoveryCandidate": true
+      },
+      {
+        "kind": "plant",
+        "file": "1022552002_2b93faf9e7_n.jpg",
+        "primary": "Calendula officinalis L.",
+        "verifier": "Helianthus annuus",
+        "recoveryCandidate": false
+      },
+      {
+        "kind": "negative",
+        "file": "hot_dog.jpg",
+        "primary": "Nymphaea alba L.",
+        "verifier": "Pachira aquatica",
+        "recoveryCandidate": true
+      }
+    ],
+    "note": "First-pass benchmark diagnostics are verified. Disagreements are genuine taxon differences, not formatting differences; do not relax taxonKey normalization."
   },
   "blockers": [
-    "Current first-pass diagnostic capture not yet verified by Confidence Benchmark.",
-    "Species recognition remains 0/10 proposed on last verified release benchmark.",
+    "Species recognition remains 0/10 proposed on the verified 10-plant benchmark.",
+    "Current top-1 equality consensus is too strict for real plants, but accepting either model alone would admit the hot-dog negative.",
+    "Median benchmark latency is 11.639 s.",
     "Physical iPhone camera/offline behavior and release packaging remain unverified."
   ],
-  "next_action": "Finish verification of first-pass benchmark diagnostics on run 36101093164 and P0-B run 36101314641; do not tune consensus until both are resolved."
+  "next_action": "Instrument and benchmark verifier-top1 versus PlantNet top-3/top-5 overlap on the same 10 plant + 7 negative set, and accept no policy change unless it separates real plants from hot_dog while keeping negative_false_species=0."
 }
