@@ -1,36 +1,52 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "1ecfe041d1b99a107eaad737bd8197bcf1cb0e17",
-  "rollback_commit": "52abec6e7a7422c93594506678cff432775562b3",
-  "current_candidate": "1ecfe041d1b99a107eaad737bd8197bcf1cb0e17",
+  "last_good_commit": "9bb1a101cfd70819ebed1734bdd98a0b897f73c3",
+  "rollback_commit": "1ecfe041d1b99a107eaad737bd8197bcf1cb0e17",
+  "current_candidate": "9bb1a101cfd70819ebed1734bdd98a0b897f73c3",
   "current_gate": "MISSION-003-real-device-acquisition-regression",
-  "completion_score": 53,
-  "verification_score": 60,
+  "gate_weights": {
+    "source_recovery": 20,
+    "recognition_reject": 25,
+    "camera_library": 15,
+    "persistence_collection": 10,
+    "offline_privacy": 10,
+    "mobile_ui": 10,
+    "tests_release": 10
+  },
+  "completion_score": 57,
+  "verification_score": 68,
   "last_tests": {
-    "status": "PASS_CI",
-    "command": "HERBARIUM Guard run 36162088193",
-    "result": "SUCCESS on authoritative acquisition handoff; performance contract expanded to 14 assertions.",
-    "scope": "Raw input interception, local preparation, authoritative DataTransfer replacement, fail-closed errors, readiness telemetry, bounded analysis/performance regression."
+    "status": "PASS_CI_WEBKIT",
+    "command": "HERBARIUM Guard run 36165119647",
+    "result": "SUCCESS: local-subject-evidence 4/4; performance/acquisition 33/33; plant-subject gate 10/10; WebKit mobile acquisition E2E 4/4.",
+    "scope": "Home→Field visible flow, library file handoff, duplicate-event suppression, invalid-file reset, preview render and UNKNOWN-safe save in WebKit mobile. This is browser-level WebKit verification, not a physical iPhone claim."
   },
   "blockers": [
     "Dataset-backed real-photo reject metrics are unavailable until real labeled photos are supplied",
-    "Physical iPhone camera/library, IndexedDB and installed-PWA offline regression still needs device/browser verification",
+    "Physical iPhone camera/library, IndexedDB and installed-PWA offline regression still needs device verification",
     "Species recognition remains intentionally disabled until subject reject is validated on real images",
-    "GitHub Pages publication remains blocked by repository Pages enablement permissions"
+    "Public site publication remains blocked: GitHub Pages repository enablement requires an admin-capable connection; alternate Vercel scope is not authorized"
   ],
-  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"real_dataset":"harness ready / corpus absent","note":"No claim of real-image recognition accuracy"},
+  "recognition_metrics": {
+    "positive_accuracy": null,
+    "negative_reject_rate": null,
+    "unknown_rate": null,
+    "real_dataset": "harness ready / corpus absent",
+    "note": "No claim of real-image recognition accuracy"
+  },
   "implemented": [
     "Conservative plant/uncertain/non-plant admission contract and UNKNOWN-safe save semantics",
-    "Camera/library acquisition validation and local preprocessing",
-    "Real IndexedDB observation collection/detail/delete flows",
-    "Local-only offline PWA shell and diagnostics",
-    "Retained acquisition edge capped at 1600px with local prepare timing/byte/pixel metrics and transient canvas release",
-    "Raw camera/library file is intercepted before runtime consumption; prepared file replaces it authoritatively via DataTransfer before the runtime change flow resumes",
-    "Preparation failures clear the input and remain fail-closed; successful preparation emits local readiness telemetry and visible status",
-    "Subject evidence analysis bounded to 160px with timing/pixel metrics, unchanged-preview suppression and mutation debounce",
-    "Fourteen performance/acquisition contract assertions pass in CI"
+    "Camera/library acquisition validation and local preprocessing with retained edge capped at 1600px",
+    "Authoritative prepared-photo memory handoff; runtime never depends on rewriting input.files or DataTransfer",
+    "Delegated capture-grid interception survives Field rerenders and suppresses duplicate native change bursts",
+    "WebKit iframe-realm Event/CustomEvent handling and cached-iframe safety reattachment",
+    "Single-decode runtime photo pipeline with createImageBitmap→Image fallback, bounded quality work and released canvases",
+    "All four Field capture inputs are bound correctly after rerender and preserve camera/library choice",
+    "Subject gate treats null/malformed evidence fail-closed instead of crashing and synchronizes through iframe-realm MutationObserver plus explicit shot-updated event",
+    "Real IndexedDB observation collection/detail/delete flows and local-only offline PWA shell remain preserved",
+    "HERBARIUM Guard now executes Node contracts instead of syntax-only checks and runs WebKit mobile E2E acquisition regression"
   ],
-  "next_action": "Add browser-level acquisition regression coverage for camera/library prepared-file handoff, error/reset and duplicate-event safety, then harden Safari/iPhone compatibility without weakening UNKNOWN fail-closed behavior.",
-  "updated_at": "2026-09-25T18:39:10+02:00"
+  "next_action": "Add WebKit end-to-end persistence regression: Home→Field→photo→save UNKNOWN observation→reload→Book pending entry→delete, verifying IndexedDB persistence/recovery and that no unverified observation enters the verified-species count.",
+  "updated_at": "2026-09-25T19:08:30+02:00"
 }
