@@ -29,6 +29,8 @@ assert.match(runtime,/typeof createImageBitmap!=='function'/,'Safari fallback mu
 assert.match(runtime,/\.catch\(fallback\)/,'bitmap decode failure must fall back to HTMLImageElement');
 assert.match(runtime,/qualityCanvas\.width=1;qualityCanvas\.height=1;previewCanvas\.width=1;previewCanvas\.height=1/,'runtime canvases must be released');
 assert.match(runtime,/Fotocamera o libreria/,'mobile UX must preserve camera/library choice');
+assert.match(runtime,/\$\$\('#captureGrid input'\)\.forEach/,'all four Field inputs must receive runtime change handlers');
+assert.doesNotMatch(runtime,/\$\('#captureGrid input'\)\.forEach/,'single-element selector must never be used as a collection');
 
 assert.match(evidence,/\bmax=160\b/,'subject analysis edge must stay bounded');
 assert.match(evidence,/analysis:\{ms:/,'subject analysis must expose timing/dimensions');
@@ -37,4 +39,4 @@ assert.match(guard,/lastSignature/,'unchanged previews must not be re-analysed')
 assert.match(guard,/setTimeout\(sync,120\)/,'mutation bursts must be debounced');
 assert.match(guard,/analysisPixels/,'aggregate runtime must report bounded subject work');
 
-console.log('performance-contract: 28/28 PASS');
+console.log('performance-contract: 30/30 PASS');
