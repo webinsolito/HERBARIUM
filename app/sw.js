@@ -1,0 +1,63 @@
+const VERSION='herbarium-v1-20260925-01';
+const CACHE=VERSION+'-app';
+const PRECACHE=[
+  './',
+  './index.html',
+  './runtime.html',
+  './manifest.webmanifest',
+  './icon.svg',
+  './offline.html',
+  './acquisition-guard.js',
+  './field-runtime-guard.js',
+  './subject-gate-ui.js',
+  './plant-subject-gate.js',
+  './local-subject-evidence.js'
+];
+
+self.addEventListener('install',event=>{
+  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(PRECACHE)));
+});
+
+self.addEventListener('activate',event=>{
+  event.waitUntil(
+    caches.keys()
+      .then(keys=>Promise.all(keys.filter(k=>k.startsWith('herbarium-v1-')&&k!==CACHE).map(k=>caches.delete(k))))
+      .then(()=>self.clients.claim())
+  );
+});
+
+self.addEventListener('message',event=>{
+  if(event.data?.type==='SKIP_WAITING') self.skipWaiting();
+});
+
+self.addEventListener('fetch',event=>{
+  const req=event.request;
+  if(req.method!=='GET') return;
+  const url=new URL(req.url);
+  if(url.origin!==self.location.origin) return;
+
+  if(req.mode==='navigate'){
+    event.respondWith(
+      fetch(req)
+        .then(res=>{
+          if(res&&res.ok){const copy=res.clone();caches.open(CACHE).then(c=>c.put(req,copy));}
+          return res;
+        })
+        .catch(async()=>{
+          const exact=await caches.match(req,{ignoreSearch:true});
+          return exact||caches.match('./index.html')||caches.match('./offline.html');
+        })
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(req,{ignoreSearch:true}).then(cached=>{
+      const fresh=fetch(req).then(res=>{
+        if(res&&res.ok)caches.open(CACHE).then(c=>c.put(req,res.clone()));
+        return res;
+      }).catch(()=>null);
+      return cached||fresh.then(res=>res||caches.match('./offline.html'));
+    })
+  );
+});
