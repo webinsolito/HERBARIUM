@@ -1,0 +1,38 @@
+name: Promote RC3 runtime
+
+on:
+  push:
+    paths:
+      - '.github/workflows/promote-rc3-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Promote immutable RC3 into canonical runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s recovery/HERBARIUM_TEST_PC.html
+          cp recovery/HERBARIUM_TEST_PC.html app/runtime.html
+          cmp -s recovery/HERBARIUM_TEST_PC.html app/runtime.html
+          grep -q 'id="captureGrid"' app/runtime.html
+          grep -q 'id="saveObsBtn"' app/runtime.html
+      - name: Commit canonical runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- app/runtime.html; then
+            echo 'runtime already canonical'
+            exit 0
+          fi
+          git config user.name 'herbarium-director'
+          git config user.email 'actions@users.noreply.github.com'
+          git add app/runtime.html
+          git commit -m 'Promote RC3 into canonical app runtime'
+          git push
