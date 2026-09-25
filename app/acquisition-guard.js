@@ -87,6 +87,8 @@ export function installAcquisitionGuard(doc=document){
   const preparedByInput=new WeakMap();
   const passthroughEvents=new WeakSet();
   const inFlight=new WeakSet();
+  const EventCtor=doc.defaultView?.Event||globalThis.Event;
+  const CustomEventCtor=doc.defaultView?.CustomEvent||globalThis.CustomEvent;
 
   const consume=input=>{
     const payload=preparedByInput.get(input)||null;
@@ -117,7 +119,7 @@ export function installAcquisitionGuard(doc=document){
         preparedByInput.delete(input);
         input.value='';
         show('error',result.message+' Il riconoscimento resta UNKNOWN.');
-        doc.defaultView.dispatchEvent(new CustomEvent('herbarium:acquisition-error',{detail:{code:result.code}}));
+        doc.defaultView.dispatchEvent(new CustomEventCtor('herbarium:acquisition-error',{detail:{code:result.code}}));
         return;
       }
 
@@ -126,10 +128,10 @@ export function installAcquisitionGuard(doc=document){
       input.dataset.herbariumPrepared='true';
       input.dataset.herbariumResized=String(result.resized);
       show('ok',result.resized?`Foto ottimizzata sul dispositivo · ${result.width}×${result.height}px`:'Foto verificata · dimensioni già adatte.');
-      doc.defaultView.dispatchEvent(new CustomEvent('herbarium:acquisition-ready',{detail:{metrics:result.metrics,resized:result.resized,width:result.width,height:result.height}}));
+      doc.defaultView.dispatchEvent(new CustomEventCtor('herbarium:acquisition-ready',{detail:{metrics:result.metrics,resized:result.resized,width:result.width,height:result.height}}));
 
       if(!input.isConnected){preparedByInput.delete(input);return}
-      const resume=new Event('change',{bubbles:true});
+      const resume=new EventCtor('change',{bubbles:true});
       passthroughEvents.add(resume);
       input.dispatchEvent(resume);
     }finally{
