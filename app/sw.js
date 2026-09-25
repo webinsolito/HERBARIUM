@@ -1,4 +1,4 @@
-const VERSION='herbarium-v1-20260925-01';
+const VERSION='herbarium-v1-20260925-02';
 const CACHE=VERSION+'-app';
 const PRECACHE=[
   './',
