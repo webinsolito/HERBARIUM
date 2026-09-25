@@ -41,12 +41,25 @@ test('invalid acquisition resets input and never reaches runtime', async ({ page
 });
 
 test('canonical mobile flow accepts library input and preserves UNKNOWN-safe save', async ({ page }) => {
+  const pageErrors=[];
+  page.on('pageerror',err=>{pageErrors.push(err.message);console.log('PAGEERROR',err.message)});
+  page.on('console',msg=>{if(msg.type()==='error')console.log('CONSOLE_ERROR',msg.text())});
   await page.goto('/app/index.html');
   const frame=page.frameLocator('#runtimeFrame');
   const input=frame.locator('#captureGrid input[data-role="whole"]');
   await expect(input).toHaveAttribute('accept','image/*');
   await expect(input).not.toHaveAttribute('capture',/.+/);
   await input.setInputFiles({name:'leaf.png',mimeType:'image/png',buffer:PNG});
+  await page.waitForTimeout(700);
+  const debug=await frame.locator('body').evaluate(()=>({
+    acquisition:document.querySelector('#acquisitionStatus')?.textContent||'',
+    toast:document.querySelector('#toast')?.textContent||'',
+    hasApi:!!window.HerbariumAcquisition,
+    thumbs:document.querySelectorAll('#captureGrid img.thumb').length
+  }));
+  console.log('CANONICAL_DEBUG',JSON.stringify({...debug,pageErrors}));
+  expect(debug.hasApi).toBe(true);
+  expect(debug.acquisition).toMatch(/verificata|ottimizzata/i);
   await expect(frame.locator('#captureGrid img.thumb')).toHaveCount(1);
   const save=frame.locator('#saveObsBtn');
   await expect(save).toContainText(/Salva osservazione/);
