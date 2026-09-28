@@ -1,33 +1,48 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "afc866d1a45ac55b4ae74ed3cd1dc2ceb96630cd",
-  "rollback_commit": "6e088482cb2342e0cd63909e56ad6c1c23b3893d",
-  "current_candidate": "82d47e0c4bd349dc8993adcaabb94f035d7c3e79",
-  "current_gate": "MISSION-004-premium-observation-detail-and-collection",
-  "gate_weights": {"source_recovery":20,"recognition_reject":25,"camera_library":15,"persistence_collection":10,"offline_privacy":10,"mobile_ui":10,"tests_release":10},
+  "last_good_commit": "3a85dbf444cc44d3f9159139ca7fec5de1ec57b6",
+  "rollback_commit": "105b22fdf5c2ad98ef3c38b173fe77c66b771148",
+  "current_candidate": "ac9dfd25c642363bea1a189d56fa92e66600fa9c",
+  "current_gate": "MISSION-005-pages-recovery-and-final-delivery",
+  "gate_weights": {
+    "source_recovery": 20,
+    "recognition_reject": 25,
+    "camera_library": 15,
+    "persistence_collection": 10,
+    "offline_privacy": 10,
+    "mobile_ui": 10,
+    "tests_release": 10
+  },
   "completion_score": 61,
   "verification_score": 72,
   "last_tests": {
-    "status": "PASS_CI_WEBKIT",
-    "command": "HERBARIUM Guard run 36190714374",
-    "result": "SUCCESS on afc866d1: premium botanical depth and iPhone touch hierarchy candidate passed HERBARIUM Guard.",
-    "scope": "Automated browser/runtime regression; not a physical iPhone claim."
+    "status": "PASS_CI_WEBKIT_AND_PAGES",
+    "command": "HERBARIUM Guard 36204459398 + Pages build/deployment 36423541581",
+    "result": "SUCCESS: app HEAD 3a85dbf4 passed HERBARIUM Guard; gh-pages fdbf6862 deployed successfully.",
+    "scope": "Automated browser/runtime and GitHub Pages deployment; not a physical iPhone claim."
   },
   "blockers": [
-    "Public GitHub Pages deployment still fails during repository Pages configuration/enablement",
     "Dataset-backed real-photo reject metrics are unavailable until real labeled photos are supplied",
     "Physical iPhone camera/library, IndexedDB and installed-PWA offline regression still needs device verification",
     "Species recognition remains intentionally disabled until subject reject is validated on real images"
   ],
-  "recognition_metrics": {"positive_accuracy":null,"negative_reject_rate":null,"unknown_rate":null,"real_dataset":"harness ready / corpus absent","note":"No claim of real-image recognition accuracy"},
+  "recognition_metrics": {
+    "positive_accuracy": null,
+    "negative_reject_rate": null,
+    "unknown_rate": null,
+    "real_dataset": "harness ready / corpus absent",
+    "note": "No claim of real-image recognition accuracy"
+  },
   "implemented": [
     "Conservative plant/uncertain/non-plant admission contract and UNKNOWN-safe save semantics",
     "Camera/library acquisition validation and local preprocessing with retained edge capped at 1600px",
     "WebKit mobile acquisition and UNKNOWN persistence regression coverage",
     "Premium botanical visual layer with soft depth, natural ivory/green/gold materials and iPhone 390/430 tuning",
-    "Premium observation-detail and collection-card treatment added in candidate 82d47e0c with layered photo frames, taxonomy ornament, fact tiles and touch affordances"
+    "Premium observation-detail and collection-card treatment added in candidate 82d47e0c with layered photo frames, taxonomy ornament, fact tiles and touch affordances",
+    "Public GitHub Pages recovered through dedicated gh-pages publication of app/; deployment run 36423541581 succeeded at https://webinsolito.github.io/HERBARIUM/",
+    "Main deploy workflow changed to sync app/ into gh-pages without Pages enablement API dependency"
   ],
-  "next_action": "Certify candidate 82d47e0c with HERBARIUM Guard; if green promote it to last_good, then restore public Pages preview as P1 and visually verify observation detail/collection at 390 and 430px.",
-  "updated_at": "2026-09-26T00:19:00+02:00"
+  "next_action": "Visually verify the public HERBARIUM release at desktop, 390px and 430px; then close remaining real-data recognition/reject and physical-iPhone validation gaps without inventing accuracy.",
+  "updated_at": "2026-09-28T14:44:00+02:00"
 }
