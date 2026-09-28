@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { mkdirSync } from 'node:fs';
 
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z3QUAAAAASUVORK5CYII=','base64');
 
@@ -73,3 +74,20 @@ test('UNKNOWN observation persists across reload, stays pending, and can be dele
   await expect(finalFrame.locator('#pendingList [data-open-obs]')).toHaveCount(0);
   await expect(finalFrame.locator('#statSpecies')).toHaveText('0');
 });
+
+for (const width of [390, 430]) {
+  test(`premium shell is usable without horizontal overflow at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/app/index.html');
+    const frame=page.frameLocator('#runtimeFrame');
+    await expect(frame.locator('.hero')).toBeVisible();
+    await expect(frame.locator('.nav')).toBeVisible();
+    await expect(frame.locator('.nav .ui-icon')).toHaveCount(5);
+    await expect(frame.locator('#settingsBtn .ui-icon')).toHaveCount(1);
+    await expect(frame.locator('html')).toHaveCSS('overflow-x', 'visible');
+    const overflow=await frame.locator('body').evaluate(body=>body.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(1);
+    mkdirSync('artifacts',{recursive:true});
+    await page.screenshot({path:`artifacts/herbarium-${width}.png`,fullPage:true});
+  });
+}

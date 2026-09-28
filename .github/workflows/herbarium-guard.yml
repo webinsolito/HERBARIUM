@@ -109,6 +109,15 @@ jobs:
           done
           npx playwright test tests/acquisition-browser.spec.mjs --config=playwright.config.mjs
 
+      - name: Upload responsive visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: herbarium-responsive-${{ github.sha }}
+          path: artifacts/herbarium-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Run project tests when declared
         shell: bash
         run: |
