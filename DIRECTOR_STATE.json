@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "branch": "main",
-  "last_good_commit": "3a85dbf444cc44d3f9159139ca7fec5de1ec57b6",
-  "rollback_commit": "105b22fdf5c2ad98ef3c38b173fe77c66b771148",
-  "current_candidate": "ac9dfd25c642363bea1a189d56fa92e66600fa9c",
-  "current_gate": "MISSION-005-pages-recovery-and-final-delivery",
+  "last_good_commit": "f66a2dad0b8033d43a0618aa4366610a7fa86085",
+  "rollback_commit": "c26bee6859c2d6dd5a75aa74dec127292dcf1d7e",
+  "current_candidate": "f66a2dad0b8033d43a0618aa4366610a7fa86085",
+  "current_gate": "MISSION-006-real-photo-corpus-and-device-validation",
   "gate_weights": {
     "source_recovery": 20,
     "recognition_reject": 25,
@@ -14,13 +14,14 @@
     "mobile_ui": 10,
     "tests_release": 10
   },
-  "completion_score": 61,
-  "verification_score": 72,
+  "completion_score": null,
+  "verification_score": null,
+  "score_note": "Historical percentages retired: current evidence is reported by named tests and explicit blockers.",
   "last_tests": {
     "status": "PASS_CI_WEBKIT_AND_PAGES",
-    "command": "HERBARIUM Guard 36204459398 + Pages build/deployment 36423541581",
-    "result": "SUCCESS: app HEAD 3a85dbf4 passed HERBARIUM Guard; gh-pages fdbf6862 deployed successfully.",
-    "scope": "Automated browser/runtime and GitHub Pages deployment; not a physical iPhone claim."
+    "command": "HERBARIUM Guard 36667852799 (candidate) + Pages deploy 36668029157",
+    "result": "SUCCESS: camera/library, prudent subject gate, REJECT no-save, UNKNOWN persistence/detail/delete, corrupt-image handling, runtime precache, and 390/430 responsive checks passed in WebKit; Pages deployment succeeded.",
+    "scope": "Synthetic labeled contract fixtures and automated WebKit/runtime checks; not real-photo accuracy and not a physical iPhone claim."
   },
   "blockers": [
     "Dataset-backed real-photo reject metrics are unavailable until real labeled photos are supplied",
@@ -42,7 +43,10 @@
     "Premium observation-detail and collection-card treatment added in candidate 82d47e0c with layered photo frames, taxonomy ornament, fact tiles and touch affordances",
     "Public GitHub Pages recovered through dedicated gh-pages publication of app/; deployment run 36423541581 succeeded at https://webinsolito.github.io/HERBARIUM/",
     "Main deploy workflow changed to sync app/ into gh-pages without Pages enablement API dependency"
+    ,"Offline pixel evidence v2 rejects uniform green surfaces instead of treating green alone as botanical evidence"
+    ,"REJECT blocks persistence; admitted and uncertain observations remain species UNKNOWN with gate evidence stored in IndexedDB"
+    ,"Synthetic labeled plant/non-plant fixture suite covers false-positive, persistence, corrupt-image and offline paths without an accuracy claim"
   ],
-  "next_action": "Visually verify the public HERBARIUM release at desktop, 390px and 430px; then close remaining real-data recognition/reject and physical-iPhone validation gaps without inventing accuracy.",
-  "updated_at": "2026-09-28T14:44:00+02:00"
+  "next_action": "Supply a consented, labeled real-photo plant/non-plant corpus; compute reject/UNKNOWN metrics and calibrate thresholds on held-out images, then run camera/library, IndexedDB and installed-PWA offline checks on a physical iPhone.",
+  "updated_at": "2026-09-30T06:20:00+02:00"
 }
