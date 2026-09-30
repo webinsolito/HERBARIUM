@@ -64,7 +64,9 @@ export async function evidenceFromImageElement(img,quality=1){
   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});if(!ctx)throw new Error('CANVAS');
   ctx.drawImage(img,0,0,width,height);
-  const pixels=ctx.getImageData(0,0,width,height),result=evidenceFromPixels({...pixels,quality});
+  const pixels=ctx.getImageData(0,0,width,height),result=evidenceFromPixels({
+    data:pixels.data,width:pixels.width,height:pixels.height,quality
+  });
   canvas.width=1;canvas.height=1;
   return{...result,analysis:{ms:Math.max(0,Math.round(now()-started)),width,height,pixels:width*height,sourceWidth:sourceW,sourceHeight:sourceH}};
 }

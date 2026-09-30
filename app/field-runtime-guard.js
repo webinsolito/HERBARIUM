@@ -41,7 +41,7 @@ export function attachFieldRuntimeGuard(doc=document){
     const version=++syncVersion,thumbs=[...grid.querySelectorAll('.thumb')],signature=thumbs.map(x=>x.currentSrc||x.src||'').join('|');
     if(signature===lastSignature&&thumbs.length)return;lastSignature=signature;
     if(!thumbs.length){
-      result=null;renderSubjectGate(card,result);recognize.textContent='Riconoscimento in attesa della foto';evidenceCopy.textContent='Aggiungi una foto: validazione e controllo avvengono solo sul dispositivo.';
+      result=null;renderSubjectGate(card,result);card.append(recognize,evidenceCopy);recognize.textContent='Riconoscimento in attesa della foto';evidenceCopy.textContent='Aggiungi una foto: validazione e controllo avvengono solo sul dispositivo.';
       applySubjectAdmission({recognitionButton:recognize},result);persistDecision(save,result,null);save.disabled=true;save.setAttribute('aria-disabled','true');save.textContent=original;return;
     }
 
@@ -49,7 +49,7 @@ export function attachFieldRuntimeGuard(doc=document){
     const evidences=[];for(const img of thumbs){try{evidences.push(await evidenceFromImageElement(img,1))}catch{}}
     if(version!==syncVersion)return;
     const evidence=aggregateEvidence(evidences);result=classifyPlantSubject(evidence);
-    renderSubjectGate(card,result);card.dataset.loading='false';
+    renderSubjectGate(card,result);card.append(recognize,evidenceCopy);card.dataset.loading='false';
     const admission=applySubjectAdmission({recognitionButton:recognize,saveButton:save},result);persistDecision(save,result,evidence);
     const status=result.status,perf=evidence?` · ${evidence.analysisMs} ms / ${evidence.analysisPixels.toLocaleString('it-IT')} px`:'';
     if(status==='plant'){

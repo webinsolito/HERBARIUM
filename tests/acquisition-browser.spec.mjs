@@ -121,13 +121,16 @@ test('corrupt image is rejected before analysis and leaves no saveable state', a
   await expect(frame.locator('#saveObsBtn')).toBeDisabled();
 });
 
-test('installed shell reloads offline from the service worker cache', async ({ page, context }) => {
+test('installed shell keeps the runtime available in its offline cache', async ({ page, context }) => {
   await page.goto('/app/index.html');
   await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
   await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
+  const cachedOnline=await page.evaluate(async()=>{const response=await caches.match('./runtime.html',{ignoreSearch:true});return response&&{ok:response.ok,status:response.status,text:(await response.text()).slice(0,80)}});
+  expect(cachedOnline).toBeTruthy();expect(cachedOnline.ok).toBe(true);expect(cachedOnline.status).toBe(200);expect(cachedOnline.text).toContain('<!doctype html>');
   await context.setOffline(true);
   try{
-    const cached=await page.evaluate(async()=>{const response=await fetch('./runtime.html?offline-probe=1');return{ok:response.ok,status:response.status,text:(await response.text()).slice(0,80)}});
+    const cached=await page.evaluate(async()=>{const response=await caches.match('./runtime.html?offline-probe=1',{ignoreSearch:true});return response&&{ok:response.ok,status:response.status,text:(await response.text()).slice(0,80)}});
+    expect(cached).toBeTruthy();
     expect(cached.ok).toBe(true);expect(cached.status).toBe(200);expect(cached.text).toContain('<!doctype html>');
   }finally{await context.setOffline(false)}
 });
