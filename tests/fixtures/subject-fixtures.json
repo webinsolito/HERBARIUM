@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "scope": "synthetic-contract-fixtures-not-real-world-accuracy",
+  "fixtures": [
+    {
+      "id": "plant_leaf_cluster",
+      "label": "PLANT",
+      "pattern": "leaf-cluster",
+      "width": 128,
+      "height": 128,
+      "description": "Sagome fogliari verdi su fondo naturale, etichetta sintetica PLANT"
+    },
+    {
+      "id": "nonplant_green_cloth",
+      "label": "NON_PLANT",
+      "pattern": "green-cloth",
+      "width": 128,
+      "height": 128,
+      "description": "Superficie verde uniforme tipo tessuto, regressione falso positivo"
+    },
+    {
+      "id": "nonplant_blue_screen",
+      "label": "NON_PLANT",
+      "pattern": "blue-screen",
+      "width": 128,
+      "height": 128,
+      "description": "Superficie blu artificiale, fixture negativa"
+    }
+  ]
+}

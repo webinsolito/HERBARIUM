@@ -1,16 +1,12 @@
 import { SUBJECT, classifyPlantSubject, subjectGateCopy } from './plant-subject-gate.js';
 
-/**
- * Safe bridge between detector evidence and the Field UI.
- * Fail-closed by design: missing/invalid evidence can never enable recognition.
- */
 export function evaluateSubjectAdmission(evidence) {
   const result = classifyPlantSubject(evidence);
   const copy = subjectGateCopy(result);
   return Object.freeze({
-    ...result,
-    ...copy,
+    ...result,...copy,
     mayRecognize: result.status === SUBJECT.PLANT,
+    maySaveUnknown: result.status !== SUBJECT.NON_PLANT,
     maySaveAsIdentified: false
   });
 }
@@ -18,22 +14,21 @@ export function evaluateSubjectAdmission(evidence) {
 export function renderSubjectGate(container, evidence) {
   if (!container) throw new TypeError('subject gate container is required');
   const state = evaluateSubjectAdmission(evidence);
+  const label=state.status===SUBJECT.NON_PLANT?'REJECT':state.status===SUBJECT.PLANT?'BOTANICO · SPECIE UNKNOWN':'UNKNOWN';
   container.dataset.subjectStatus = state.status;
   container.dataset.tone = state.tone;
   container.setAttribute('role', 'status');
   container.setAttribute('aria-live', 'polite');
   container.innerHTML = '';
 
-  const eyebrow = document.createElement('span');
-  eyebrow.className = 'k';
-  eyebrow.textContent = 'Controllo soggetto';
-  const title = document.createElement('h3');
-  title.textContent = state.title;
-  const detail = document.createElement('p');
-  detail.className = 'notice';
-  detail.textContent = state.detail;
-
-  container.append(eyebrow, title, detail);
+  const head=document.createElement('div');head.className='subject-result-head';
+  const eyebrow = document.createElement('span');eyebrow.className = 'k';eyebrow.textContent = 'Esito locale';
+  const stamp=document.createElement('strong');stamp.className=`subject-stamp ${state.tone}`;stamp.textContent=label;
+  head.append(eyebrow,stamp);
+  const title = document.createElement('h3');title.textContent = state.title;
+  const detail = document.createElement('p');detail.className = 'notice';detail.textContent = state.detail;
+  const privacy=document.createElement('small');privacy.className='subject-privacy';privacy.textContent='Sul dispositivo · foto privata · nessuna specie assegnata';
+  container.append(head,title,detail,privacy);
   container.hidden = false;
   return state;
 }
@@ -44,11 +39,9 @@ export function applySubjectAdmission({ recognitionButton, saveButton }, evidenc
     recognitionButton.disabled = !state.mayRecognize;
     recognitionButton.setAttribute('aria-disabled', String(!state.mayRecognize));
   }
-  // A plant-subject pass is not a species verification. Saving as identified
-  // remains blocked until the recognition pipeline returns its own verified result.
-  if (saveButton && saveButton.dataset.requiresVerifiedSpecies === 'true') {
-    saveButton.disabled = true;
-    saveButton.setAttribute('aria-disabled', 'true');
+  if(saveButton){
+    saveButton.disabled=!state.maySaveUnknown||saveButton.dataset.requiresVerifiedSpecies==='true';
+    saveButton.setAttribute('aria-disabled',String(saveButton.disabled));
   }
   return state;
 }
