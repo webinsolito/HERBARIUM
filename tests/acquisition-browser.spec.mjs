@@ -120,11 +120,10 @@ test('corrupt image is rejected before analysis and leaves no saveable state', a
 test('installed shell reloads offline from the service worker cache', async ({ page, context }) => {
   await page.goto('/app/index.html');
   await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
-  await page.reload();
   await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
   await context.setOffline(true);
   try{
-    await page.reload({waitUntil:'domcontentloaded'});
+    await page.goto('/app/index.html',{waitUntil:'domcontentloaded'});
     const frame=page.frameLocator('#runtimeFrame');
     await expect(frame.locator('#home')).toHaveClass(/active/);
     await expect(frame.locator('#networkBadge')).toContainText(/offline/i);

@@ -48,6 +48,17 @@ export function evidenceFromPixels({data,width,height,quality=1}={}){
 }
 
 export async function evidenceFromImageElement(img,quality=1){
+  if(!(img.complete&&img.naturalWidth)){
+    if(typeof img.decode==='function'){try{await img.decode()}catch{}}
+    if(!(img.complete&&img.naturalWidth)){
+      if(img.complete)throw new Error('DECODE');
+      await new Promise((resolve,reject)=>{
+        const done=()=>{cleanup();resolve()},fail=()=>{cleanup();reject(new Error('DECODE'))};
+        const cleanup=()=>{img.removeEventListener('load',done);img.removeEventListener('error',fail)};
+        img.addEventListener('load',done,{once:true});img.addEventListener('error',fail,{once:true});
+      });
+    }
+  }
   const started=now(),max=160,sourceW=img.naturalWidth||img.width,sourceH=img.naturalHeight||img.height;
   const scale=Math.min(1,max/Math.max(sourceW,sourceH)),width=Math.max(1,Math.round(sourceW*scale)),height=Math.max(1,Math.round(sourceH*scale));
   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
