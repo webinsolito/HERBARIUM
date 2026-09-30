@@ -81,7 +81,7 @@ test('green non-plant fixture is REJECTED and cannot enter the collection', asyn
   await expect(frame.locator('.subject-stamp')).toHaveText('REJECT');
   await expect(frame.locator('#saveObsBtn')).toBeDisabled();
   await expect(frame.locator('#saveObsBtn')).toContainText(/respinta/i);
-  await frame.locator('[data-go="book"]').first().click();
+  await frame.locator('.nav [data-go="book"]').click();
   await expect(frame.locator('#pendingList [data-open-obs]')).toHaveCount(0);
 });
 
