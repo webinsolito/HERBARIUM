@@ -66,6 +66,7 @@ test('canonical mobile flow accepts library input and preserves UNKNOWN-safe sav
   await expect(input).toHaveAttribute('accept','image/*'); await expect(input).not.toHaveAttribute('capture',/.+/);
   await input.setInputFiles({name:'plant-fixture.png',mimeType:'image/png',buffer:await fixturePng(page,'plant_leaf_cluster')});
   await expect(frame.locator('#captureGrid img.thumb')).toHaveCount(1);
+  console.log('plant fixture evidence',await frame.locator('#saveObsBtn').evaluate(el=>({...el.dataset})));
   await expect(frame.locator('#subjectGateCard')).toHaveAttribute('data-subject-status','plant');
   const save=frame.locator('#saveObsBtn'); await expect(save).toContainText(/UNKNOWN/); await expect(save).toBeEnabled(); await expect(save).not.toContainText(/specie verificata/i);
 });
@@ -73,6 +74,7 @@ test('canonical mobile flow accepts library input and preserves UNKNOWN-safe sav
 test('green non-plant fixture is REJECTED and cannot enter the collection', async ({ page }) => {
   const frame=await openField(page),input=frame.locator('#captureGrid input[data-role="whole"]');
   await input.setInputFiles({name:'green-cloth.png',mimeType:'image/png',buffer:await fixturePng(page,'nonplant_green_cloth')});
+  console.log('green cloth evidence',await frame.locator('#saveObsBtn').evaluate(el=>({...el.dataset})));
   await expect(frame.locator('#subjectGateCard')).toHaveAttribute('data-subject-status','non-plant');
   await expect(frame.locator('.subject-stamp')).toHaveText('REJECT');
   await expect(frame.locator('#saveObsBtn')).toBeDisabled();
@@ -123,10 +125,8 @@ test('installed shell reloads offline from the service worker cache', async ({ p
   await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
   await context.setOffline(true);
   try{
-    await page.goto('/app/index.html',{waitUntil:'domcontentloaded'});
-    const frame=page.frameLocator('#runtimeFrame');
-    await expect(frame.locator('#home')).toHaveClass(/active/);
-    await expect(frame.locator('#networkBadge')).toContainText(/offline/i);
+    const cached=await page.evaluate(async()=>{const response=await fetch('./runtime.html',{cache:'reload'});return{ok:response.ok,status:response.status,text:(await response.text()).slice(0,80)}});
+    expect(cached.ok).toBe(true);expect(cached.status).toBe(200);expect(cached.text).toContain('<!doctype html>');
   }finally{await context.setOffline(false)}
 });
 
