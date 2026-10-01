@@ -639,3 +639,32 @@ select,input[type=text],input[type=number],input[type=password]{
   .specimen-caption b{font-size:.8rem}
   .specimen-caption small{font-size:.46rem}
 }
+
+/* VISUAL V5 — photographic botanical specimen */
+.hero-specimen,.specimen-stem,.specimen-leaf,.specimen-flower,.specimen-vein,.specimen-core{display:none!important}
+.specimen-photo{
+  margin:6px 0 0;
+  width:178px;
+  aspect-ratio:178/270;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid rgba(229,213,167,.16);
+  background:#0b251a;
+  box-shadow:0 22px 40px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.05);
+}
+.specimen-photo img{
+  width:100%;height:100%;display:block;
+  object-fit:cover;
+  filter:saturate(.88) contrast(1.03) brightness(.95);
+}
+.specimen-caption{margin-top:10px!important}
+.specimen-caption b{font-size:.78rem!important;font-weight:500!important}
+.specimen-caption small{font-size:.46rem!important;letter-spacing:.16em!important}
+@media(max-width:600px){
+  .specimen-photo{width:88px;border-radius:14px;margin:0}
+  .specimen-plate{grid-template-columns:96px 1fr!important}
+}
+@media(max-width:390px){
+  .specimen-photo{width:82px;border-radius:13px}
+  .specimen-plate{grid-template-columns:90px 1fr!important}
+}
