@@ -1,4 +1,4 @@
-const VERSION='herbarium-v1-20260930-subject-gate-v2';
+const VERSION='herbarium-v1-20261001-visual-premium-v2';
 const CACHE=VERSION+'-app';
 const PRECACHE=['./','./index.html','./runtime.html','./premium.css','./manifest.webmanifest','./icon.svg','./offline.html','./acquisition-guard.js','./field-runtime-guard.js','./subject-gate-ui.js','./plant-subject-gate.js','./local-subject-evidence.js'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(PRECACHE)))});
