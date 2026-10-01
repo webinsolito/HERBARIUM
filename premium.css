@@ -520,3 +520,122 @@ select,input[type=text],input[type=number],input[type=password]{
   .home-action small{font-size:.64rem}
   .stats span{letter-spacing:.02em!important}
 }
+
+
+/* VISUAL V4 — scientific editorial specimen, no cartoon medallion */
+.hero-visual{
+  position:relative!important;
+  min-height:318px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:24px 18px!important;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,0)),
+    radial-gradient(circle at 50% 45%,rgba(218,198,137,.07),transparent 45%)!important;
+  border-left:1px solid rgba(238,222,171,.08)!important;
+}
+.hero-visual:before{
+  content:""!important;
+  position:absolute!important;
+  inset:18px!important;
+  width:auto!important;height:auto!important;left:auto!important;
+  border:1px solid rgba(229,213,167,.10)!important;
+  border-radius:22px!important;
+}
+.hero-visual:after{
+  content:""!important;
+  position:absolute!important;
+  left:28px!important;right:28px!important;bottom:30px!important;
+  width:auto!important;height:1px!important;
+  border:0!important;border-radius:0!important;
+  background:linear-gradient(90deg,transparent,rgba(216,193,124,.35),transparent)!important;
+}
+.hero-medallion{display:none!important}
+.specimen-plate{
+  position:relative;z-index:2;
+  width:min(230px,100%);
+  min-height:268px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:18px 12px 14px;
+}
+.specimen-index{
+  position:absolute;top:0;left:2px;
+  font:600 .56rem/1.2 -apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
+  letter-spacing:.18em;color:rgba(221,202,138,.62);
+}
+.hero-specimen{
+  width:176px;height:220px;
+  overflow:visible;
+  filter:drop-shadow(0 16px 24px rgba(0,0,0,.16));
+}
+.specimen-stem,.specimen-leaf,.specimen-flower,.specimen-vein{
+  stroke:#d8d1b5;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.specimen-stem{stroke-width:2.2}
+.specimen-leaf{stroke-width:1.55;fill:rgba(216,209,181,.025)}
+.specimen-flower{stroke:#d2bd78;stroke-width:1.55;fill:rgba(210,189,120,.025)}
+.specimen-vein{stroke-width:.9;opacity:.38}
+.specimen-core{fill:#d2bd78;opacity:.82}
+.specimen-caption{
+  width:100%;
+  margin-top:4px;
+  text-align:center;
+  color:#eee6ce;
+}
+.specimen-caption b{
+  display:block;
+  font:500 .82rem/1.15 Georgia,serif;
+  letter-spacing:.02em;
+}
+.specimen-caption small{
+  display:block;margin-top:4px;
+  font-size:.49rem;letter-spacing:.17em;color:#9fae9f;
+}
+@media(max-width:600px){
+  .hero-visual{
+    min-height:142px!important;
+    display:block!important;
+    padding:0!important;
+    border-left:0!important;
+    border-top:1px solid rgba(238,222,171,.075)!important;
+  }
+  .hero-visual:before{
+    inset:12px 14px!important;
+    border-radius:18px!important;
+  }
+  .specimen-plate{
+    width:100%;min-height:142px;
+    display:grid;
+    grid-template-columns:112px 1fr;
+    align-items:center;
+    justify-items:start;
+    gap:14px;
+    padding:12px 22px;
+  }
+  .specimen-index{top:14px;left:auto;right:20px}
+  .hero-specimen{
+    width:100px;height:122px;
+    transform:rotate(-5deg);
+  }
+  .specimen-caption{
+    text-align:left;margin:0;
+  }
+  .specimen-caption b{font-size:.86rem}
+  .specimen-caption small{max-width:130px;line-height:1.45}
+  .hero-visual:after{
+    left:132px!important;right:26px!important;bottom:31px!important;
+  }
+}
+@media(max-width:390px){
+  .hero-visual{min-height:132px!important}
+  .specimen-plate{min-height:132px;grid-template-columns:96px 1fr;padding:10px 18px}
+  .hero-specimen{width:88px;height:112px}
+  .specimen-index{right:16px;top:12px}
+  .specimen-caption b{font-size:.8rem}
+  .specimen-caption small{font-size:.46rem}
+}
