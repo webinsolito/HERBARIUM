@@ -1,4 +1,4 @@
-const VERSION='herbarium-v1-20261001-visual-premium-v5';
+const VERSION='herbarium-v1-20261001-editorial-v3';
 const CACHE=VERSION+'-app';
 const PRECACHE=['./','./index.html','./runtime.html','./premium.css','./manifest.webmanifest','./icon.svg','./offline.html','./acquisition-guard.js','./field-runtime-guard.js','./subject-gate-ui.js','./plant-subject-gate.js','./local-subject-evidence.js'];
 
