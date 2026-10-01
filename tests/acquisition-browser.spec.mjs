@@ -136,6 +136,10 @@ for (const width of [390, 430]) {
     await page.goto('/app/index.html');
     const frame=page.frameLocator('#runtimeFrame');
     await expect(frame.locator('.hero')).toBeVisible();
+    await expect(page.locator('#boot')).toHaveClass(/ready/);
+    await page.waitForTimeout(220);
+    await expect(page.locator('#boot')).toBeHidden();
+    await expect(page.locator('#pwaNote')).not.toHaveClass(/show/, { timeout: 4000 });
     await expect(frame.locator('.nav')).toBeVisible();
     await expect(frame.locator('.nav .ui-icon')).toHaveCount(5);
     await expect(frame.locator('#settingsBtn .ui-icon')).toHaveCount(1);
