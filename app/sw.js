@@ -1,6 +1,6 @@
-const VERSION='herbarium-v1-20261001-scientific-v4';
+const VERSION='herbarium-v1-20261001-realistic-v5';
 const CACHE=VERSION+'-app';
-const PRECACHE=['./','./index.html','./runtime.html','./premium.css','./manifest.webmanifest','./icon.svg','./offline.html','./acquisition-guard.js','./field-runtime-guard.js','./subject-gate-ui.js','./plant-subject-gate.js','./local-subject-evidence.js'];
+const PRECACHE=['./','./index.html','./runtime.html','./premium.css','./manifest.webmanifest','./icon.svg','./offline.html','./acquisition-guard.js','./field-runtime-guard.js','./subject-gate-ui.js','./plant-subject-gate.js','./local-subject-evidence.js','./assets/specimen-realistic.webp'];
 
 self.addEventListener('install',event=>{
   self.skipWaiting();
